@@ -21,7 +21,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 - 2026-09-28 단계 3 완료.
 - 2026-09-28 단계 4-1 ~ 4-3 완료(GE 12개).
 - 2026-09-28 단계 4-4 완료(큐 3개 + NS_Demo_Slam, 큐 경로 설정).
-- **다음: 단계 5-1.** AN_DemoGameplayEvent. 이후 5-2는 몽타주 복제만(노티파이 추가 대신 BPI_Attacker 구현, assets.md 변경표 참고).
+- 2026-09-28 단계 5 완료(AN_DemoGameplayEvent, 몽타주 복제 3개).
+- **다음: 단계 6-1.** GA_DemoBase 함수 5개.
 
 ## 환경
 
@@ -47,8 +48,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | 4-2 | GE 쿨타임 4종 (태그 부여 컴포넌트) | ObjectTools.set_properties(`gEComponents`: 클래스 경로 배열) → get_properties로 서브오브젝트 refPath 획득 → 그 서브오브젝트에 set_properties, BlueprintTools.compile_blueprint (ProgrammaticToolset로 묶음) | 성공 | 없음 | 5분 | **핵심 확인 항목 통과.** 인스턴스드 서브오브젝트 배열에 `"/Script/GameplayAbilities.TargetTagsGameplayEffectComponent"`를 넣으면 `Default__GE_X_C:TargetTagsGameplayEffectComponent_0`이 생성되고, 그 `inheritableGrantedTagsContainer`에 `added`와 `combinedTags`를 함께 써서 태그 부여. 컴파일 뒤에도 유지. 0.8/4/6/15초. 런타임 동작은 단계 10에서 확인 |
 | 4-3 | GE_Cost 3종, GE_ManaRegen, GE_Awaken, GE_DodgeInvuln, GE_RestoreFull | 4-2와 같음 + AssetTools.save_assets | 성공 | 없음 | 5분 | Cost: Mana AddBase -20/-30/-40. ManaRegen: Infinite, period 1, Mana +5. Awaken: 8초, AttackPower MultiplyAdditive 1.5, 큐 GameplayCue.Awaken, State.Awakened 부여. DodgeInvuln: 0.4초 State.Invulnerable. RestoreFull: Health/Mana Override, AttributeBased(MaxHealth/MaxMana, Target, 계수 1). 12개 전부 get_properties로 재확인 후 저장 |
 | 4-4 | GC_Hit, GC_Slam, GC_Awaken | GameplayCueToolset.CreateCueNotifyAsset(bIsActor false/true) → BlueprintTools.set_parent(`GameplayCueNotify_Burst` / `GameplayCueNotify_Looping`) → ObjectTools.set_properties, NiagaraToolset_System.CreateNiagaraSystem/GetSystemSummary, ConfigSettingsToolset.SetSectionProperties, AssetTools.save_assets | 성공 | 없음 | 10분 | `CreateCueNotifyAsset`는 Static/Actor 기본형만 만들어서 `set_parent`로 Burst/Looping으로 바꿈(큐 태그 유지). GC_Hit = NS_Damage, GC_Slam = 새 `/Game/Demo/VFX/NS_Demo_Slam`(SimpleExplosion 템플릿 복제), GC_Awaken = NS_JumpPad(AttachToTarget, SnapToTarget, bAutoDestroyOnRemove). 에셋 태그 `GameplayCueName`은 정상. **단, GameplayCueToolset의 FindCueNotifyAssets/GetCueInfo는 새로 만든 큐를 못 찾음**(에디터 큐 라이브러리가 큐 생성 전에 초기화됨). `DefaultGame.ini`에 `GameplayCueNotifyPaths=/Game/Demo/Cues` 추가. 실제 재생은 단계 10에서 확인 |
-| 5-1 | AN_DemoGameplayEvent (함수 오버라이드) | | | | | |
-| 5-2 | 몽타주 복제와 노티파이 추가 | | | | | |
+| 5-1 | AN_DemoGameplayEvent (함수 오버라이드) | BlueprintTools.create(부모 `/Script/Engine.AnimNotify`)/add_struct_variable(`/Script/GameplayTags.GameplayTag`)/set_variable_instance_editable/add_function_graph(`Received_Notify`)/find_node_types/get_node_type_pins/write_graph_dsl/read_graph_dsl/find_nodes/compile_blueprint(warnings_as_errors), AssetTools.save_assets | 성공 | 없음 | 8분 | **함수 오버라이드 생성 확인.** `add_function_graph`에 부모 함수 이름을 주면 오버라이드 그래프가 생긴다(파라미터 MeshComp, Animation, EventReference와 bool 반환 자동). DSL에서 멤버 변수는 맨 이름으로 못 읽고 `(Variables|Default|GetEventTag)`로 읽어야 함(첫 시도 "Undefined variable"). `find_node_types`는 `context_pins: []`를 꼭 넘겨야 함(스키마상 필수). `return true` 리터럴 유지, 고아 노드 없음. read_graph_dsl은 pure 노드를 쓰인 곳마다 펼쳐 보여 줘서 GetOwner가 3번 호출되는 것처럼 보이지만 실제 노드는 1개 |
+| 5-2 | 몽타주 복제와 노티파이 추가 | AssetTools.exists/duplicate/get_asset_class/get_dependencies/save_assets | 성공(복제) / 노티파이 추가는 계획 변경으로 생략 | 없음 | 3분 | `AM_ComboAttack`→`AM_Demo_Combo`, `AM_ChargedAttack`→`AM_Demo_Slam`, `AM_Dash`→`AM_Demo_Dodge`. 복제본은 원본 노티파이 BP(AN_AttackDamage, AN_AttackCombo, AN_ChargedAttack, AN_EndDash)를 그대로 참조. 노티파이 추가(5-3)는 BPI_Attacker 구현으로 대체(단계 7-3). 참고로 몽타주 `Notifies`/`CompositeSections`는 ObjectTools로 읽기·쓰기 불가이고 Python 대체도 MCP로 불가하므로, 원래 계획대로였다면 "실패". `get_dependencies`는 저장 전 새 에셋에서 에러('NoneType' object is not iterable) |
 | 6-1 | GA_DemoBase 함수 5개 | | | | | |
 | 6-2 | GA_Attack 콤보 그래프 | | | | | |
 | 6-3 | GA_Dodge | | | | | |
