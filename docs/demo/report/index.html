@@ -161,7 +161,7 @@
     <dt>프로젝트</dt><dd>ActionDemo (Third Person BP 템플릿 + Combat, Platforming 변형 팩)</dd>
     <dt>엔진</dt><dd>Unreal Engine 5.8.3, 에디터 내장 MCP 서버 <code>http://127.0.0.1:8000/mcp</code></dd>
     <dt>작업자</dt><dd>Claude Code (claude-opus-5-5, 데스크톱 앱 Code 탭 로컬 세션). 준비 키트는 Claude 클라우드 세션, 플레이 검증은 사람</dd>
-    <dt>진행</dt><dd>2026-09-28 12:05 ~ 13:56 (KST), 단계 0~11(사람 플레이는 13:51 종료). 단계별 로컬 커밋 14개(보고서 제외, 아직 푸시 전)</dd>
+    <dt>진행</dt><dd>2026-09-28 12:05 ~ 13:56 (KST), 단계 0~11(사람 플레이는 13:51 종료). 단계별 커밋 14개(보고서 제외), 같은 날 <code>main</code>에 머지</dd>
     <dt>근거 문서</dt><dd><code>docs/demo/02-demo-spec.md</code>, <code>03-mcp-build-plan.md</code>, <code>04-mcp-test-log.md</code>, <code>assets.md</code></dd>
   </dl>
 
@@ -486,7 +486,7 @@
       <tr><td>BP 인터페이스를 추가할 툴이 없음</td><td>ObjectTools는 Blueprint를 항상 CDO로 바꿔 다룸</td><td>SlateInspector로 Class Settings UI 조작. Details 목록을 따로 Observe해야 Add 버튼이 잡힘</td></tr>
       <tr><td>DSL 작성 실패</td><td>멤버 변수는 맨 이름으로 못 읽음, bool 변수 <code>bIsDead</code>의 게터는 <code>GetIsDead</code>, 태그 컨테이너 리터럴 불가, <code>+</code>는 리터럴이 붙어야 문자열 연결</td><td>노드 타입을 먼저 조회. 실패한 쓰기는 스냅샷 롤백돼 부분 노드가 남지 않음</td></tr>
       <tr><td>괄호가 든 이벤트 이름을 DSL에 쓸 수 없음</td><td><code>OnHealthChanged(DemoAbilitySystem)</code>의 괄호를 토크나이저가 분리</td><td>이벤트 이름을 따옴표로 감쌈</td></tr>
-      <tr><td>읽기만 했는데 템플릿 BP 12개가 dirty</td><td><code>find_node_types</code>, <code>get_node_type_pins</code>가 내부적으로 임시 노드를 만들었다 지움</td><td>템플릿은 저장하지 않음. 에디터를 닫을 때 저장하지 말 것</td></tr>
+      <tr><td>읽기만 했는데 템플릿 BP 12개가 dirty</td><td><code>find_node_types</code>, <code>get_node_type_pins</code>가 내부적으로 임시 노드를 만들었다 지움</td><td>템플릿은 저장하지 않는 것이 원칙이다. 이번에는 에디터를 끌 때 12개가 다시 저장됐지만 <code>.gitignore</code> 대상이라 저장소에는 영향이 없다</td></tr>
       <tr><td>새로 만든 큐를 GameplayCueToolset이 못 찾음</td><td>에디터 큐 라이브러리가 큐 생성 전에 초기화됨</td><td>에셋 태그(<code>GameplayCueName</code>)로 등록을 확인하고 <code>DefaultGame.ini</code>에 <code>GameplayCueNotifyPaths</code>를 추가했다. 그 뒤 조회 툴이 큐를 찾는지와 큐 재생은 따로 확인하지 않았다(플레이 중 문제 보고는 없음)</td></tr>
       <tr><td>캡처에서 캐릭터가 구겨진 포즈</td><td><code>CaptureViewport</code>는 PIE 중에도 애니메이션이 없는 에디터 월드를 찍음</td><td>PIE 화면은 SlateInspector 위젯 스크린샷으로</td></tr>
       <tr><td>SlateInspector로 보낸 키가 게임에 안 들어감</td><td>게임 뷰포트가 Slate 키보드 포커스를 받지 못함. 백그라운드 에디터는 약 3fps로 스로틀</td><td>입력이 필요한 검증은 사람 플레이로</td></tr>
@@ -550,7 +550,7 @@
       <tr><td class="nowrap"><code>docs/demo/assets.md</code></td><td>템플릿 조사 결과와 계획 변경 요약</td></tr>
       <tr><td class="nowrap"><code>docs/done-action-demo-mcp.md</code></td><td>완료 문서(변경 파일, 검증, 주의사항)</td></tr>
       <tr><td class="nowrap"><code>docs/demo/screenshots/</code></td><td>PIE 화면, 에디터 캡처 비교</td></tr>
-      <tr><td class="nowrap">Git 브랜치</td><td><code>claude/elegant-einstein-ezzm7z</code>. 단계별 로컬 커밋은 아직 푸시하지 않았다(원격은 f715441까지)</td></tr>
+      <tr><td class="nowrap">Git 브랜치</td><td><code>claude/elegant-einstein-ezzm7z</code>를 <code>main</code>에 머지해 푸시했다(머지 커밋 8090fea)</td></tr>
     </tbody>
   </table>
 </section>

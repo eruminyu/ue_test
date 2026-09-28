@@ -34,6 +34,7 @@
 
 ## 주의사항
 
-- 에디터를 닫을 때 저장 확인 창이 뜨면 템플릿 에셋(`/Game/ThirdPerson`, `/Game/Variant_*`)은 저장하지 않는다. 조사용 읽기 툴 때문에 dirty 표시만 된 것이다.
+- 템플릿 에셋(`/Game/ThirdPerson`, `/Game/Variant_*`)은 조사용 읽기 툴 때문에 dirty 표시가 붙었다. 에디터 종료 시 12개가 다시 저장됐지만(의도한 수정 없음), `.gitignore` 대상이라 저장소에는 영향이 없다.
+- 에디터가 종료하면서 `DefaultGameplayTags.ini` 맨 위에 설정 헤더 `;METADATA=(Diff=true, UseCommands=true)`를 추가했다. UE 5 표준 형식이라 그대로 커밋했다.
 - Epic 스킬 플러그인 `unreal-engine-skills-for-claude-code`는 아직 설치되지 않았다. 필요하면 대화형 세션에서 `/plugin install unreal-engine-skills-for-claude-code@claude-plugins-official`을 입력한다.
-- 로컬 커밋만 했다. 푸시는 하지 않았다.
+- 브랜치 `claude/elegant-einstein-ezzm7z`를 `main`에 머지하고(머지 커밋 8090fea) 두 브랜치를 모두 푸시했다. 에디터가 열려 있는 동안에는 작업 폴더를 체크아웃하지 않도록 머지 커밋을 직접 만들어 `main`만 갱신했다.

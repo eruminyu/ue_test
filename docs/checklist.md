@@ -10,3 +10,4 @@
 - [x] 5단계 검증(단계 10), 사용자 플레이 테스트(완료 기준 6/6 통과), 요약과 최종 보고(단계 11)
 - [x] 완료 문서 [done-action-demo-mcp.md](done-action-demo-mcp.md)
 - [x] 작업 보고서 PDF [demo/ActionDemo_MCP_Report.pdf](demo/ActionDemo_MCP_Report.pdf) (원본 HTML: `docs/demo/report/`)
+- [x] `main`에 머지하고 푸시 (2026-09-28)
