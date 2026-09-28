@@ -13,15 +13,22 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 
 한 줄 결론:
 
+## 진행 상태 (이어서 할 곳)
+
+- 2026-09-28 12:05 준비 완료: BP 템플릿 `ActionDemo` 생성, `install.ps1 -Build` 성공, 변형 팩 복사, 영어 에디터 실행, MCP 서버 8000번 기동 확인.
+- **다음: 단계 0.** unreal-mcp가 연결된 Claude Code 세션(저장소 루트 `D:\Project\UE\ClaudeTest\ue_test`에서 연 세션)에서 시작한다.
+
 ## 환경
 
 | 항목 | 값 |
 | --- | --- |
-| 엔진 | UE 5.8.? |
-| 에디터 언어 | |
-| 툴셋 수 / 툴 수 | |
-| Claude Code 버전, 모델 | |
-| 날짜 | |
+| 엔진 | UE 5.8.3 (CL 58210709, Installed Build, `D:\Program Files\Epic Games\UE_5.8`) |
+| 프로젝트 | Third Person / Blueprint 템플릿 + `DemoKit/install.ps1` (C++는 DemoAttributeSet 하나). 변형 팩 Combat, Platforming은 엔진 `Templates/TemplateResources/Standard`에서 복사 |
+| 컴파일러 | VS Community 2026 18.10.0, MSVC 14.51.36231 (컴파일러 14.51.36257), Windows SDK 10.0.26100.0 |
+| 에디터 언어 | English (`OpenEditor_EN.bat`, `-culture=en`) |
+| 툴셋 수 / 툴 수 | MCP 메타 툴 3개(list_toolsets, describe_toolset, call_tool) 확인. 툴셋 수는 단계 0에서 기록 |
+| Claude Code 버전, 모델 | Claude 데스크톱 앱 Code 탭(로컬 세션), claude-opus-5-5 |
+| 날짜 | 2026-09-28 |
 
 ## 단계별 기록
 
@@ -62,3 +69,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 
 | 시각 | 증상 | 원인 추정 | 해결 |
 | --- | --- | --- | --- |
+| 11:40 | 처음 만든 프로젝트가 `D:\Project\UE\ClaudeTest\test\test.uproject`(C++ 템플릿, 저장소 밖) | 설치 문서의 이름, 위치, 유형과 다르게 생성 | 사용자와 협의해 저장소 루트에 BP 템플릿 `ActionDemo`를 새로 생성. `test`는 그대로 둠 |
+| 11:58 | 엔진이 `C:\Program Files`가 아니고 HKLM `5.8` 키도 없음 | 엔진을 D 드라이브에 설치, HKCU Builds에만 GUID로 등록 | `install.ps1 -Build -EngineDir "D:\Program Files\Epic Games\UE_5.8"` |
+| 12:00 | UBT 경고: MSVC 14.51.36257은 권장 버전(14.50.x)이 아님 | VS 2026 18.10의 최신 툴체인. 금지 범위는 아님 | 무시. 빌드 성공(43초) |
+| 12:00 | BP 프로젝트에 `Variant_Combat`, `Variant_Platforming` 콘텐츠 없음 | BP 템플릿은 프로젝트 브라우저의 Variants 드롭다운을 골라야 변형 팩이 복사됨(기본값 없음). C++ 템플릿은 전부 포함 | 에디터를 끈 상태에서 엔진의 `Templates/TemplateResources/Standard/Variant_Combat`, `Variant_Platforming` 팩을 `Content/<팩>`, `Content/__ExternalActors__/<팩>`, `Content/__ExternalObjects__/<팩>`에 복사(프로젝트 브라우저 동작 재현). 템플릿 콘텐츠라 커밋 대상 아님 |
+| 12:04 | 이 세션에 unreal-mcp가 없음(서버 목록에도 없음). 서버는 정상(`initialize` 200, 메타 툴 3개) | 세션을 저장소 밖(`D:\Project\UE\ClaudeTest`)에서 시작해 `.mcp.json`이 로드되지 않음. 세션 중 폴더 이동으로는 다시 로드되지 않음 | 저장소 루트에서 새 세션을 열어 unreal-mcp를 승인 |
