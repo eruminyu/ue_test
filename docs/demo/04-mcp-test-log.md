@@ -37,7 +37,7 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 연결과 툴셋 확인 | list_toolsets, describe_toolset, BlueprintTools.get_graph_dsl_docs, AttributeSetToolset.ListAttributes, AgentSkillToolset.ListSkills/GetSkills, ProgrammaticToolset.get_execution_environment | 성공 | 없음 | 5분 | 에디터 영어(`-culture=en`) 확인. DemoAttributeSet 로드 확인(속성 6개: Health, MaxHealth, Mana, MaxMana, AttackPower, IncomingDamage). **ProgrammaticToolset은 `json, math, re, time, datetime, copy`만 import할 수 있고 `unreal` 모듈을 못 쓴다.** 전용 툴을 묶어 부르는 오케스트레이션만 되고, 계획서가 가정한 `unreal.*` API 직접 호출(Python 대체)은 MCP로 불가. EditorAppToolset에도 콘솔 명령(`py`) 실행 툴이 없음 |
 | 1 | 템플릿 조사 | | | | | |
-| 2 | 게임플레이 태그 24개 | | | | | |
+| 2 | 게임플레이 태그 24개 | GameplayTagsToolset.AddTag ×24 (ProgrammaticToolset.execute_tool_script로 묶어 호출), GameplayTagsToolset.ListTags | 성공 | 없음 | 2분 | 24개 모두 `Config/DefaultGameplayTags.ini`에 저장, ListTags로 철자 재확인(State.Invulnerable, State.Dead, Data.Damage 포함). 호출 응답이 다른 에이전트의 호출 결과와 뒤바뀌어 돌아왔지만 실제 추가는 됨(문제 기록 참고). ProgrammaticToolset은 전용 툴을 묶기만 했으므로 판정은 성공 |
 | 3 | DT_Attr_Player, DT_Attr_Dummy | | | | | |
 | 4-1 | GE_Damage (SetByCaller, 큐) | | | | | |
 | 4-2 | GE 쿨타임 4종 (태그 부여 컴포넌트) | | | | | |
@@ -75,3 +75,5 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | 12:00 | UBT 경고: MSVC 14.51.36257은 권장 버전(14.50.x)이 아님 | VS 2026 18.10의 최신 툴체인. 금지 범위는 아님 | 무시. 빌드 성공(43초) |
 | 12:00 | BP 프로젝트에 `Variant_Combat`, `Variant_Platforming` 콘텐츠 없음 | BP 템플릿은 프로젝트 브라우저의 Variants 드롭다운을 골라야 변형 팩이 복사됨(기본값 없음). C++ 템플릿은 전부 포함 | 에디터를 끈 상태에서 엔진의 `Templates/TemplateResources/Standard/Variant_Combat`, `Variant_Platforming` 팩을 `Content/<팩>`, `Content/__ExternalActors__/<팩>`, `Content/__ExternalObjects__/<팩>`에 복사(프로젝트 브라우저 동작 재현). 템플릿 콘텐츠라 커밋 대상 아님 |
 | 12:04 | 이 세션에 unreal-mcp가 없음(서버 목록에도 없음). 서버는 정상(`initialize` 200, 메타 툴 3개) | 세션을 저장소 밖(`D:\Project\UE\ClaudeTest`)에서 시작해 `.mcp.json`이 로드되지 않음. 세션 중 폴더 이동으로는 다시 로드되지 않음 | 저장소 루트에서 새 세션을 열어 unreal-mcp를 승인 |
+| 단계 0 | ProgrammaticToolset에서 `import unreal` 불가 | 샌드박스가 `json, math, re, time, datetime, copy`만 허용. 목적이 "툴 오케스트레이션"으로 제한됨 | 계획서의 "Python 대체"(`unreal.AnimationLibrary`, IMC `map_key` 등)는 MCP로 불가. 전용 툴이 없는 작업은 ObjectTools 속성 편집이나 SlateInspectorToolset(UI 조작)으로 시도하고, 그래도 안 되면 사용자에게 요청 |
+| 단계 1~2 | 조사 에이전트 3개가 병렬로 MCP를 부르는 동안 메인 세션의 `AddTag` 스크립트 호출에, 다른 에이전트가 보낸 `get_properties(AM_Dash)`의 에러가 응답으로 돌아옴 | 같은 MCP 서버(에디터 1개)에 동시 요청을 보내면 응답이 요청과 뒤섞임. 실제 AddTag는 실행됨(ListTags로 확인) | 병렬 워크플로 중단. 이후 MCP 호출은 에이전트 하나씩 순차로만 실행. **에디터 1개당 MCP 클라이언트 1개, 호출 1개씩**이 안전 |
