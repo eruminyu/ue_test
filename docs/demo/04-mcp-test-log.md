@@ -18,7 +18,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 - 2026-09-28 12:05 준비 완료: BP 템플릿 `ActionDemo` 생성, `install.ps1 -Build` 성공, 변형 팩 복사, 영어 에디터 실행, MCP 서버 8000번 기동 확인.
 - 2026-09-28 단계 0 완료. unreal-mcp 연결(저장소 루트 세션). Epic 스킬 플러그인 `unreal-engine-skills-for-claude-code`는 마켓플레이스에 있으나 미설치. 에디터 내장 AgentSkill `BlueprintBasicsSkill`을 읽고 진행.
 - 2026-09-28 단계 1, 2 완료. 계획 변경 요약은 `docs/demo/assets.md` 맨 위.
-- **다음: 단계 3.** DT_Attr_Player, DT_Attr_Dummy.
+- 2026-09-28 단계 3 완료.
+- **다음: 단계 4-1.** GE_Damage.
 
 ## 환경
 
@@ -39,7 +40,7 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | 0 | 연결과 툴셋 확인 | list_toolsets, describe_toolset, BlueprintTools.get_graph_dsl_docs, AttributeSetToolset.ListAttributes, AgentSkillToolset.ListSkills/GetSkills, ProgrammaticToolset.get_execution_environment | 성공 | 없음 | 5분 | 에디터 영어(`-culture=en`) 확인. DemoAttributeSet 로드 확인(속성 6개: Health, MaxHealth, Mana, MaxMana, AttackPower, IncomingDamage). **ProgrammaticToolset은 `json, math, re, time, datetime, copy`만 import할 수 있고 `unreal` 모듈을 못 쓴다.** 전용 툴을 묶어 부르는 오케스트레이션만 되고, 계획서가 가정한 `unreal.*` API 직접 호출(Python 대체)은 MCP로 불가. EditorAppToolset에도 콘솔 명령(`py`) 실행 툴이 없음 |
 | 1 | 템플릿 조사 | AssetTools.find_assets/list_folders/get_asset_class/get_dependencies/get_referencers/get_asset_tags, BlueprintTools.get_parent/list_graphs/read_graph_dsl/find_nodes/get_node_infos/list_functions/list_variables/list_events, ObjectTools.list_properties/get_properties, NiagaraToolset_System.GetSystemSummary/GetEmitterSummary/GetEmitterTopology 등 | 부분 | 없음 | 40분(에이전트 순차) | 결과는 `docs/demo/assets.md`. 경로, 메시, AnimBP 슬롯, 입력, 노티파이 방식, Niagara는 전용 툴로 확인. **몽타주 섹션 이름·시작 시간과 노티파이 트리거 시간은 MCP로 못 읽음**(`CompositeSections`, `Notifies` "could not be read"), 캐릭터 변수로 추정. 공격 판정이 `BPI_Attacker` 인터페이스 메시지 방식이라 단계 5-2, 5-3을 "BP_DemoPlayer가 BPI_Attacker 구현"으로 변경(변경표는 assets.md 맨 위) |
 | 2 | 게임플레이 태그 24개 | GameplayTagsToolset.AddTag ×24 (ProgrammaticToolset.execute_tool_script로 묶어 호출), GameplayTagsToolset.ListTags | 성공 | 없음 | 2분 | 24개 모두 `Config/DefaultGameplayTags.ini`에 저장, ListTags로 철자 재확인(State.Invulnerable, State.Dead, Data.Damage 포함). 호출 응답이 다른 에이전트의 호출 결과와 뒤바뀌어 돌아왔지만 실제 추가는 됨(문제 기록 참고). ProgrammaticToolset은 전용 툴을 묶기만 했으므로 판정은 성공 |
-| 3 | DT_Attr_Player, DT_Attr_Dummy | | | | | |
+| 3 | DT_Attr_Player, DT_Attr_Dummy | DataTableTools.search_row_structs/create/get_schema/add_rows/set_rows/get_rows, AssetTools.save_assets (ProgrammaticToolset로 묶음) | 성공 | 없음 | 3분 | 행 구조체 `/Script/GameplayAbilities.AttributeMetaData`(열: baseValue, minValue, maxValue, derivedAttributeInfo, bCanStack). 행 5개 `DemoAttributeSet.MaxHealth/Health/MaxMana/Mana/AttackPower`. 플레이어 500/500/100/100/20, 더미 1000/1000/0/0/0을 get_rows로 재확인 |
 | 4-1 | GE_Damage (SetByCaller, 큐) | | | | | |
 | 4-2 | GE 쿨타임 4종 (태그 부여 컴포넌트) | | | | | |
 | 4-3 | GE_Cost 3종, GE_ManaRegen, GE_Awaken, GE_DodgeInvuln, GE_RestoreFull | | | | | |
