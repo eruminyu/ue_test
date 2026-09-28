@@ -19,7 +19,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 - 2026-09-28 단계 0 완료. unreal-mcp 연결(저장소 루트 세션). Epic 스킬 플러그인 `unreal-engine-skills-for-claude-code`는 마켓플레이스에 있으나 미설치. 에디터 내장 AgentSkill `BlueprintBasicsSkill`을 읽고 진행.
 - 2026-09-28 단계 1, 2 완료. 계획 변경 요약은 `docs/demo/assets.md` 맨 위.
 - 2026-09-28 단계 3 완료.
-- **다음: 단계 4-1.** GE_Damage.
+- 2026-09-28 단계 4-1 ~ 4-3 완료(GE 12개).
+- **다음: 단계 4-4.** GC_Hit, GC_Slam, GC_Awaken (+ NS_Demo_Slam).
 
 ## 환경
 
@@ -41,9 +42,9 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | 1 | 템플릿 조사 | AssetTools.find_assets/list_folders/get_asset_class/get_dependencies/get_referencers/get_asset_tags, BlueprintTools.get_parent/list_graphs/read_graph_dsl/find_nodes/get_node_infos/list_functions/list_variables/list_events, ObjectTools.list_properties/get_properties, NiagaraToolset_System.GetSystemSummary/GetEmitterSummary/GetEmitterTopology 등 | 부분 | 없음 | 40분(에이전트 순차) | 결과는 `docs/demo/assets.md`. 경로, 메시, AnimBP 슬롯, 입력, 노티파이 방식, Niagara는 전용 툴로 확인. **몽타주 섹션 이름·시작 시간과 노티파이 트리거 시간은 MCP로 못 읽음**(`CompositeSections`, `Notifies` "could not be read"), 캐릭터 변수로 추정. 공격 판정이 `BPI_Attacker` 인터페이스 메시지 방식이라 단계 5-2, 5-3을 "BP_DemoPlayer가 BPI_Attacker 구현"으로 변경(변경표는 assets.md 맨 위) |
 | 2 | 게임플레이 태그 24개 | GameplayTagsToolset.AddTag ×24 (ProgrammaticToolset.execute_tool_script로 묶어 호출), GameplayTagsToolset.ListTags | 성공 | 없음 | 2분 | 24개 모두 `Config/DefaultGameplayTags.ini`에 저장, ListTags로 철자 재확인(State.Invulnerable, State.Dead, Data.Damage 포함). 호출 응답이 다른 에이전트의 호출 결과와 뒤바뀌어 돌아왔지만 실제 추가는 됨(문제 기록 참고). ProgrammaticToolset은 전용 툴을 묶기만 했으므로 판정은 성공 |
 | 3 | DT_Attr_Player, DT_Attr_Dummy | DataTableTools.search_row_structs/create/get_schema/add_rows/set_rows/get_rows, AssetTools.save_assets (ProgrammaticToolset로 묶음) | 성공 | 없음 | 3분 | 행 구조체 `/Script/GameplayAbilities.AttributeMetaData`(열: baseValue, minValue, maxValue, derivedAttributeInfo, bCanStack). 행 5개 `DemoAttributeSet.MaxHealth/Health/MaxMana/Mana/AttackPower`. 플레이어 500/500/100/100/20, 더미 1000/1000/0/0/0을 get_rows로 재확인 |
-| 4-1 | GE_Damage (SetByCaller, 큐) | | | | | |
-| 4-2 | GE 쿨타임 4종 (태그 부여 컴포넌트) | | | | | |
-| 4-3 | GE_Cost 3종, GE_ManaRegen, GE_Awaken, GE_DodgeInvuln, GE_RestoreFull | | | | | |
+| 4-1 | GE_Damage (SetByCaller, 큐) | BlueprintTools.create(asset_type=부모 클래스 `/Script/GameplayAbilities.GameplayEffect`), ObjectTools.list_properties/set_properties/get_properties, BlueprintTools.compile_blueprint | 성공 | 없음 | 5분 | `create`의 `asset_type`이 곧 부모 클래스다. BP 에셋에 set_properties하면 CDO에 들어간다. 속성 이름은 lowerCamelCase(`durationPolicy`, `modifiers`, `gameplayCues`, `gEComponents`). 속성 지정 형식: `{"attributeName":"IncomingDamage","attribute":"/Script/ActionDemo.DemoAttributeSet:IncomingDamage","attributeOwner":{"refPath":"/Script/ActionDemo.DemoAttributeSet"}}`, 크기 `{"magnitudeCalculationType":"SetByCaller","setByCallerMagnitude":{"dataTag":{"tagName":"Data.Damage"}}}`. list_properties(GE)가 115KB라 파일로 떨어짐 |
+| 4-2 | GE 쿨타임 4종 (태그 부여 컴포넌트) | ObjectTools.set_properties(`gEComponents`: 클래스 경로 배열) → get_properties로 서브오브젝트 refPath 획득 → 그 서브오브젝트에 set_properties, BlueprintTools.compile_blueprint (ProgrammaticToolset로 묶음) | 성공 | 없음 | 5분 | **핵심 확인 항목 통과.** 인스턴스드 서브오브젝트 배열에 `"/Script/GameplayAbilities.TargetTagsGameplayEffectComponent"`를 넣으면 `Default__GE_X_C:TargetTagsGameplayEffectComponent_0`이 생성되고, 그 `inheritableGrantedTagsContainer`에 `added`와 `combinedTags`를 함께 써서 태그 부여. 컴파일 뒤에도 유지. 0.8/4/6/15초. 런타임 동작은 단계 10에서 확인 |
+| 4-3 | GE_Cost 3종, GE_ManaRegen, GE_Awaken, GE_DodgeInvuln, GE_RestoreFull | 4-2와 같음 + AssetTools.save_assets | 성공 | 없음 | 5분 | Cost: Mana AddBase -20/-30/-40. ManaRegen: Infinite, period 1, Mana +5. Awaken: 8초, AttackPower MultiplyAdditive 1.5, 큐 GameplayCue.Awaken, State.Awakened 부여. DodgeInvuln: 0.4초 State.Invulnerable. RestoreFull: Health/Mana Override, AttributeBased(MaxHealth/MaxMana, Target, 계수 1). 12개 전부 get_properties로 재확인 후 저장 |
 | 4-4 | GC_Hit, GC_Slam, GC_Awaken | | | | | |
 | 5-1 | AN_DemoGameplayEvent (함수 오버라이드) | | | | | |
 | 5-2 | 몽타주 복제와 노티파이 추가 | | | | | |
