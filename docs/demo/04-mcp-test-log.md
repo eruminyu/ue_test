@@ -23,7 +23,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 - 2026-09-28 단계 4-4 완료(큐 3개 + NS_Demo_Slam, 큐 경로 설정).
 - 2026-09-28 단계 5 완료(AN_DemoGameplayEvent, 몽타주 복제 3개).
 - 2026-09-28 단계 6 완료(GA 6개, 모두 strict 컴파일 통과).
-- **다음: 단계 7-1.** AC_DemoAbilitySystem. 클래스 배열 변수 불가 → StartupAbilities/StartupEffects는 GA/GE CDO를 담는 오브젝트 참조 배열 + GetClass로 우회, PressAbility는 InputTag만 받아 TryActivateAbilitiesByTag.
+- 2026-09-28 단계 7-1, 7-2 완료.
+- **다음: 단계 7-3.** BP_DemoPlayer(부모 BP_ThirdPersonCharacter). ASC + AC_DemoAbilitySystem 컴포넌트, BPI_Attacker 구현, BeginPlay에서 IMC_Demo(우선순위 1)와 HUD.
 
 ## 환경
 
@@ -55,8 +56,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | 6-2 | GA_Attack 콤보 그래프 | BlueprintTools.add_variable(int, float, name ARRAY, float ARRAY)/add_event(`K2_ActivateAbility`)/write_graph_dsl/read_graph_dsl/compile_blueprint(strict), ObjectTools.set_properties | 성공(런타임은 단계 10) | 없음 | 20분 | DSL 한 번으로 노드 49개: CommitAbility → WaitGameplayEvent 3개(InputTag.Attack / Event.Montage.ComboCheck / Event.Hit, 반복) → PlayMontageAndWait(AM_Demo_Combo, Sections[0]) → 4개 종료 핀 EndAbility. 태스크 노드는 `(:then ...)` 연속으로 이어 붙임. 순수 노드 재평가 문제를 피하려고 섹션 점프는 `SetComboIndex`의 출력 핀을 사용. Sections=[Melee01, Melee02, Melee03], Coefficients=[1.0, 1.1, 1.8]. `add_event`가 `OnEndAbility` 이벤트+부모 호출 노드도 함께 만들어 둠(무해) |
 | 6-3 | GA_Dodge | 6-2와 같음 | 성공(런타임은 단계 10) | 없음 | 5분 | CommitAbility 실패 시 EndAbility. GE_DodgeInvuln 적용, 마지막 이동 입력 방향(없으면 전방)으로 회전 후 LaunchCharacter 1500, AM_Demo_Dodge 재생. Cancel: Ability.Attack, Ability.Skill. 쿨타임 클래스는 `{"refPath": ".../GE_Cooldown_Dodge.GE_Cooldown_Dodge_C"}`로 CDO에 설정 |
 | 6-4 | 스킬 3종 | 6-2와 같음 + ProgrammaticToolset로 묶음 | 성공(런타임은 단계 10) | 없음 | 10분 | DashStrike: 전방 1800 발사 + AM_Demo_Combo `Melee03` + Event.Hit 1회 → HitTargets(220,150,2.5,700,150). GroundSlam: AM_Demo_Slam `Attack` 섹션 + HitTargets(400,50,2.0,150,800) + `ExecuteGameplayCueOnOwner(GameplayCue.Slam)`. Awaken: GE_Awaken 적용 후 EndAbility. 코스트/쿨타임/Owned(State.Casting)/Cancel/Blocked 태그 모두 CDO에 설정. **계획 변경:** 클래스 파라미터를 못 만들어서 `PressAbility(InputTag, AbilityClass)` 대신 각 GA의 AbilityTags에 `InputTag.*`를 함께 넣고 `TryActivateAbilitiesByTag(InputTag)`로 발동하도록 함 |
-| 7-1 | AC_DemoAbilitySystem | | | | | |
-| 7-2 | 입력 에셋 (IA 5개, IMC 매핑) | | | | | |
+| 7-1 | AC_DemoAbilitySystem | BlueprintTools.create(부모 ActorComponent)/add_object_variable(DataTable, GameplayAbility ARRAY, GameplayEffect ARRAY, AbilitySystemComponent)/add_variable/set_variable_instance_editable/add_event_dispatcher/add_function_param(디스패처)/add_function_graph/add_struct_function_param/add_event(커스텀 `Die`, `Respawn`)/write_graph_dsl/find_nodes/get_node_infos/compile_blueprint(strict), ObjectTools.set_properties | 성공(우회 포함) | 없음 | 20분 | BeginPlay: GetComponentByClass(ASC) → InitStats(DemoAttributeSet, AttributeTable) → StartupAbilities마다 GiveAbility(GetClass(CDO)) → StartupEffects마다 ApplyGameplayEffectToSelf → WaitForAttributeChanged(Health) → OnHealthChanged 방송, 0 이하면 Die. Die/Respawn은 커스텀 이벤트(Delay 때문에). 디스패처 3개(OnHealthChanged에 NewValue, OldValue). **우회:** StartupAbilities/Effects는 클래스 배열 대신 GA/GE 오브젝트 참조 배열(값은 CDO)로, `PressAbility`는 클래스 파라미터 대신 InputTag만 받아 `TryActivateAbilitiesByTag`. DSL 실패 2회: bool 변수 게터는 `GetbIsDead`가 아니라 `GetIsDead`(표시 이름에서 b 제거), `FGameplayTagContainer` 리터럴 `(GameplayTags=((TagName="State.Dead")))`는 핀에 안 들어감 → `MakeGameplayTagContainerfromTag` 노드로 대체. 실패한 쓰기는 부분 노드를 남기지 않음(고아 노드는 기본 EventTick 하나뿐) |
+| 7-2 | 입력 에셋 (IA 5개, IMC 매핑) | DataAssetTools.create(`/Script/EnhancedInput.InputAction`, `/Script/EnhancedInput.InputMappingContext`), ObjectTools.set_properties/get_properties, AssetTools.save_assets | 성공 | 없음 | 3분 | IA 5개(Boolean, 트리거 없음). **IMC 매핑이 ObjectTools로 된다.** 레거시 `mappings`가 아니라 `defaultKeyMappings.mappings`에 `{"action":{"refPath":...},"key":{"keyName":"LeftMouseButton"},"triggers":[],"modifiers":[]}` 배열을 쓰면 됨. 좌클릭, LeftShift, Q, E, R 재확인 |
 | 7-3 | BP_DemoPlayer 컴포넌트와 기본값 | | | | | |
 | 7-4 | Enhanced Input 이벤트 노드 5개 | | | | | |
 | 7-5 | BP_TrainingDummy (래그돌, HP 바) | | | | | |
