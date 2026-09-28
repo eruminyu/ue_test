@@ -1,0 +1,12 @@
+{
+  "enabledPlugins": {
+    "unreal-engine-skills-for-claude-code@claude-plugins-official": true
+  },
+  "enabledMcpjsonServers": ["unreal-mcp"],
+  "permissions": {
+    "allow": [
+      "mcp__unreal-mcp__list_toolsets",
+      "mcp__unreal-mcp__describe_toolset"
+    ]
+  }
+}
