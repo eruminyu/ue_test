@@ -26,7 +26,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 - 2026-09-28 단계 7-1, 7-2 완료.
 - 2026-09-28 단계 7-3, 7-4(생성) 완료.
 - 2026-09-28 단계 7-5, 8 완료(WBP가 있어야 캐스트할 수 있어서 7-5 그래프를 8 뒤에 작성).
-- **다음: 단계 9-1.** BP_DemoGameMode → 9-2 L_DemoArena → 9-3 기본 맵.
+- 2026-09-28 단계 9 완료.
+- **다음: 단계 10-1.** 전체 컴파일 → PIE 검증.
 
 ## 환경
 
@@ -64,9 +65,9 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | 7-4 | Enhanced Input 이벤트 노드 5개 | BlueprintTools.find_node_types(`Input|EnhancedActionEvents|IA_Demo_*`)/create_node ×15/get_node_infos/connect_pins ×10/set_pin_value ×5/get_pin_value/compile_blueprint(strict) | 생성 성공, PIE 확인 대기 | | 5분 | DSL은 EI 이벤트의 Started 핀을 고를 수 없어서 노드 API로 생성: EI 이벤트(`Started`) → `Class|ACDemoAbilitySystem|PressAbility`(self = `GetDemoAbilitySystem`, InputTag = `(TagName="InputTag.X")`). 연결과 핀 값은 get_node_infos로 확인. PIE에서 불리는지는 단계 10에서 판정 |
 | 7-5 | BP_TrainingDummy (래그돌, HP 바) | BlueprintTools.create(부모 Character)/list_component_events/add_component_bound_event ×3/write_graph_dsl/compile_blueprint(strict), ActorTools.add_component ×3(ASC, AC, WidgetComponent), ObjectTools.set_properties(CDO 서브오브젝트 `Default__BP_TrainingDummy_C:CharacterMesh0`, `:CollisionCylinder`, 컴포넌트 템플릿) | 성공(런타임은 단계 10) | 없음 | 15분 | 메시 SKM_Manny_Simple + ABP_Unarmed, (0,0,-89), Yaw 270, 캡슐 35/90. WidgetComponent: WBP_DummyHealth, Screen, 150×14, Z 120. AC 디스패처는 `add_component_bound_event`로 바인딩 이벤트 생성. DSL에서 이름에 괄호가 든 이벤트는 따옴표로 씀: `(event "OnHealthChanged(DemoAbilitySystem)" ...)`. OnHealthChanged → GetUserWidgetObject → CastToWBP_DummyHealth → HealthBar.SetPercent(New/MaxHealth). OnDied → 메시 콜리전 프로필 Ragdoll + SimulatePhysics. OnRespawned → 물리 끄기, CharacterMesh 프로필, 캡슐에 SnapToTarget 재부착, 상대 위치·회전 복원. WBP 캐스트가 필요해서 단계 8 뒤에 그래프를 씀 |
 | 8 | WBP_DemoHUD, WBP_DummyHealth | UMGToolSet.CreateWidgetBlueprint/AddWidget ×15/ToggleWidgetAsVariable/GetWidgets/CompileWidgetBlueprint, ObjectTools.list_properties/set_properties/get_properties(위젯, CanvasPanelSlot, VerticalBoxSlot, HorizontalBoxSlot), BlueprintTools.add_event(`Tick`)/find_node_types/get_node_type_pins/write_graph_dsl/compile_blueprint(strict), AssetTools.save_assets | 성공 | 없음 | 20분 | WBP_DummyHealth: 루트 ProgressBar `HealthBar`(빨강). WBP_DemoHUD: CanvasPanel → VerticalBox(좌하단 앵커 (0,1), 오프셋 40/-40, 크기 420×170) → HPText, HPBar, MPText, MPBar, HorizontalBox(Border 슬롯 4개 Shift/Q/E/R). Tick 그래프 노드 68개: OwningPlayerPawn 유효 시 속성 4개 읽어 바 Percent와 "HP 350 / 500" 텍스트(Append+ToString(Integer)+Round) 갱신, ASC가 Cooldown.* 태그를 가지면 슬롯 RenderOpacity 0.3. FText 속성은 문자열로 바로 설정됨. 참고: DSL의 `+`는 바로 옆 인자가 문자열 리터럴일 때만 문자열 연결이라 `Utilities|String|Append`를 명시적으로 씀. BP_DemoPlayer Possessed에 CreateWidget(WBP_DemoHUD)+AddToViewport 추가(DSL 재작성 후에도 노드 API로 만든 EI 노드 10개 유지 확인) |
-| 9-1 | BP_DemoGameMode | | | | | |
-| 9-2 | L_DemoArena 배치 | | | | | |
-| 9-3 | 기본 맵 설정 | | | | | |
+| 9-1 | BP_DemoGameMode | BlueprintTools.create(부모 GameModeBase)/compile_blueprint, ObjectTools.set_properties/get_properties, AssetTools.save_assets | 성공 | 없음 | 2분 | DefaultPawnClass = BP_DemoPlayer_C, PlayerControllerClass = BP_ThirdPersonPlayerController_C(템플릿 PC, IMC_Default와 IMC_MouseLook 추가) |
+| 9-2 | L_DemoArena 배치 | AssetTools.find_assets/is_dirty/duplicate/save_assets, SceneTools.get_current_level/load_level/find_actors/add_to_scene_from_asset ×3, ActorTools.get_label/get_actor_transform/get_actor_bounds, ObjectTools.get_class/list_properties/set_properties(WorldSettings) | 성공 | 없음 | 5분 | **새 레벨 생성 툴이 없어서** 엔진 템플릿 `/Engine/Maps/Templates/Template_Default`(바닥 80m, 방향광, SkyAtmosphere, SkyLight, 구름, 안개, PlayerStart 포함)를 `/Game/Demo/Maps/L_DemoArena`로 복제. 레벨 전환 전에 현재 레벨이 dirty가 아님을 확인해 저장 모달을 피함. 더미 3개 (800,0) (800,400) (1200,-300), Z 92, Yaw 180. WorldSettings `defaultGameMode` = BP_DemoGameMode_C |
+| 9-3 | 기본 맵 설정 | ConfigSettingsToolset.ListSections/GetSectionPropertyValues/SetSectionProperties(Project/Project/Maps) | 성공 | 없음 | 1분 | `DefaultEngine.ini`의 EditorStartupMap, GameDefaultMap = L_DemoArena |
 | 10-1 | 전체 컴파일 | | | | | |
 | 10-2 | PIE와 스크린샷 | | | | | |
 | 10-3 | GAS 인스펙터로 상태 확인 | | | | | |
