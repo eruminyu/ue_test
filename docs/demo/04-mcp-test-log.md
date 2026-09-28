@@ -16,7 +16,8 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 ## 진행 상태 (이어서 할 곳)
 
 - 2026-09-28 12:05 준비 완료: BP 템플릿 `ActionDemo` 생성, `install.ps1 -Build` 성공, 변형 팩 복사, 영어 에디터 실행, MCP 서버 8000번 기동 확인.
-- **다음: 단계 0.** unreal-mcp가 연결된 Claude Code 세션(저장소 루트 `D:\Project\UE\ClaudeTest\ue_test`에서 연 세션)에서 시작한다.
+- 2026-09-28 단계 0 완료. unreal-mcp 연결(저장소 루트 세션). Epic 스킬 플러그인 `unreal-engine-skills-for-claude-code`는 마켓플레이스에 있으나 미설치. 에디터 내장 AgentSkill `BlueprintBasicsSkill`을 읽고 진행.
+- **다음: 단계 1.** 템플릿 조사.
 
 ## 환경
 
@@ -26,7 +27,7 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 | 프로젝트 | Third Person / Blueprint 템플릿 + `DemoKit/install.ps1` (C++는 DemoAttributeSet 하나). 변형 팩 Combat, Platforming은 엔진 `Templates/TemplateResources/Standard`에서 복사 |
 | 컴파일러 | VS Community 2026 18.10.0, MSVC 14.51.36231 (컴파일러 14.51.36257), Windows SDK 10.0.26100.0 |
 | 에디터 언어 | English (`OpenEditor_EN.bat`, `-culture=en`) |
-| 툴셋 수 / 툴 수 | MCP 메타 툴 3개(list_toolsets, describe_toolset, call_tool) 확인. 툴셋 수는 단계 0에서 기록 |
+| 툴셋 수 / 툴 수 | MCP 메타 툴 3개 + 툴셋 52개. BlueprintTools는 툴 53개. 계획서가 기대한 BlueprintTools, GameplayTagsToolset, GASToolsets(Cue, AttributeSet, AbilitySystemInspector), DataTableTools, UMGToolSet, EditorAppToolset, AutomationTestToolset, ProgrammaticToolset 모두 있음. **애니메이션 몽타주, Enhanced Input, GameplayEffect 전용 툴셋은 없음** |
 | Claude Code 버전, 모델 | Claude 데스크톱 앱 Code 탭(로컬 세션), claude-opus-5-5 |
 | 날짜 | 2026-09-28 |
 
@@ -34,7 +35,7 @@ PC의 Claude Code 세션이 `03-mcp-build-plan.md`를 진행하면서 채운다.
 
 | 단계 | 작업 | 사용한 툴 (툴셋.함수) | 판정 | 사람 개입 | 걸린 시간 | 메모 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 연결과 툴셋 확인 | | | | | |
+| 0 | 연결과 툴셋 확인 | list_toolsets, describe_toolset, BlueprintTools.get_graph_dsl_docs, AttributeSetToolset.ListAttributes, AgentSkillToolset.ListSkills/GetSkills, ProgrammaticToolset.get_execution_environment | 성공 | 없음 | 5분 | 에디터 영어(`-culture=en`) 확인. DemoAttributeSet 로드 확인(속성 6개: Health, MaxHealth, Mana, MaxMana, AttackPower, IncomingDamage). **ProgrammaticToolset은 `json, math, re, time, datetime, copy`만 import할 수 있고 `unreal` 모듈을 못 쓴다.** 전용 툴을 묶어 부르는 오케스트레이션만 되고, 계획서가 가정한 `unreal.*` API 직접 호출(Python 대체)은 MCP로 불가. EditorAppToolset에도 콘솔 명령(`py`) 실행 툴이 없음 |
 | 1 | 템플릿 조사 | | | | | |
 | 2 | 게임플레이 태그 24개 | | | | | |
 | 3 | DT_Attr_Player, DT_Attr_Dummy | | | | | |
