@@ -73,3 +73,18 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# --- ActionDemo (UE 5.8 MCP test project in ./ActionDemo) ---
+# The root patterns above are anchored to the repository root, so the subfolder needs its own lines.
+ActionDemo/Binaries/
+ActionDemo/Intermediate/
+ActionDemo/Saved/
+ActionDemo/DerivedDataCache/
+ActionDemo/Platforms/
+*.uproject.bak
+ActionDemo/OpenEditor_EN.bat
+
+# Template content is recreated by making a new Third Person project, so only the
+# assets made for the demo (Content/Demo) are committed. This keeps Git LFS usage small.
+ActionDemo/Content/*
+!ActionDemo/Content/Demo/
