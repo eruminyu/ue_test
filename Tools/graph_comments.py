@@ -68,8 +68,8 @@ MAX_TITLE_W = 1600   # 제목이 한 줄에 들어가도록 박스를 넓히는 
 
 
 def text_px(line, font):
-    """제목 줄의 대략적인 픽셀 폭 (한글·기호 = font, 영문·숫자 = 0.58 font)."""
-    return sum(font * (1.0 if ord(ch) > 0x2000 else 0.58) for ch in line)
+    """제목 줄의 대략적인 픽셀 폭 (한글·기호 = font, 영문·숫자 = 0.75 font. 0.58은 실측보다 20% 좁아 자동 줄바꿈을 놓쳤다)."""
+    return sum(font * (1.0 if ord(ch) > 0x2000 else 0.75) for ch in line)
 
 
 def title_height(text, font, width=None):
@@ -420,7 +420,7 @@ def ui_paste_verify(graph_ref, anchor, boxes, kx, ky, port):
             "comments_pasted": len(got), "objects_pasted": len(objs), "mismatch": mism}
 
 
-def ui_run(window, graph_ref, spec, boxes, shot, port):
+def ui_run(window, graph_ref, spec, boxes, shot, port, fit_all=False):
     """그래프 탭 열기 → 워터마크 찾기 → 보정 → 붙여넣기·확인 → Home → 스크린샷을 한 번에."""
     graph = graph_ref.split(":")[-1]
     anchor = open_graph(window, graph, port)
@@ -430,7 +430,7 @@ def ui_run(window, graph_ref, spec, boxes, shot, port):
     out = {"graph": graph, "anchor": anchor, "L": [lx, ly]}
     out.update(ui_paste_verify(graph_ref, anchor, boxes, kx, ky, port))
     if shot:
-        out["shot"] = fit_and_shot(graph_ref, anchor, shot, port)
+        out["shot"] = fit_and_shot(graph_ref, anchor, shot, port, fit_all)
     return out
 
 
@@ -468,14 +468,23 @@ def close_asset_tab(window, asset_name, port):
     raise SystemExit(f"asset tab {asset_name} with a close button not found (is it the active tab?)")
 
 
-def fit_and_shot(graph_ref, anchor, shot, port):
+def fit_and_shot(graph_ref, anchor, shot, port, fit_all=False):
     """선택 해제 → Home(전체 맞춤, 애니메이션이 있어 기다림) → 스크린샷.
     Escape로는 선택이 안 풀리고, 빈 곳 왼쪽 클릭은 노드 위젯을 누를 위험이 있다.
-    그래서 더미 knot을 붙여넣어(선택이 그것으로 바뀜) 바로 delete_node → 선택이 비게 한다."""
+    그래서 더미 knot을 붙여넣어(선택이 그것으로 바뀜) 바로 delete_node → 선택이 비게 한다.
+    fit_all: 선택이 빈 Home은 노드만 맞추고(주석 제목이 위로 잘림) 줌 1:1에서 안 움직이기도 한다.
+    그래서 Ctrl+A(주석 포함 전체 선택) → Home → 3초 → 더미 knot으로 선택만 풀고(뷰 유지) Home 없이 찍는다."""
+    if fit_all:
+        mcp(SI, "Click", {"ref": anchor, "button": "right"}, port)
+        mcp(SI, "PressKey", {"key": "Escape"}, port)
+        mcp(SI, "PressKey", {"key": "Ctrl+A"}, port)
+        mcp(SI, "PressKey", {"key": "Home"}, port)
+        time.sleep(3)
     set_clipboard(knot_block("K2Node_Knot_Desel", 0, 0))
     ui_paste_and_read(graph_ref, anchor, "K2Node_Knot_Desel", False, port)
-    mcp(SI, "PressKey", {"key": "Home"}, port)
-    time.sleep(1.5)
+    if not fit_all:
+        mcp(SI, "PressKey", {"key": "Home"}, port)
+        time.sleep(1.5)
     return save_shot(shot, port)
 
 
@@ -514,6 +523,7 @@ def main():
     us.add_argument("out")
     us.add_argument("--window", required=True)
     us.add_argument("--port", type=int, default=8000)
+    us.add_argument("--fit-all", action="store_true", help="Ctrl+A → Home으로 주석까지 맞춘 뒤 찍기")
     ur = sub.add_parser("ui-run", help="탭 열기부터 스크린샷까지 한 그래프를 한 번에")
     ur.add_argument("spec")
     ur.add_argument("graph_ref")
@@ -522,6 +532,7 @@ def main():
     ur.add_argument("--shot", help="스크린샷 PNG 경로")
     ur.add_argument("--port", type=int, default=8000)
     ur.add_argument("--force", action="store_true")
+    ur.add_argument("--fit-all", action="store_true", help="Ctrl+A → Home으로 주석까지 맞춘 뒤 찍기")
     up = sub.add_parser("ui-paste")
     up.add_argument("spec")
     up.add_argument("graph_ref")
@@ -560,7 +571,7 @@ def main():
 
     if args.cmd == "ui-shot":
         anchor = open_graph(args.window, args.graph_ref.split(":")[-1], args.port)
-        print(json.dumps({"png": fit_and_shot(args.graph_ref, anchor, args.out, args.port)}))
+        print(json.dumps({"png": fit_and_shot(args.graph_ref, anchor, args.out, args.port, args.fit_all)}))
         return 0
 
     if args.cmd == "verify":
@@ -609,7 +620,7 @@ def main():
         if problems and not args.force:
             print(json.dumps({"problems": problems, "note": "fix spec/layout or pass --force"}, ensure_ascii=False))
             return 1
-        print(json.dumps(ui_run(args.window, args.graph_ref, spec, boxes, args.shot, args.port), ensure_ascii=False))
+        print(json.dumps(ui_run(args.window, args.graph_ref, spec, boxes, args.shot, args.port, args.fit_all), ensure_ascii=False))
         return 0
     lx, ly = (float(v) for v in args.L.split(","))
     kx, ky, path = put_paste_on_clipboard(spec, boxes, lx, ly)
