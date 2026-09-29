@@ -133,7 +133,7 @@
 ### 몬스터 GA (GA_ActionBase 자식, 그래프 없음)
 
 - `BT create {"folder_path":"/Game/SoulCombat/GAS/Abilities","asset_name":"GA_Enemy_Melee","asset_type":{"refPath":"/Game/SoulCombat/GAS/Abilities/GA_ActionBase.GA_ActionBase_C"}}` → `compile_blueprint` → EventGraph의 기본 `K2Node_Event_0`(ActivateAbility), `K2Node_CallParentFunction_0`, `K2Node_Event_1`(OnEndAbility)을 `delete_node` → 부모 흐름만 돈다.
-- CDO 한 번에: `OT set_properties` values `{"abilityTags":{"gameplayTags":[{"tagName":"Ability.Enemy.Attack.Melee"}]},"activationBlockedTags":{"gameplayTags":[{"tagName":"State.Dead"},{"tagName":"State.HitStun"}]},"activationOwnedTags":{"gameplayTags":[{"tagName":"State.Attacking"}]},"cooldownGameplayEffectClass":"/Game/SoulCombat/GAS/Effects/GE_Cooldown_Enemy_Melee.GE_Cooldown_Enemy_Melee_C","Montage":"/Game/Variant_Combat/Anims/AM_ComboAttack.AM_ComboAttack","StartSection":"Melee01","PlayRate":0.8,"HitTime":0.467,"Coefficient":1.0,"Radius":130,"ForwardOffset":110,"Knockback":300,"Launch":0,"bFaceInputOnStart":false}` → true.
+- CDO 한 번에: `OT set_properties` values `{"abilityTags":{"gameplayTags":[{"tagName":"Ability.Enemy.Attack.Melee"}]},"activationBlockedTags":{"gameplayTags":[{"tagName":"State.Dead"},{"tagName":"State.HitStun"}]},"activationOwnedTags":{"gameplayTags":[{"tagName":"State.Attacking"}]},"cooldownGameplayEffectClass":"/Game/SoulCombat/GAS/Effects/GE_Cooldown_Enemy_Melee.GE_Cooldown_Enemy_Melee_C","Montage":"/Game/Variant_Combat/Anims/AM_ComboAttack.AM_ComboAttack","StartSection":"Melee01","PlayRate":0.8,"HitTime":0.45,"Coefficient":1.0,"Radius":130,"ForwardOffset":110,"Knockback":300,"Launch":0,"bFaceInputOnStart":false}` → true.
 - 손자 GA(GA_Enemy_Melee_Boss, 부모 `GA_Enemy_Melee_C`)는 바뀌는 값만 넣으면 태그, 몽타주, bFaceInputOnStart가 부모 CDO에서 상속된다(get_properties로 확인).
 
 ### 상속 컴포넌트 값: 손자 BP는 에디터를 먼저 연다 (함정)
@@ -167,7 +167,7 @@
 
 ### WidgetComponent (머리 위 바)
 
-- `AcT add_component {"owner":<BP>,"component_type":{"refPath":"/Script/UMG.WidgetComponent"},"name":"OverheadBar"}` → 캡슐 아래에 붙는다. 프로퍼티(OT, 소문자 시작): `{"space":"Screen","widgetClass":"/Game/SoulCombat/UI/WBP_AttributeBar.WBP_AttributeBar_C","drawSize":{"x":120,"y":12},"relativeLocation":{"x":0,"y":0,"z":115},"BodyInstance":{"collisionProfileName":"NoCollision","collisionEnabled":"NoCollision"},"bGenerateOverlapEvents":false,"CanCharacterStepUpOn":"ECB_No"}` → true. 기본값은 World, 500×500, 프로필 `UI`(Pawn 겹침)였다.
+- `AcT add_component {"owner":<BP>,"component_type":{"refPath":"/Script/UMG.WidgetComponent"},"name":"OverheadBar"}` → 캡슐 아래에 붙는다. 프로퍼티(OT, 소문자 시작): `{"space":"Screen","widgetClass":"/Game/SoulCombat/UI/WBP_AttributeBar.WBP_AttributeBar_C","drawSize":{"x":120,"y":12},"relativeLocation":{"x":0,"y":0,"z":120},"BodyInstance":{"collisionProfileName":"NoCollision","collisionEnabled":"NoCollision"},"bGenerateOverlapEvents":false,"CanCharacterStepUpOn":"ECB_No"}` → true. 기본값은 World, 500×500, 프로필 `UI`(Pawn 겹침)였다.
 - 그래프: `(bind bar (Utilities|Casting|CastToWBP_AttributeBar :Object (UserInterface|GetUserWidgetObject :self (Variables|Default|GetOverheadBar))) (:then (Class|WBPAttributeBar|Setup :self bar :InAttribute "<Health 리터럴>" :InMaxAttribute "<MaxHealth 리터럴>" :InLabel "" :InFillColor "(R=0.450000,G=0.030000,B=0.030000,A=1.000000)" :bInShowNumbers false) (Class|WBPAttributeBar|BindtoActor :self bar :Actor self)) (:CastFailed))`. 켜고 끄기는 `Rendering|SetVisibility :self <OverheadBar> :bNewVisibility b`(SceneComponent 버전).
 - 휴면 숨김은 `Rendering|SetActorHiddenInGame`만으로는 Screen 공간 위젯이 남을 수 있어서 OverheadBar 가시성도 같이 끈다.
 
@@ -185,8 +185,8 @@
 
 ### 예고원 액터 (BP_TelegraphCircle)
 
-- `StaticMeshTools get_bounds {"mesh":{"refPath":"/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder"}}` → min (-50,-50,0), max (50,50,100). **피벗이 바닥**이라 액터를 바닥 +2에 두면 원판이 바닥 위에 얹힌다. 반지름 50 → XY 배율 = 반지름 / 50, 높이 2 cm → Z 배율 0.02.
-- `AcT add_component`(StaticMeshComponent `Disc`, DefaultSceneRoot 아래) → `OT set_properties {"instance":{"refPath":"...BP_TelegraphCircle_C:Disc_GEN_VARIABLE"},"values":{"StaticMesh":"/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder","RelativeScale3D":{"x":1,"y":1,"z":0.02},"OverrideMaterials":["/Game/SoulCombat/Materials/MI_SC_Telegraph.MI_SC_Telegraph"],"BodyInstance":{"collisionProfileName":"NoCollision","collisionEnabled":"NoCollision"},"bGenerateOverlapEvents":false,"CanCharacterStepUpOn":"ECB_No","CastShadow":false}}` → true.
+- `StaticMeshTools get_bounds {"mesh":{"refPath":"/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder"}}` → min (-50,-50,0), max (50,50,100). **피벗이 바닥**이라 액터를 바닥 +2에 두면 원판이 바닥 위에 얹힌다. 반지름 50 → XY 배율 = 반지름 / 50, 높이 1 cm → Z 배율 0.01(계획 "높이 0.01배").
+- `AcT add_component`(StaticMeshComponent `Disc`, DefaultSceneRoot 아래) → `OT set_properties {"instance":{"refPath":"...BP_TelegraphCircle_C:Disc_GEN_VARIABLE"},"values":{"StaticMesh":"/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder","RelativeScale3D":{"x":1,"y":1,"z":0.01},"OverrideMaterials":["/Game/SoulCombat/Materials/MI_SC_Telegraph.MI_SC_Telegraph"],"BodyInstance":{"collisionProfileName":"NoCollision","collisionEnabled":"NoCollision"},"bGenerateOverlapEvents":false,"CanCharacterStepUpOn":"ECB_No","CastShadow":false}}` → true.
 - 주의: `get_properties ["BodyInstance.collisionProfileName"]`처럼 점 경로를 주면 `could not be read` 에러가 난다. `["BodyInstance"]` 전체를 읽고 그 안에서 찾는다.
 - 노드 ID: `Transformation|SetRelativeScale3D :self (Variables|Default|GetDisc) :NewScale3D v`, `Math|Float|Lerp :A :B :Alpha`, `Math|Float|Min(Float) :A :B`, `Math|Float|SafeDivide :A :B`. Tick 머리는 `(event EventTick (DeltaSeconds) ...)`.
 - 0 나눗셈 방지: `(select (> grow 0.0) (Math|Float|Min(Float) :A 1.0 :B (Math|Float|SafeDivide :A elapsed :B grow)) 1.0)`. Select는 양쪽 입력을 모두 계산하므로 `/` 대신 SafeDivide를 쓴다.
@@ -201,7 +201,7 @@
   1. `PlayMontageAndWait :StartSection "Charge"`
   2. `WaitDelay(TelegraphTime)`
   3. `(Ability|Animation|MontageJumptoSection :SectionName "Attack")` (인터럽트가 나지 않는다)
-  4. `WaitDelay(0.367)` (Attack 섹션 기준 타격 노티파이 시점)
+  4. `WaitDelay(HitDelay)` (계획대로 0.45. Attack 섹션 노티파이 시점은 0.367이지만 계획 값을 쓴다)
 
   몽타주가 끝나면 BlendOut/Completed 핀이 EndAbility를 부른다.
 - 두 번째 몽타주(돌진): 첫 PlayMontageAndWait(윈드업)의 Completed/BlendOut/Interrupted/Cancelled 핀은 **연결하지 않는다**. AM_Dash가 시작되면 윈드업 태스크가 OnInterrupted를 동기로 낸다. 여기에 EndAbility를 걸면 돌진이 바로 끊긴다(engine-api-notes B1). 어빌리티 종료는 마지막 WaitDelay → EndAbility에서만 한다.
@@ -249,3 +249,40 @@
   - `GetActiveTags`에 `Cooldown.Enemy.Attack.1/.2/.3`이 나온다. 각각 보스 근접, 내려찍기, 돌진 쿨다운 GE가 주는 태그다.
   - `GetActiveEffects`에 `Default__GE_Cooldown_Boss_*_C`와 남은 시간이 나온다.
   - 예고원은 슬램 중에만 `find_actors`(클래스 BP_TelegraphCircle_C)에 잡히고, 끝나면 사라졌다.
+
+## 5단계 검증 지적 수정 (에디터 B)
+
+### 수치 기본값 고치기: 계획 값 우선
+
+- 노티파이 시점(Melee01 0.467, Attack 섹션 0.367)을 쓰지 말고 계획 값을 쓴다. 검증은 계획서 숫자와 대조한다.
+- GA CDO 한 값만 바꾸기: `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/GAS/Abilities/GA_Enemy_Melee.GA_Enemy_Melee"},"values":"{\"HitTime\":0.45}"}` → true. 자식 GA_Enemy_Melee_Boss는 자기 값(0.40)을 따로 넣어 두었으므로 그대로다(get_properties로 확인).
+- BP 변수 기본값도 같다: `GA_Boss_Slam.GA_Boss_Slam`에 `{"HitDelay":0.45}`. `compile_blueprint` 뒤에도 값이 유지됐다(get_properties로 확인).
+
+### 부모 컴포넌트 템플릿을 바꿔도 자식 BP에는 안 넘어간다 (함정)
+
+- `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/Characters/Enemies/BP_EnemyBase.BP_EnemyBase_C:OverheadBar_GEN_VARIABLE"},"values":"{\"relativeLocation\":{\"x\":0,\"y\":0,\"z\":120}}"}` → 부모는 120이 됐다. 하지만 자식 4개(Grunt, TrainingDummy, SealCrystal, Boss)의 `<Child>_C:OverheadBar_GEN_VARIABLE`은 부모를 `compile_blueprint`한 뒤에도 옛 값 115였다. 자식은 에디터를 한 번 열어 상속 컴포넌트 템플릿을 갖고 있었다.
+- 에디터 디테일 패널과 달리 ObjectTools 쓰기는 자식 템플릿으로 전파하지 않는다. 그대로 저장하면 자식에 115가 덮어쓴 값으로 남는다.
+- 해결: 자식마다 같은 `set_properties`를 넣고, get_properties로 확인한 뒤 저장한다. 부모 컴포넌트 값을 고칠 때는 항상 자식 템플릿도 읽어 본다.
+
+### 예고원 크기 0에서 시작
+
+- `BP_TelegraphCircle` CDO에 `{"DiscHeightScale":0.01,"MinRadiusRatio":0.0}`, `BP_TelegraphCircle_C:Disc_GEN_VARIABLE`에 `{"RelativeScale3D":{"x":1,"y":1,"z":0.01}}`를 넣었다.
+- UpdateDiscScale은 `Lerp(MinRadiusRatio, 1, 진행률)`이다. 그래서 그래프를 고치지 않아도 크기 0 → Radius로 자란다. Init이 곧바로 UpdateDiscScale을 부르므로, 템플릿 XY 1은 에디터 뷰포트 미리보기에만 쓰인다.
+
+### 수정 뒤 저장 점검
+
+- 검증 패스가 컴파일해서 dirty가 된 같은 단계 에셋(GA_Boss_Charge, BP_EnemyAIController)도 있다.
+  1. 먼저 find_nodes + get_node_infos로 연결 0 노드를 찾는다. 스트레이 `*_Event_N`이 없는지 확인한다.
+  2. 없으면 `compile_blueprint(warnings_as_errors)` → `save_assets`(경로 명시) → `is_dirty` false 순서로 끝낸다.
+- NodeInfo 필드 이름: `input_pins`/`output_pins`, 각 핀의 `connected_pins`, 노드 종류 `type_id`, 위치 `position`. 연결 수는 모든 핀의 `connected_pins` 길이를 더해 센다.
+
+### 분노 배너는 컨트롤러 UI 허브가 필요하다 (6단계 예정 항목)
+
+- 에디터 B의 `BP_SCPlayerController`에는 입력 함수만 있고 `ShowRoomBanner`가 없다(list_graphs로 확인). 그래서 BP_Enemy_Boss에서 배너를 부를 수 없다.
+- 6단계에서 컨트롤러 UI 허브가 있는 에디터가 맡아야 한다. 방법은 둘 중 하나다.
+  - `BP_Room_Boss`가 보스의 `OnEnraged(Boss)`를 바인딩한다. 예: `(Default|AssignOnEnraged :self boss)` → 핸들러 `(event Custom|OnEnraged_Event (Boss) ...)`에서 `PC.ShowRoomBanner("수호자가 분노했다!", "")`.
+  - 또는 BP_Enemy_Boss의 OnEnraged 호출 뒤에 `GetPlayerController(0)` → `CastToBP_SCPlayerController` → `ShowRoomBanner`를 잇는다.
+- 결정(2차 수정): 5단계 결함이 아니라 **6단계 예정 항목**으로 넘긴다. 5단계 몫은 "분노 판정 + GE_Boss_Enrage 적용 + `OnEnraged(Boss)` 방송"까지다. 에디터 B에서 확인한 것:
+  - `BT list_graphs {"blueprint":{"refPath":"/Game/SoulCombat/Characters/Enemies/BP_Enemy_Boss.BP_Enemy_Boss"}}` → `UserConstructionScript`, `EventGraph`, `OnEnraged`(디스패처)
+  - 같은 호출을 `/Game/SoulCombat/Core/BP_SCPlayerController.BP_SCPlayerController`에 하면 입력 함수 7개와 EventGraph뿐이다. `ShowRoomBanner`는 없다.
+- 6단계 작업자 주의: 바인딩을 넣은 뒤에는 그 그래프(BP_Room_Boss나 BP_Enemy_Boss EventGraph)에 `read_graph_dsl`을 쓰지 않는다. Assign 노드가 있는 그래프를 읽을 때마다 연결 없는 `OnEnraged_Event_N`/`OnHealthChanged_Event_N`이 새로 생긴다. 확인은 `find_nodes {"graph":G,"title":"","entry_points_only":true}` + `get_node_infos`로 한다. BP_Enemy_Boss의 진입 노드는 지금 3개다(`AddEvent|EventBeginPlay`, `AddEvent|Custom|InitEnrage`, `AddEvent|Custom|OnHealthChanged_Event`). 넷째가 보이면 스트레이다.
