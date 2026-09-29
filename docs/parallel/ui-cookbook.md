@@ -80,3 +80,48 @@
 ## 마무리 점검
 
 - 저장 후에도 `is_dirty`가 다시 true가 되는 경우가 있었다(WBP_RoomBanner, 원인 불명). 끝에 폴더 전체를 `find_assets` → `is_dirty`로 한 번 더 돌리고, dirty면 `compile_blueprint` → `save_assets`(경로 명시) → `is_dirty` false 확인.
+
+## 버튼 클릭 이벤트 (WBP_DungeonEntry, WBP_DungeonClear)
+
+- **가장 간단한 방법(확인)**: 버튼은 `AddWidget` 때 `bIsVariable` 기본 true다. `UMG BindToEventProperty {"widgetBlueprint":W,"eventName":"OnClicked","propertyName":"EnterButton","propertyClass":{"refPath":"/Script/UMG.Button"}}` → `true`. EventGraph에 `K2Node_ComponentBoundEvent_0`(type_id `AddEvent|OnClicked(EnterButton)`, 연결 없음)이 생긴다.
+- 본문은 DSL 머리 `(event OnClicked(EnterButton) (Default|CallOnConfirmed))`로 쓴다 → 기존 바운드 이벤트 노드에 그대로 이어진다(새 이벤트 안 생김). `read_graph_dsl`도 같은 머리로 읽힌다. Event Construct에서 `AssignOnClicked`를 쓸 필요가 없었다.
+- 디스패처 방송: `add_event_dispatcher` → 컴파일 → `(Default|CallOnConfirmed)` (파라미터 없음).
+- Button 프로퍼티: `widgetStyle{normal,hovered,pressed,disabled(SlateBrush),normalForeground...,normalPadding,pressedPadding}`, `colorAndOpacity`, `backgroundColor`, `clickMethod`, `isFocusable`. 기본 normal 틴트는 회색(0.5) 둥근 상자라 글자는 어두운색(0.05)이 잘 보인다. ButtonSlot 기본값: padding 4/2/4/2, 정렬 Center/Center.
+
+## 전체 화면 반투명 창
+
+- 루트 Border(`brushColor` 검정 a0.6, `padding` 0) + `BorderSlot_0`의 `horizontalAlignment:"HAlign_Center"`, `verticalAlignment:"VAlign_Center"`, `padding` 0 → 내용이 화면 가운데. Border 자체의 `horizontalAlignment`/`verticalAlignment`도 같이 넣었다(슬롯과 별도 저장).
+- 최소 너비: SizeBox `{"minDesiredWidth":600,"bOverride_MinDesiredWidth":true}`.
+- TextBlock 자동 줄바꿈: `{"autoWrapText":true}`(그 밖에 `wrapTextAt`, `wrappingPolicy`, `textOverflowPolicy`).
+
+## 카운트다운 (WBP_DungeonClear)
+
+- 노드 ID: `Utilities|FlowControl|Delay :Duration 1.0`(EventGraph에서만), 정수 최대 `Math|Integer|Max(Integer) :A 0 :B x`(`Math|Integer|Max`는 `does not exist`).
+- 커스텀 이벤트가 자기 자신을 다시 부르는 반복(`(event Custom|CountdownStep (Utilities|FlowControl|Delay :Duration 1.0) ... (CallFunction|CountdownStep))`)이 DSL로 만들어지고 경고 없이 컴파일된다. 함수(Setup)에서도 `(CallFunction|CountdownStep)`으로 시작한다.
+- **함정: 순수 노드 재평가**. `(bind remaining (- (GetCountdown) 1))` 후 `(SetCountdown remaining)`과 `(if (<= remaining 0) ...)`에 같이 쓰면, 비교 쪽이 Set 뒤에 순수 노드를 다시 계산해 `Countdown-2`를 비교한다(한 칸 일찍 끝남). `bind`는 노드를 하나로 묶을 뿐 값을 저장하지 않는다. Set 뒤에는 변수를 다시 읽는다: `(if (<= (Variables|DungeonClear|State|GetCountdown) 0) ...)`.
+- 한 번만 방송: `(fn RequestReturn () (if (not (Variables|DungeonClear|State|GetRequested)) (Variables|DungeonClear|State|SetRequested true) (Default|CallOnReturnRequested)))`. bool `bRequested`는 `GetRequested`/`SetRequested`로 쓰고, 읽으면 `|GetbRequested`로 나온다.
+
+## HUD 캔버스 (WBP_PlayerHUD)
+
+- CanvasPanelSlot(`<WBP>:WidgetTree.RootCanvas.CanvasPanelSlot_<n>`) 프로퍼티: `layoutData{offsets{left,top,right,bottom},anchors{minimum{x,y},maximum{x,y}},alignment{x,y}}`, `bAutoSize`, `zOrder`. 점 앵커일 때 offsets의 left/top = 위치, right/bottom = 크기. 기본값 `offsets(0,0,100,30)`, 앵커 (0,0).
+  - 왼쪽 아래: `{"layoutData":{"offsets":{"left":40,"top":-40,"right":360,"bottom":100},"anchors":{"minimum":{"x":0,"y":1},"maximum":{"x":0,"y":1}},"alignment":{"x":0,"y":1}}}`
+  - 내용 크기 따르기: `"bAutoSize":true`(offsets의 right/bottom 무시).
+- 중첩 WBP 추가: `AddWidget`의 `widgetClass`에 `/Game/SoulCombat/UI/WBP_SkillSlot.WBP_SkillSlot_C` → `bIsVariable` 기본 true. CDO visibility가 Collapsed인 WBP(RoomBanner, EventTimer)는 인스턴스도 Collapsed로 시작한다(다른 것은 SelfHitTestInvisible).
+- **중첩 위젯 인스턴스 값으로 설정(확인)**: `OT set_properties <WBP>:WidgetTree.SlotDash {"keyLabel":"Shift","skillName":"대시","cooldownTag":{"tagName":"Cooldown.Dash"},"costAttribute":{"attributeName":"Stamina","attribute":"/Script/SoulCombat.SCAttributeSet:Stamina","attributeOwner":{"refPath":"/Script/SoulCombat.SCAttributeSet"}},"cost":25}` → true. 컴파일·저장 뒤 is_dirty false이고 `GetWidgetDescription`에 남는다. 단 GetWidgetDescription은 **클래스 기본값과 다른 값만** 보여 주므로(HPBar는 Label만, SlotSkill1은 SkillName·Cost만) 전체 확인은 `OT get_properties`로 한다. 자식 Construct가 ApplyAppearance로 값을 적용하므로 HUD Construct의 Setup 호출은 생략했다.
+- 속성 이름 확인: `GASToolsets.AttributeSetToolset ListAttributes {"className":"SCAttributeSet"}`(U 접두사 붙이면 `not found`).
+- 자식 WBP 함수 노드 ID(밑줄 빠짐): `Class|WBPRoomBanner|ShowBanner :self rb :Title :Subtitle :Duration`, `Class|WBPBossHealthBar|ShowFor :Boss :BossName`, `Class|WBPBossHealthBar|HideBar`, `Class|WBPEventTimer|StartTimer :Objective :Seconds`, `Class|WBPEventTimer|SetProgress :Progress`, `Class|WBPEventTimer|StopTimer`, `Class|WBPInteractPrompt|SetPrompt :Key :Action`, `Class|WBPSkillSlot|BindtoActor :Actor`. HUD 위젯 변수 게터: `Variables|WBP_PlayerHUD|GetHPBar`.
+- **함정**: `read_graph_dsl`이 자식 함수 호출 이름을 틀리게 읽는다. 슬롯의 BindtoActor가 `Class|WBPAttributeBar|BindtoActor`로, SetPrompt가 `Class|AssetExportTask|SetPrompt`로 나왔다. 실제 대상은 `get_node_infos`의 self 핀 타입(`WBP Skill Slot Object Reference`, `WBP Interact Prompt Object Reference`)으로 확인했다.
+- 오브젝트 파라미터: `add_object_function_param {"graph":G,"param_name":"Pawn","object_class":{"refPath":"/Script/Engine.Pawn"},"input_param":true}`. Pawn을 자식의 `Actor` 핀에 바로 넘겨도 된다.
+
+## 배치와 저장 점검 메모
+
+- 기본 이벤트를 지운 EventGraph에 `arrange_nodes`를 돌리면 체인이 y 약 1100~1950으로 밀려났다(WBP_DungeonEntry, WBP_DungeonClear). 작은 그래프는 `set_node_position`으로 직접 놓았다: 실행 노드는 y 0 한 줄, x 300 간격, 순수 노드는 소비 노드 아래(y 150~280). 함수 그래프도 arrange 결과에서 FunctionEntry가 오른쪽(x 1350)으로 가는 경우가 있어 같은 방식으로 고쳤다.
+- `AT save_assets` 인자는 `{"asset_paths":["/Game/SoulCombat/UI/WBP_X"]}`(문자열 패키지 경로). `{"assets":[ref]}`는 스키마 오류.
+- 폴더 전체 is_dirty 점검 스크립트에서 python `print`로 만든 목록에 `\r`이 붙어 인자 JSON이 깨졌다(`Invalid control character`). `tr -d '\r'`로 지운 뒤 돌린다.
+
+## 검증 뒤 수정 (색 보정, 저장 상태)
+
+- **함정: 자식 WBP 변수 기본값(CDO)을 바꿔도 이미 배치된 중첩 인스턴스에는 에디터 안에서 퍼지지 않았다.** `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/UI/WBP_SkillSlot.WBP_SkillSlot"},"values":"{\"NoCostColor\":{\"r\":0.01,\"g\":0.01,\"b\":0.012,\"a\":0.95}}"}` → true, WBP_SkillSlot 컴파일 뒤에도 `OT get_properties <HUD>:WidgetTree.SlotDash ["noCostColor"]`는 옛 값 (0.45, 0.05, 0.05, 0.8)이었다. 인스턴스마다 같은 값을 `set_properties`로 넣고(SlotDash, SlotSkill1~3) HUD를 컴파일한 뒤 다시 읽어 확인했다. CDO 변수 이름은 `NoCostColor`, 인스턴스 쪽 이름은 `noCostColor`로 읽혔다(둘 다 get_properties에 통함).
+- 중첩 위젯 한 개의 값만 고치기: `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/UI/WBP_PlayerHUD.WBP_PlayerHUD:WidgetTree.StaminaBar"},"values":"{\"fillColor\":{\"r\":1.0,\"g\":0.85,\"b\":0.1,\"a\":1}}"}` → true, HUD 컴파일 뒤 유지.
+- `read_graph_dsl`과 `CompileWidgetBlueprint`/`compile_blueprint`만 해도 WBP가 dirty가 된다(읽기 전용 검증 뒤 9개 모두 is_dirty true). 검증 뒤에는 `UMG CompileWidgetBlueprint` → `BT compile_blueprint {"warnings_as_errors":true}` → `AT save_assets {"asset_paths":[9개 경로]}` → `AT is_dirty` false 확인까지 한다.
+- 로그 툴셋 전체 이름은 `EditorToolset.LogsToolset`이다(`LogsToolset`만 쓰면 `Toolset 'LogsToolset' not found`). `GetLogEntries {"pattern":"WBP_.*(Warning|Error)","category":"","maxEntries":50}` → `[]`.
