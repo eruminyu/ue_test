@@ -1,0 +1,6 @@
+[
+ {"text": "■ StartRoom() - 방에 들어섰을 때 한 번\n시작 표시(bStarted) → 방 이름 배너 → 이 방에서 부활하도록 체크포인트 갱신\n→ OnRoomStarted 방송 → 방 종류별 진행(BeginRoomLogic).", "all": true, "color": "event", "pad": 56, "maxw": 0},
+ {"text": "■ 방 이름 배너\nbStarted = true로 다시 시작되지 않게 막고,\nPC.ShowRoomBanner(RoomTitle, RoomSubtitle)로 방 이름을 띄운다.", "names": ["StartRoom#0", "SetbStarted#0", "Sequence#0", "GetSCPlayerController#0", "IsValid#0", "ShowRoomBanner#1"], "color": "ui", "maxw": 0},
+ {"text": "■ 체크포인트\n죽으면 이 방 입구에서 부활하도록 플레이어 Combat의\nSetRespawnTransform(RespawnPoint 월드 트랜스폼)을 부른다.", "names": ["Sequence#1", "IsValid#1", "IsValid#2", "SetRespawnTransform#5"], "color": "setup", "maxw": 0},
+ {"text": "■ 방 시작 알림과 진행\nOnRoomStarted(self) 방송 뒤 BeginRoomLogic으로 방별 규칙을 시작한다.", "names": ["CallOnRoomStarted#0", "BeginRoomLogic#6"], "color": "logic", "maxw": 0}
+]

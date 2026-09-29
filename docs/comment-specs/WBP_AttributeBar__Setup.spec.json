@@ -1,0 +1,3 @@
+[
+ {"text": "■ Setup(InAttribute, InMaxAttribute, InLabel, InFillColor, bInShowNumbers)\n바 하나의 설정을 한 번에 넣는다: 읽을 속성 쌍(현재/최대), 이름표, 채움 색, 숫자 표시 여부.\n저장 뒤 ApplyAppearance로 바로 모양을 반영한다. HUD·보스 바·몬스터 머리 위 바가 같이 쓴다.", "all": true, "color": "setup", "pad": 48}
+]

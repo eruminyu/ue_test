@@ -1,0 +1,3 @@
+[
+ {"text": "■ UpdateCountdownText()\nCountdownText = 'N초 후 필드로 돌아갑니다'\n(N = Max(0, Countdown)).", "all": true, "color": "ui", "pad": 48}
+]

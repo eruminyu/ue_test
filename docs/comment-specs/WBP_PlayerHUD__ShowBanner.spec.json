@@ -1,0 +1,3 @@
+[
+ {"text": "■ ShowBanner(Title, Subtitle)\n컨트롤러 ShowRoomBanner가 부른다.\nRoomBanner.ShowBanner(Title, Subtitle, BannerDuration 3초).", "all": true, "color": "ui", "pad": 48}
+]

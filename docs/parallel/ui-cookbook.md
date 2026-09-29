@@ -446,3 +446,125 @@
 
 - 부모 BP_DungeonRoom CDO에 `InitialCheckDelay` 0.2를 넣고 자식 4개를 다시 컴파일해도 자식 CDO는 0이었다. 레벨에 놓인 방 인스턴스(L_Dungeon_01)도 0이었고, 레벨이 dirty가 됐다.
 - 해결: 자식 CDO마다 `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/Dungeon/BP_Room_Start.BP_Room_Start"},"values":"{\"InitialCheckDelay\":0.2}"}`, 레벨 인스턴스는 `SceneTools find_actors {"actor_type":{"refPath":"/Game/SoulCombat/Dungeon/BP_DungeonRoom.BP_DungeonRoom_C"}}`로 모아 같은 값을 넣고 레벨을 저장(`save_assets`에 `/Game/SoulCombat/Maps/L_Dungeon_01` 명시). 이후 부모·자식 재컴파일 뒤에도 0.2 유지를 확인했다.
+- 범위 주의: 이렇게 하면 부모 BP 하나를 고쳐도 자식 BP 파일과 맵 파일이 함께 바뀐다. 수정 단계의 허용 에셋 목록에 자식 BP와 맵을 처음부터 넣고, 본 프로젝트로 옮길 때도 부모·자식·맵을 한 묶음으로 옮긴다. 부모만 옮기면 자식 CDO와 레벨 인스턴스 값이 0이 된다.
+- 확인 호출(읽기만, 파일 안 바뀜): `OT get_properties {"instance":{"refPath":"/Game/SoulCombat/Dungeon/BP_Room_Start.Default__BP_Room_Start_C"},"properties":["InitialCheckDelay"]}`. 레벨 쪽은 `SceneTools find_actors {"name":"","tag":"","collision_channels":[],"actor_type":{"refPath":"/Game/SoulCombat/Dungeon/BP_DungeonRoom.BP_DungeonRoom_C"}}`로 모은다(`name`·`tag`·`collision_channels`는 필수라 빈 값을 준다). 모은 액터마다 같은 `get_properties`를 부른다.
+- 변경이 없는 BP에 `compile_blueprint`를 불러도 is_dirty는 false로 남았다(BP_Room_Start). 이때는 다시 저장하지 않는다.
+
+## 7c 수정 확인: B1 보강, B4, B5 (에디터 B)
+
+### 기존 실행 흐름에 IsValid 매크로 끼우기 (DSL 재작성 없이)
+
+- DSL로 다시 쓰면 손으로 만든 노드(예: `declaring_class`로 만든 PrimitiveComponent 버전 IsOverlappingActor)가 바뀔 수 있다. 그래서 노드 단위로 끼웠다.
+  1. `BT create_node {"graph":{"refPath":"/Game/SoulCombat/Dungeon/BP_DungeonRoom.BP_DungeonRoom:EventGraph"},"type_id":"Utilities|IsValid","pos":{"x":700,"y":778}}` → `K2Node_MacroInstance_24`.
+  2. 핀 index는 입력 `exec` 0, `InputObject` 1(`Object Reference`), 출력 `Is Valid` 0, `Is Not Valid` 1이다.
+  3. PT 스크립트 한 번에 다음을 했다.
+     - `break_pins`(Delay then 0 → Branch execute 0)
+     - `connect_pins`(Delay then → IsValid exec 0)
+     - `connect_pins`(IsValid `Is Valid` 0 → Branch execute 0)
+     - `connect_pins`(GetPlayerPawn ReturnValue 0 → IsValid InputObject 1)
+  4. `get_node_infos`로 연결을 확인했다. GetPlayerPawn 출력 하나가 IsValid와 IsOverlappingActor 두 곳에 이어진다.
+  5. `compile_blueprint {"warnings_as_errors":true}` → null, `[Compiler]` 로그 0건.
+- `arrange_nodes`(get_connected_subgraph 결과)는 exec 줄을 계단식으로 내려 놓았다(겹침은 없음). 그래서 `set_node_position`으로 exec 5개를 한 줄(y 688, x 0/400/752/1104/1408)에, 순수 노드를 그 아래(y 864~1184)에 두었다.
+- Git Bash에서 로그 패턴 `\[Compiler\]`를 `echo '...'`로 JSON 파일에 쓰면 백슬래시가 줄어 `Invalid \escape` 에러가 난다. 인자 파일은 `python -c "import json;json.dump({...,'pattern':r'\[Compiler\]'},open(f,'w'))"`로 만든다. 여러 줄 heredoc 여러 개를 한 Bash 호출에 이어 붙였을 때도 셸 파싱이 깨졌다. 긴 한국어 조각은 파일로 먼저 쓰고 `cat >>`한다.
+
+### 스폰 직후 잠깐 뜨는 배너 잡기
+
+- `StartPIE {"options":{"bSimulate":false,"playMode":"PlayMode_InViewPort","warmupSeconds":0.5}}` 바로 뒤에 작은 PT 스크립트를 부른다.
+  - 스크립트 내용: PC ref를 직접 지정(`.../UEDPIE_0_L_Dungeon_01.L_Dungeon_01:PersistentLevel.BP_SCPlayerController_C_0`) → `HUD` → `RoomBanner` → `visibility`와 `WidgetTree_0.TitleText.text`.
+  - 결과: `HitTestInvisible`과 '시련의 회랑'을 잡았다. 1초 뒤에는 Collapsed였다.
+  - warmup 2초에 폴링 20여 개면 배너(3초)가 이미 사라진 뒤라 글자만 남는다.
+- Bash에서 PT 결과의 한글이 깨져 보이면 `--out` 파일로 받아 utf-8로 읽는다(`PYTHONIOENCODING=utf-8`).
+
+### 위젯 CDO 포커스 플래그 (B4)
+
+- `OT list_properties {"instance":{"refPath":"/Game/SoulCombat/UI/WBP_DungeonEntry.WBP_DungeonEntry"}}`(약 10 KB)에 `bIsFocusable`(boolean)이 있다.
+- 다음 순서로 고쳤다.
+  1. `OT set_properties {..., "values":"{\"bIsFocusable\":true}"}` → true, `get_properties`로 true 확인.
+  2. `UMGToolSet CompileWidgetBlueprint` → true.
+  3. `BT compile_blueprint {"warnings_as_errors":true}` → null.
+  4. `AT save_assets ["/Game/SoulCombat/UI/WBP_DungeonEntry"]`.
+- PIE에서 만들어진 위젯 인스턴스(`/Engine/Transient...WBP_DungeonEntry_C_0`)도 `bIsFocusable` true로 읽혔고, UIOnly 포커스 에러가 사라졌다.
+
+### 레벨 적 인스턴스 어그로 범위 (B5)
+
+- 인스턴스 편집 변수라 레벨 액터에 바로 넣는다. `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/Maps/L_CombatField.L_CombatField:PersistentLevel.BP_Enemy_Grunt_C_0"},"values":"{\"AggroRange\":800}"}` → true.
+  - 두 번째 액터(`_C_1`)는 따로 부른다.
+  - 라벨은 `AcT get_label`로 확인한다. `_C_0` = SparringGrunt_1, `_C_1` = SparringGrunt_2.
+- AI(Think)는 거리를 잡몹의 **현재 위치**에서 잰다. 잡몹은 집으로 돌아가지 않으므로, 플레이어가 한 번 끌고 오면 그 자리에서 다시 추적할 수 있다.
+- 확인: PIE에서 `AbilitySystemInspectorToolset GetAttributeValues`로 Health를 읽었다. `AcT set_actor_transform`으로 플레이어를 복귀점과 스파링 구역에 옮겨, 추적하지 않는 경우와 여전히 공격하는 경우를 둘 다 봤다.
+
+## 9단계 주석 패스: 방 로직과 던전 게임 모드 (에디터 B)
+
+대상은 BP_DungeonRoom(그래프 6), BP_Room_Mob(1), BP_Room_Event(5), BP_Room_Boss(2), BP_DungeonGameMode(1)다. 그래프 15개에 주석 박스 41개를 붙였다. BP_Room_Start는 건너뛰었다(ConstructionScript가 진입 노드와 부모 호출뿐이고 EventGraph는 비어 있음).
+절차는 `docs/comment-pass-recipe.md` 그대로 하고, 모든 도구 호출에 `--port 8001`을 줬다. `graph_layout.py`는 `--port`가 **서브명령 앞**(`python Tools/graph_layout.py --port 8001 dump ...`)이고, `graph_comments.py`는 **서브명령 뒤**(`ui-run ... --port 8001`)다.
+
+### 함정: 워터마크 밑에 노드가 있으면 ui-run 보정 붙여넣기가 안 된다
+
+- 증상: `ui-run`이 `get_node_infos ... K2Node_Knot_Cal is not valid EdGraphNode`로 멈춘다. 그래프에는 아무것도 붙지 않았다(다시 덤프해 노드 수 그대로 확인).
+- 원인: 에디터 B의 BP 창은 1672×914로 작다. 그래서 그래프를 1:1로 열면 `BLUEPRINT` 워터마크 밑에 노드(Return Node)가 깔린다. 오른쪽 클릭이 노드 컨텍스트 메뉴로 가서 노드만 선택되고, 그 뒤 Ctrl+V는 무시됐다. 로직은 바뀌지 않았다(same-logic 모두 same).
+- 우회: 포커스 앵커를 그래프 패널 오른쪽 위의 줌 글자 `text "Zoom 1:1"`로 바꿨다. `graph_comments.py`는 고치지 않고, 스크래치 폴더에 래퍼를 두어 `open_graph`만 바꿔 끼웠다.
+  ```python
+  # C:/Project/SoulCombat_B/_agent_tmp/cp/gc_zoom.py (사용: python gc_zoom.py ui-run ... --port 8001 --fit-all)
+  import re, sys
+  sys.path.insert(0, r"<repo>/Tools"); import graph_comments as gc
+  _orig = gc.open_graph
+  def open_graph(window, graph, port):
+      _orig(window, graph, port)   # 탭 열기(워터마크 확인은 그대로)
+      tree = gc.mcp(gc.SI, "Snapshot", {"ref": window, "maxDepth": 40}, port)
+      refs = re.findall(r'text "Zoom[^"]*" \[.*?\] \[ref=(\w+)\]', tree)
+      assert len(refs) == 1, refs
+      return refs[0]
+  gc.open_graph = open_graph; sys.argv[0] = "graph_comments.py"; sys.exit(gc.main())
+  ```
+  결과: 그래프 15개 모두 `knot_ok: true`, `mismatch: []`, `comments_pasted` = spec 박스 수였다.
+  수동으로 확인할 때는 `graph_comments.py ui-calib <graph_ref> <Zoom text ref> --port 8001` → `{"L": [...]}`처럼 앵커만 바꿔 넣으면 된다.
+- 제안: 도구에 `--anchor zoom` 옵션을 넣으면 래퍼가 필요 없다.
+
+### 함정: --fit-all 없이 찍으면 1:1 화면이 찍힌다
+
+- 첫 그래프(GetSCPlayerController)를 `--fit-all` 없이 찍었더니 `Zoom 1:1` 그대로였다. 선택이 빈 상태의 Home이 뷰를 움직이지 않았고, 주석 제목도 잘렸다.
+- `ui-shot <graph_ref> <png> --window <w> --port 8001 --fit-all`로 다시 찍었다(Ctrl+A → Home → 3초 → 선택 해제). 이후에는 `ui-run`에 처음부터 `--fit-all`을 줬다.
+
+### 행 사이가 좁을 때: layout 결과를 y로 밀기
+
+- 함수 헤더 박스 안에 안쪽 박스를 세로로 쌓으면, 제목 3줄짜리 박스끼리 16~32 겹치거나 딱 붙었다(`boxes i and j overlap`, 또는 한 박스 아래 = 다음 박스 위).
+- `--breaks`는 가로 간격만 벌린다. 그래서 layout JSON의 `pos`와 `rects`에서 y ≥ Y(필요하면 x 범위 제한)인 노드를 +64~128 옮긴 뒤 preview를 다시 돌렸다. 값은 `docs/comment-specs/breaks.json`에 적었다.
+- 순수 노드도 같은 행 기준으로 함께 옮겨진다. same-logic은 위치만 바뀌므로 모두 same이었다.
+
+### 그 밖에
+
+- `compile_blueprint`의 `blueprint`는 오브젝트 경로(`/Game/.../BP_X.BP_X`)여야 한다. 패키지 경로만 주면 `is not a valid object path`로 실패한다.
+- 에디터 B에서 `EditorAppToolset`의 긴 이름은 `EditorToolset.EditorAppToolset`이다(`OpenEditorForAsset`, `GetOpenAssets`).
+- BP 창 ref는 에셋을 열 때마다 새로 생겼다(w54 → w60 → w63 → w68 → w71). 에디터 A의 w116처럼 고정되지 않으므로, 열 때마다 `Snapshot {"ref":"","maxDepth":1}`로 확인한다.
+- Assign 노드가 있는 그래프(Room_Mob, Room_Event, Room_Boss, DungeonGameMode의 EventGraph)는 `read_graph_dsl`을 쓰지 않았다. 덤프(get_node_infos)로만 읽었고, 스트레이 `*_Event_N`은 생기지 않았다(전후 노드 수가 같음).
+
+## 9단계 주석 패스: UI 위젯 블루프린트 (에디터 B)
+
+대상은 /Game/SoulCombat/UI의 위젯 BP 9개다. 그래프 34개에 주석 박스 40개를 붙였다. 절차는 `docs/comment-pass-recipe.md`와 위 절(방 로직)과 같다. 모든 도구 호출에 `--port 8001`을 줬다.
+건너뛴 그래프: 노드가 0개인 EventGraph(WBP_BossHealthBar, WBP_InteractPrompt, WBP_PlayerHUD), 디스패처 시그니처 그래프(WBP_DungeonEntry OnConfirmed·OnCancelled, WBP_DungeonClear OnReturnRequested, 진입 노드 1개).
+
+### 위젯 BP는 Graph 모드로 바꿔야 하고, 워터마크 글자가 다르다
+
+- `EditorToolset.EditorAppToolset OpenEditorForAsset {"assetPath":"/Game/SoulCombat/UI/WBP_X"}`로 열면 매번 Designer 모드다. 스냅샷(`Snapshot {"ref":"<창>","maxDepth":40}`)에 `checkbox "Graph" [unchecked] [ref=cbNN]`이 있으면 `Click {"ref":"cbNN"}` → `[checked]`가 된다. 그다음에야 `tab "My Blueprint"`, `listitem "<함수>"`, `tab "EventGraph"`가 나온다.
+- Designer 모드에도 `text "Zoom -3"`(디자이너 캔버스 줌)이 있다. Graph로 바꾼 뒤에는 그래프 패널의 `Zoom` 글자 하나만 남는다.
+- 그래프 워터마크가 `text "BLUEPRINT"`가 아니라 `text "WIDGET BLUEPRINT"`다. 그래서 `graph_comments.open_graph`가 `expected one BLUEPRINT watermark`로 멈춘다.
+- 우회: 스크래치 래퍼 `C:/Project/SoulCombat_B/_agent_tmp/cp/gc_widget.py`. `open_graph`를 통째로 바꿔, 탭 클릭(없으면 My Blueprint 항목 더블클릭) 뒤 `Zoom` 글자 ref를 앵커로 돌려준다. 나머지(보정·붙여넣기·검증·스크린샷·클립보드 잠금)는 `graph_comments.py` 그대로다.
+  ```
+  python gc_widget.py ui-run <spec> /Game/SoulCombat/UI/WBP_X.WBP_X:<Graph> --window <창 ref> --layout <layout> --shot docs/screenshots/graphs/WBP_X__<Graph>.png --port 8001 --fit-all
+  python gc_widget.py ui-shot /Game/SoulCombat/UI/WBP_X.WBP_X:<Graph> <png> --window <창 ref> --port 8001 --fit-all
+  ```
+  그래프 ref 형식은 일반 BP와 같다(`/Game/SoulCombat/UI/WBP_DungeonClear.WBP_DungeonClear:UpdateCountdownText`). `graph_layout.py dump/apply/same-logic`도 위젯 BP에 그대로 됐다.
+- 결과: 그래프 34개 모두 `knot_ok: true`, `mismatch: []`, `comments_pasted` = spec 박스 수. 보정 위치 L은 대부분 (0,0)이었지만 균형추 검증으로 위치가 정확히 맞았다.
+- 창 ref는 에셋마다 새로 생겼다(w74, w79, w82, w85, w88, w91, w94, w99, w102). `Snapshot {"ref":"","maxDepth":1}`의 `window "WBP_X"`에서 읽는다.
+- 저장·닫기는 일반 BP와 같다: `compile_blueprint {"blueprint":{"refPath":"/Game/SoulCombat/UI/WBP_X.WBP_X"},"warnings_as_errors":true}` → null, `save_assets` → `graph_comments.py ui-close WBP_X --window <창> --port 8001`. 다시 열면 또 Designer 모드다.
+
+### 함정: 핀이 많은 노드 밑에 순수 노드가 가려진다 (WBP_BossHealthBar ShowFor)
+
+- `WBP_AttributeBar.Setup` 호출 노드는 구조체 드롭다운(InAttribute, InMaxAttribute)과 체크박스가 있어 실제 높이가 약 323이다. layout 추정은 246이라, 그 아래 y 288에 놓인 `GetHealthBar`가 노드 밑에 가려졌다(스크린샷에서 발견).
+- 해결: 붙인 뒤 `BT set_node_position {"node":{"refPath":"/Game/SoulCombat/UI/WBP_BossHealthBar.WBP_BossHealthBar:ShowFor.K2Node_VariableGet_1"},"pos":{"x":960,"y":336}}` → `gc_widget.py ui-shot ... --fit-all`로 다시 찍었다. 새 위치도 헤더 박스 안이라 주석은 그대로 뒀다.
+
+### 함정: 박스 폭이 그래프 패널보다 조금 넓으면 --fit-all이 1:1에 머문다 (WBP_DungeonClear UpdateCountdownText)
+
+- 박스 폭 1440, 에디터 B 그래프 패널 폭 약 1360. Ctrl+A → Home 뒤에도 `Zoom 1:1`이어서 박스 제목 왼쪽이 잘렸다. `ui-shot`을 다시 해도 같았다.
+- 붙인 주석 하나 지우기(레시피 4절 방법): 1:1 스냅샷에 제목이 `text "■ UpdateCountdownText()..." [ref=x1280]`로 나온다 → `Click {"ref":"x1280"}`(왼쪽, 주석만 선택) → `PressKey {"key":"Delete"}` → `find_nodes` 노드 수 8 그대로, 스냅샷에 `■` 0개.
+- 그다음 layout JSON에서 x ≥ 800인 노드를 +320 옮겨 폭을 1760으로 넓혔다 → preview → apply → ui-run을 다시 했다. 결과는 Zoom -2로 전체가 보였다. 이동값은 `docs/comment-specs/breaks.json`에 적었다.

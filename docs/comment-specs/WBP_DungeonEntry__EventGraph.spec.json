@@ -1,0 +1,4 @@
+[
+ {"text": "■ 입장 버튼\nEnterButton 클릭 → OnConfirmed 방송.\n플레이어 컨트롤러가 받아 던전으로 이동한다.", "names": ["OnClicked(EnterButton)#0", "CallOnConfirmed#0"], "color": "event", "pad": 48},
+ {"text": "■ 취소 버튼\nCancelButton 클릭 → OnCancelled 방송.\n컨트롤러가 창을 닫고 게임 입력으로 되돌린다.", "names": ["OnClicked(CancelButton)#1", "CallOnCancelled#1"], "color": "event", "pad": 48}
+]

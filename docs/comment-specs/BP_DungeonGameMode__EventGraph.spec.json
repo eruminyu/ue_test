@@ -1,0 +1,4 @@
+[
+ {"text": "■ 던전 시작 (BeginPlay)\n클리어 시간 기록용으로 StartTime = 게임 시간을 저장하고,\n레벨의 모든 BP_DungeonRoom의 OnRoomCleared에 OnRoomCleared_Event를 연결한다.", "names": ["EventBeginPlay#0", "SetStartTime#0", "GetAllActorsOfClass#1", "ForEachLoop#0", "AssignOnRoomCleared#0"], "color": "event", "maxw": 0},
+ {"text": "■ 던전 클리어 → 결과 화면 (방 클리어 방송)\n클리어된 방이 bIsFinalRoom(보스 방)일 때만: ClearSeconds = 현재 − StartTime을 먼저 계산하고\n(연출 대기 시간이 기록에 섞이지 않게) ClearScreenDelay(2초) 뒤 PC.OpenDungeonClear(ClearSeconds).", "names": ["OnRoomCleared_Event#0", "Branch#0", "SetClearSeconds#1", "Delay#3", "CastToBP_SCPlayerController#0", "OpenDungeonClear#5"], "color": "ui", "maxw": 0}
+]

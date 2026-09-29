@@ -1,0 +1,3 @@
+[
+ {"text": "■ UpdateProgress() - 진행 표시 갱신\n이벤트 타이머 아래 진행 글자를 '봉인석 {DestroyedCount} / {TotalCrystals}'로 바꾼다\n(PC.SetEventProgress). 시작할 때와 봉인석이 부서질 때마다 부른다.", "all": true, "color": "ui", "pad": 48, "maxw": 0}
+]

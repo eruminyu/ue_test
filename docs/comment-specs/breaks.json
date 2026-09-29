@@ -15,5 +15,15 @@
  "BP_SCPlayerController__EventGraph": "(블록 수동 배치: layout 결과의 체인들을 블록별 열로 다시 쌓음 - [BeginPlay, OnPossess](세로 간격 352) | [IA_Move, IA_MouseLook] | [IA_Interact] / 아래 행: [IA_Attack, IA_Jump, IA_Guard, IA_Dash] + [IA_Skill1~3] | [BindEntryWidget, OnConfirmed, OnCancelled] + [BindClearWidget, OnReturnRequested](열 간격 352), 블록 간격 480)",
  "BP_SCPlayerController__HandleMove": "CanMove#8",
  "BP_SCPlayerController__SetInteractable": "Branch#1 (+ layout 수동 이동: y>=400 노드 y+96)",
- "BP_DungeonGate__EventGraph": "(블록 수동 배치: 왼쪽 열 [BeginPlay] / [InteractSphere 겹침 시작, 끝](간격 352) / [OnInteracted_Event], 오른쪽 위 [OpenGate](+ y>=500 노드 y+96), 오른쪽 아래 [PortalTrigger 겹침] | [OnCancelled_Event], 블록 간격 480~560)"
+ "BP_DungeonGate__EventGraph": "(블록 수동 배치: 왼쪽 열 [BeginPlay] / [InteractSphere 겹침 시작, 끝](간격 352) / [OnInteracted_Event], 오른쪽 위 [OpenGate](+ y>=500 노드 y+96), 오른쪽 아래 [PortalTrigger 겹침] | [OnCancelled_Event], 블록 간격 480~560)",
+ "BP_DungeonRoom__StartRoom": "(breaks 없음 + layout 수동 이동: y>=400 노드 y+128, 그다음 y>=1150 노드 y+96)",
+ "BP_DungeonRoom__ClearRoom": "(breaks 없음 + layout 수동 이동: y>=300 노드 y+96, 그다음 y>=1000 노드 y+96)",
+ "BP_Room_Mob__EventGraph": "(breaks 없음 + layout 수동 이동: y>=1700이고 x<3000인 노드 y+96)",
+ "BP_Room_Event__EventSucceeded": "(breaks 없음 + layout 수동 이동: y>=400 노드 y+96)",
+ "BP_Room_Event__OnTimeUp": "(breaks 없음 + layout 수동 이동: y>=400 노드 y+96)",
+ "BP_Room_Event__EventGraph": "(breaks 없음 + layout 수동 이동: y>=500이고 x<4000인 노드 y+96)",
+ "BP_Room_Boss__EventGraph": "(breaks 없음 + layout 수동 이동: y>=800이고 x<4000인 노드 y+96, 그다음 y>=400이고 x<4000인 노드 y+64)",
+ "WBP_SkillSlot__Refresh": "GetActiveEffectsWithAllTags#6,SetBrushColor#20 (+ layout 수동 이동: y>=1248 노드 y+128)",
+ "WBP_BossHealthBar__ShowFor": "(breaks 없음 + 적용 뒤 수동 이동: GetHealthBar(K2Node_VariableGet_1) → (960,336). Setup 노드 실제 높이(약 323)가 추정(246)보다 커서 그 밑에 가려졌다)",
+ "WBP_DungeonClear__UpdateCountdownText": "(breaks 없음 + layout 수동 이동: x>=800 노드 x+320. 박스 폭 1440이 창 그래프 패널(약 1360)보다 조금 넓어 Home이 1:1에 머물러 제목 왼쪽이 잘렸다 → 폭을 1760으로 넓혀 -2 줌으로 맞춤)"
 }

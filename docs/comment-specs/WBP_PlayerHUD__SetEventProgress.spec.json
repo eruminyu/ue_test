@@ -1,0 +1,3 @@
+[
+ {"text": "■ SetEventProgress(Progress)\n봉인석을 부술 때마다 컨트롤러가 부른다.\nEventTimer.SetProgress(Progress).", "all": true, "color": "ui", "pad": 48}
+]

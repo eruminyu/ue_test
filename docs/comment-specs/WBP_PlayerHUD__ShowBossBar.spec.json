@@ -1,0 +1,3 @@
+[
+ {"text": "■ ShowBossBar(Boss, BossName)\n보스 방이 컨트롤러를 거쳐 부른다.\nBossBar.ShowFor(Boss, BossName)로 보스 체력 바를 띄운다.", "all": true, "color": "ui", "pad": 48}
+]

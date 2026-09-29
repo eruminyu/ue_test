@@ -1,0 +1,3 @@
+[
+ {"text": "■ FinishEvent() - 이벤트 마무리\n성공·실패 공통: 이벤트 타이머 UI를 숨기고(PC.HideEventTimer)\nClearRoom으로 출구를 연다.", "all": true, "color": "logic", "pad": 48, "maxw": 0}
+]

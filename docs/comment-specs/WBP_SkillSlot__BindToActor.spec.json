@@ -1,0 +1,3 @@
+[
+ {"text": "■ BindToActor(Actor)\n슬롯이 읽을 대상을 정한다: Actor의 ASC를 BoundASC에 저장하고\nRefresh로 바로 한 번 그린다. 이후에는 Tick이 매 프레임 Refresh한다.", "all": true, "color": "setup", "pad": 48}
+]

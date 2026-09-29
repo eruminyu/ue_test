@@ -1,0 +1,3 @@
+[
+ {"text": "■ ApplyAppearance()\n저장된 설정을 화면에 반영한다: LabelText = Label, Bar 채움 색 = FillColor.\nbShowNumbers면 ValueText를 보이고(HitTestInvisible), 아니면 숨긴다(Collapsed).", "all": true, "color": "ui", "pad": 48}
+]

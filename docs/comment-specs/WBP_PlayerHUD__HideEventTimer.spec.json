@@ -1,0 +1,3 @@
+[
+ {"text": "■ HideEventTimer()\n이벤트가 끝나면 컨트롤러가 부른다.\nEventTimer.StopTimer().", "all": true, "color": "ui", "pad": 48}
+]

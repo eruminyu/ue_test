@@ -1,0 +1,3 @@
+[
+ {"text": "■ RequestReturn()\n필드 복귀를 한 번만 요청한다: bRequested가 false일 때만 true로 바꾸고\nOnReturnRequested를 방송한다(컨트롤러가 받아 필드로 이동). 버튼과 카운트다운 끝이 같이 쓴다.", "all": true, "color": "logic", "pad": 48}
+]

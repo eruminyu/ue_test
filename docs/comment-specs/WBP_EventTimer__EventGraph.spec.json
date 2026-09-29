@@ -1,0 +1,3 @@
+[
+ {"text": "■ 남은 시간 표시 (Tick)\nbRunning일 때만 매 프레임 남은 시간 = Max(0, EndTime - 현재 게임 시간)을 구해\nTimeText에 '남은 시간 N.N초'(소수 1자리)로 쓴다. 판정(시간 초과)은 방 BP의 타이머가 한다.", "names": ["EventTick#2", "Branch#0", "SetText(Text)#4"], "color": "event", "pad": 48}
+]

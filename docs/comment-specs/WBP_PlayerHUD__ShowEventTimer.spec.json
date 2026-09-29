@@ -1,0 +1,3 @@
+[
+ {"text": "■ ShowEventTimer(Objective, Seconds)\n이벤트 방 시작 때 컨트롤러가 부른다.\nEventTimer.StartTimer(Objective, Seconds).", "all": true, "color": "ui", "pad": 48}
+]

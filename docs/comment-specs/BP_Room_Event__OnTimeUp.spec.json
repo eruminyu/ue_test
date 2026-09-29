@@ -1,0 +1,5 @@
+[
+ {"text": "■ OnTimeUp() - 제한 시간 초과 (TimeLimit 타이머)\n이미 성공했으면(bEventDone) 무시한다. 아니면 실패: 남은 봉인석을 치우고 실패 배너 → FinishEvent.\n실패해도 방은 클리어되어 다음 방으로 갈 수 있다(보상만 없음).", "all": true, "color": "event", "pad": 56, "maxw": 0},
+ {"text": "■ 남은 봉인석 휴면\nbEventDone = true → 아직 살아 있는(NOT Combat.bIsDead) 봉인석마다\nSetDormant(true)로 숨긴다.", "names": ["OnTimeUp#0", "Branch#0", "SetbEventDone#0", "ForEachLoop#0", "IsValid#1", "Branch#1", "SetDormant#1"], "color": "logic", "maxw": 0},
+ {"text": "■ 실패 배너 → 마무리\nPC.ShowRoomBanner('실패', '봉인석이 사라졌다') → FinishEvent.", "names": ["Sequence#0", "GetSCPlayerController#2", "IsValid#2", "ShowRoomBanner#3", "FinishEvent#4"], "color": "ui", "maxw": 0}
+]

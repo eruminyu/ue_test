@@ -146,3 +146,28 @@
 - UMG 버튼은 SlateInspector `Click`만으로는 눌리지 않았다(포커스만 감). `PressKey Enter`로 눌렀다.
 - 백그라운드 PIE(3 fps)라 한 번 폴링하는 데 속성 20여 개 기준 5~10초가 걸린다. 킬러가 1초 간격이라 웨이브 전환, 보스 바 표시 같은 중간 순간은 대부분 지나간 뒤에 읽혔다. 최종 상태와 카운터로 판정했다.
 - 레벨 이동 뒤 PIE 경로가 `/Game/SoulCombat/Maps/UEDPIE_0_L_CombatField.L_CombatField:PersistentLevel...`로 바뀐다. 옛 경로는 `is not valid Object for property 'instance'` 에러를 낸다.
+
+## 수정 확인 (에디터 B, 2026-09-29)
+
+B1, B4, B5를 고친 뒤 다시 확인했다. 고친 에셋은 `BP_DungeonRoom`, `WBP_DungeonEntry`, `L_CombatField` 셋이다. 셋 다 저장했고, 끝에 `/Game/SoulCombat`·`/Game/_Scratch`의 더러운 에셋은 0개다. PIE는 꺼져 있고, 레벨은 `L_Dungeon_01`로 되돌려 두었다.
+
+B1은 앞선 수정 시도에서 이미 BeginPlay 초기 겹침 확인이 들어가 저장돼 있었다. 그 시도는 `InitialCheckDelay` 변수(0.2)를 쓰면서 자식 BP_Room_* 4개 CDO와 `L_Dungeon_01` 방 인스턴스 5개에도 같은 값을 넣고 저장했다(파일 시각 21:52). 이번에는 그 변경을 그대로 두었다. 사양에 있던 `IsValid(플레이어 폰)` 검사만 더했고, 자식 BP와 맵은 건드리지 않았다.
+
+| # | 확인 | 관찰 | 판정 |
+| --- | --- | --- | --- |
+| F1-1 | BP_DungeonRoom BeginPlay 흐름 | BeginPlay → Delay(`InitialCheckDelay` 0.2) → `IsValid(GetPlayerPawn(0))` → Branch(NOT bStarted AND `RoomTrigger.IsOverlappingActor(폰)`) → StartRoom. 기존 `OnComponentBeginOverlap(RoomTrigger)` 흐름은 그대로다. `compile_blueprint`(warnings_as_errors) 통과, `[Compiler]` 로그 0건 | 통과 |
+| F1-2 | 자식 상속 | BP_Room_Start에는 이벤트가 없다. BP_Room_Mob·Event·Boss에는 BeginRoomLogic과 커스텀 이벤트만 있고 BeginPlay 오버라이드는 없다(`find_nodes` entry_points_only). 그래서 부모 BeginPlay가 그대로 상속된다 | 통과 |
+| F1-3 | PIE 진짜 `L_Dungeon_01` | 스폰 직후 Room_Start `bStarted`·`bCleared` true, 나머지 방 4개는 false. 플레이어 (0,0,92). `Combat.RespawnTransform` (-350,0,100)으로 Start 방 안이다 | 통과 |
+| F1-4 | 시작 배너 | warmup 0.5초 PIE 직후 HUD `RoomBanner` HitTestInvisible(표시), TitleText '시련의 회랑', Subtitle '앞으로 나아가라'. 약 1초 뒤 폴링에서는 Collapsed(3초 표시 뒤 숨김) | 통과 |
+| F1-5 | 로그 | `Creating play world package` 뒤 Error·Warning 0줄(툴 잡음 제외) | 통과 |
+| F4-1 | WBP_DungeonEntry CDO | `bIsFocusable` false → true. `CompileWidgetBlueprint` true, `compile_blueprint`(warnings_as_errors) 통과. BP_SCPlayerController는 고치지 않았다 | 통과 |
+| F4-2 | PIE `L_FieldFlowTest` + TestGateDriver(Mode 0) | 약 11초 뒤 드라이버 Step 3, 게이트 `bIsOpen`·`bEntryOpen` true, `PC.EntryWidget` = `WBP_DungeonEntry_C_0`(인스턴스 `bIsFocusable` true), 커서 표시 | 통과 |
+| F4-3 | 로그 | 창이 열린 뒤에도 `Attempting to focus Non-Focusable widget` 없음. PIE 로그의 Error·Warning 0줄 | 통과 |
+| F5-1 | L_CombatField 스파링 잡몹 | SparringGrunt_1(`BP_Enemy_Grunt_C_0`, (-1500,700)), SparringGrunt_2(`BP_Enemy_Grunt_C_1`, (-900,1100))의 인스턴스 `AggroRange` 2500 → 800. 한 호출에 한 액터씩 넣고 다시 읽었다. 저장 뒤 is_dirty false. 거리: 필드 시작점 (0,0)까지 1655/1421, GateReturn (0,1450)까지 1677/966, 게이트 (0,2200)까지 2121/1421. 모두 800보다 멀다 | 통과 |
+| F5-2 | PIE 필드 시작점 | 시작 뒤 약 10초(warmup 2 + 대기 8) 동안 플레이어 (0,0,92), Health 1000/1000. 잡몹 두 마리 모두 제자리 | 통과 |
+| F5-3 | GateReturn 위치 (추가 확인) | 플레이어를 (0,1450,100)으로 옮기고 6초 뒤에도 Health 1000, 잡몹 제자리 | 통과 |
+| F5-4 | 스파링은 그대로 되는지 (회귀) | 플레이어를 스파링 구역 (-1200,900)으로 옮기자 잡몹 둘이 붙어 8초 사이 Health 1000 → 800 | 통과 |
+| F5-5 | 로그 | 필드 PIE의 Error·Warning 0줄(PIE 중 set_actor_transform이 남기는 툴 잡음 제외) | 통과 |
+
+- 남은 항목: B2(GC_Hit 소켓 경고), B3(예고원 Nanite 머티리얼)는 이번 범위가 아니라 그대로다.
+- B5의 (b)안(입장 창 동안 일시정지 또는 무적)은 적용하지 않았다. 이제 잡몹이 게이트까지 오지 않으므로, 창을 연 채 맞는 경우는 플레이어가 잡몹을 끌고 온 때뿐이다.

@@ -1,0 +1,8 @@
+[
+ {"text": "■ 웨이브 방 시작 (BeginRoomLogic 오버라이드)\n문을 닫아 방에 가둔 뒤, Enemies 중 가장 큰 Wave 번호를 MaxWave로 세고\nCurrentWave = 1로 첫 웨이브(StartWave)를 연다.", "names": ["EventBeginRoomLogic#3", "CloseDoors#0", "SetMaxWave#0", "ForEachLoop#0", "IsValid#1", "SetMaxWave#1", "SetCurrentWave#2", "StartWave#1"], "color": "event", "maxw": 0},
+ {"text": "■ StartWave - 웨이브 소환\n휴면해 있던 적 중 이번 웨이브(Wave == CurrentWave)만 깨워 싸우게 한다.", "names": [], "wrap": [2, 3], "color": "event", "pad": 56, "maxw": 0},
+ {"text": "■ 이번 웨이브 적 깨우기\nAliveCount = 0 → 유효하고 Wave == CurrentWave인 적마다 Combat.OnDied에\nOnDied_Event를 연결하고 ActivateEnemy → AliveCount + 1.", "names": ["StartWave#0", "SetAliveCount#3", "ForEachLoop#2", "IsValid#3", "Branch#0", "AssignOnDied#0", "ActivateEnemy#2", "SetAliveCount#4"], "color": "logic", "maxw": 0},
+ {"text": "■ 빈 웨이브 건너뛰기\n깨운 적이 0마리(AliveCount == 0)면 기다리지 않고 NextWave.", "names": ["Branch#1", "NextWave#5"], "color": "logic", "maxw": 0},
+ {"text": "■ NextWave - 웨이브 진행\nCurrentWave + 1. MaxWave를 넘으면 방을 클리어(ClearRoom)한다.\n아니면 WaveDelay(1초) 쉬고 '다음 웨이브' 배너를 띄운 뒤 StartWave\n(PC가 없어도 웨이브는 진행).", "names": ["NextWave#1", "SetCurrentWave#5", "Branch#2", "Delay#8", "GetSCPlayerController#9", "IsValid#4", "ShowRoomBanner#10", "StartWave#11", "ClearRoom#7", "StartWave#12"], "color": "event", "maxw": 0},
+ {"text": "■ 적 처치 (Combat.OnDied)\n이번 웨이브 적이 쓰러질 때마다 AliveCount - 1.\n모두 쓰러지면(AliveCount <= 0) NextWave.", "names": ["OnDied_Event#2", "SetAliveCount#6", "Branch#3", "NextWave#15"], "color": "damage", "maxw": 0}
+]

@@ -1,0 +1,4 @@
+[
+ {"text": "■ 생성 시 모양 반영 (Construct)\n디자이너 기본값 또는 Setup 값으로\nApplyAppearance를 한 번 부른다.", "names": ["EventConstruct#1", "ApplyAppearance#0"], "color": "event", "pad": 48},
+ {"text": "■ 매 프레임 갱신 (Tick)\nBindToActor로 BoundASC가 정해진 뒤부터\nRefresh로 현재/최대 값을 다시 그린다.", "names": ["EventTick#2", "IsValid#0", "Refresh#1"], "color": "event", "pad": 48}
+]

@@ -1,0 +1,3 @@
+[
+ {"text": "■ SetPrompt(Key, Action)\n상호작용 안내 글자를 채운다: KeyText = '[' + Key + ']', ActionText = Action.\n예: [F] 게이트 열기. 보이기·숨기기는 HUD의 Show/HideInteractPrompt가 한다.", "all": true, "color": "ui", "pad": 48}
+]

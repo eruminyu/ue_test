@@ -1,0 +1,9 @@
+[
+ {"text": "■ 보스전 시작 (BeginRoomLogic 오버라이드)\n문을 닫고 Enemies에서 보스를 골라 사망·분노 이벤트를 연결한 뒤 깨우고, 화면 위에 보스 체력 바를 띄운다.", "names": [], "wrap": [1, 2, 3, 4], "color": "event", "pad": 56, "maxw": 0},
+ {"text": "■ 보스 고르기\nCloseDoors → CurrentBoss 비우기 → Enemies 중 첫 번째 유효한 적을 CurrentBoss로.", "names": ["EventBeginRoomLogic#3", "CloseDoors#0", "SetCurrentBoss#0", "ForEachLoop#0", "IsValid#1", "IsValid#2", "SetCurrentBoss#1"], "color": "setup", "maxw": 0},
+ {"text": "■ 보스 이벤트 연결\nCombat.OnDied → OnDied_Event.\nBP_Enemy_Boss면 OnEnraged → OnEnraged_Event(분노 배너).", "names": ["IsValid#3", "AssignOnDied#0", "Sequence#0", "CastToBP_Enemy_Boss#0", "AssignOnEnraged#1"], "color": "logic", "maxw": 0},
+ {"text": "■ 보스가 없으면\n배치 실수로 막히지 않게\n바로 ClearRoom.", "names": ["ClearRoom#5"], "color": "logic", "maxw": 0},
+ {"text": "■ 보스 깨우기와 체력 바\nActivateEnemy → PC.ShowBossBar(CurrentBoss, 이름).\n이름은 BossNameOverride, 비어 있으면 보스의 DisplayName.", "names": ["ActivateEnemy#1", "GetSCPlayerController#2", "IsValid#4", "ShowBossBar#4"], "color": "ui", "maxw": 0},
+ {"text": "■ 보스 처치 (Combat.OnDied)\nHandleBossDied: 보스 바 숨김 → ClearRoom.", "names": ["OnDied_Event#0", "HandleBossDied#6"], "color": "damage", "maxw": 0},
+ {"text": "■ 보스 분노 (OnEnraged)\n보스 체력이 분노 기준 아래로 떨어지면\nPC.ShowRoomBanner('수호자가 분노했다!')로 알린다.", "names": ["OnEnraged_Event#1", "GetSCPlayerController#7", "IsValid#5", "ShowRoomBanner#8"], "color": "ui", "maxw": 0}
+]

@@ -1,0 +1,6 @@
+[
+ {"text": "■ ClearRoom() - 방 클리어 (한 번만)\n출구를 열고, 필요하면 '클리어' 배너를 띄운 뒤 OnRoomCleared를 방송한다.\n던전 게임 모드가 이 방송으로 최종 방 클리어(결과 화면)를 판단한다.", "all": true, "color": "event", "pad": 56, "maxw": 0},
+ {"text": "■ 중복 방지 → 출구 열기\nbCleared면 아무것도 안 한다. 처음이면 bCleared = true,\nExitDoor.OpenDoor로 다음 방 길을 연다.", "names": ["ClearRoom#0", "Branch#0", "SetbCleared#0", "Sequence#0", "IsValid#0", "OpenDoor#0"], "color": "logic", "maxw": 0},
+ {"text": "■ 클리어 배너\nClearBannerTitle이 비어 있지 않고 최종 방이 아닐 때만 띄운다.\n(이벤트 방은 결과 배너, 보스 방은 결과 화면이 따로 있어서 끈다)", "names": ["Sequence#1", "Branch#1", "GetSCPlayerController#4", "IsValid#1", "ShowRoomBanner#5"], "color": "ui", "maxw": 0},
+ {"text": "■ 클리어 알림\nOnRoomCleared(self) 방송.", "names": ["CallOnRoomCleared#0"], "color": "logic", "maxw": 0}
+]

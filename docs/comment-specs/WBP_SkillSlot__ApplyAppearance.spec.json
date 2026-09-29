@@ -1,0 +1,3 @@
+[
+ {"text": "■ ApplyAppearance()\n저장된 설정을 화면에 반영한다: KeyText = KeyLabel, NameText = SkillName,\nBackground 색 = NormalColor(비용 부족 색은 Refresh가 매 프레임 다시 고른다).", "all": true, "color": "ui", "pad": 48}
+]

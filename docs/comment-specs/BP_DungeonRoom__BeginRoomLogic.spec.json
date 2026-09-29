@@ -1,0 +1,3 @@
+[
+ {"text": "■ BeginRoomLogic() - 방마다 다른 진행 규칙\n기본(시작 방)은 들어오자마자 ClearRoom으로 출구를 연다.\n웨이브·이벤트·보스 방(BP_Room_*)이 오버라이드해 전투를 시작한다.", "all": true, "color": "logic", "pad": 48}
+]

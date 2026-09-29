@@ -1,0 +1,6 @@
+[
+ {"text": "■ 봉인석 이벤트 시작 (BeginRoomLogic 오버라이드)\n문을 닫고 봉인석(Enemies)을 깨운 뒤 TimeLimit(30초) 카운트다운을 시작한다.\n시간 안에 모두 부수면 EventSucceeded, 못 부수면 OnTimeUp.", "names": [], "wrap": [1, 2], "color": "event", "pad": 56, "maxw": 0},
+ {"text": "■ 봉인석 깨우기\nCloseDoors → bEventDone = false, DestroyedCount = 0, TotalCrystals = 0\n→ 유효한 봉인석마다 TotalCrystals + 1, Combat.OnDied에 OnDied_Event 연결, ActivateEnemy.", "names": ["EventBeginRoomLogic#3", "CloseDoors#0", "SetbEventDone#0", "SetDestroyedCount#1", "SetTotalCrystals#2", "ForEachLoop#0", "IsValid#1", "SetTotalCrystals#3", "AssignOnDied#0", "ActivateEnemy#2"], "color": "setup", "maxw": 0},
+ {"text": "■ 타이머 UI와 제한 시간\nPC.ShowEventTimer('봉인석을 파괴하라', TimeLimit) → UpdateProgress('봉인석 0 / N')\n→ SetTimerbyFunctionName(OnTimeUp, TimeLimit, 반복 없음).", "names": ["Sequence#0", "GetSCPlayerController#3", "IsValid#2", "ShowEventTimer#4", "UpdateProgress#5", "SetTimerbyFunctionName#6"], "color": "ui", "maxw": 0},
+ {"text": "■ 봉인석 파괴 (Combat.OnDied)\n이벤트가 끝나지 않았으면 DestroyedCount + 1 → 진행 표시 갱신.\n전부 부쉈으면(DestroyedCount >= TotalCrystals) EventSucceeded.", "names": ["OnDied_Event#0", "Branch#0", "SetDestroyedCount#4", "UpdateProgress#9", "Branch#1", "EventSucceeded#10"], "color": "damage", "maxw": 0}
+]

@@ -1,0 +1,3 @@
+[
+ {"text": "■ BindToPawn(Pawn)\n컨트롤러가 HUD를 만든 뒤(InitHUD) 부른다: HUD 안의 바 3개(HPBar, SPBar, StaminaBar)와\n스킬 슬롯 4개(SlotDash, SlotSkill1~3)를 모두 같은 Pawn에 BindToActor로 연결한다.", "all": true, "color": "setup", "pad": 48}
+]

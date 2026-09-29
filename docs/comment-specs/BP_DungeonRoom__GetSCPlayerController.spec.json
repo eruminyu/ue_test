@@ -1,0 +1,3 @@
+[
+ {"text": "■ GetSCPlayerController() → PC\n0번 플레이어 컨트롤러를 BP_SCPlayerController로 캐스트해 돌려준다.\n배너·HUD(보스 바, 이벤트 타이머)를 부를 때 쓴다. 캐스트 실패면 None.", "all": true, "color": "setup", "pad": 48}
+]

@@ -1,0 +1,4 @@
+[
+ {"text": "■ 1초 카운트다운 (CountdownStep)\nDelay 1초 → 아직 복귀 요청 전이면 Countdown - 1 → 글자 갱신.\nCountdown <= 0이면 RequestReturn, 아니면 CountdownStep을 다시 불러 반복한다.", "names": ["CountdownStep#0", "Delay#12", "Branch#2", "SetCountdown#2", "UpdateCountdownText#15", "Branch#3", "RequestReturn#17", "CountdownStep#18"], "color": "event", "pad": 48},
+ {"text": "■ 돌아가기 버튼\nReturnButton 클릭 → RequestReturn\n(카운트다운을 기다리지 않고 바로 복귀).", "names": ["OnClicked(ReturnButton)#0", "RequestReturn#7"], "color": "event", "pad": 48}
+]

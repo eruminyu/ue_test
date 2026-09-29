@@ -1,0 +1,4 @@
+[
+ {"text": "■ 방 입장 감지 (RoomTrigger 겹침)\n겹친 액터가 플레이어 폰이고 아직 시작 전(NOT bStarted)이면 StartRoom.", "names": ["OnComponentBeginOverlap(RoomTrigger)#0", "Branch#0", "StartRoom#2"], "color": "event", "maxw": 0},
+ {"text": "■ 처음부터 방 안에 있을 때 (BeginPlay)\n플레이어가 트리거 안에서 스폰되면 겹침 시작 이벤트가 오지 않는다(시작 방).\nInitialCheckDelay 뒤 폰이 유효하고, 시작 전이고, RoomTrigger와 겹쳐 있으면 StartRoom.", "names": ["EventBeginPlay#3", "Delay#10", "IsValid#24", "Branch#1", "StartRoom#14"], "color": "event", "maxw": 0}
+]

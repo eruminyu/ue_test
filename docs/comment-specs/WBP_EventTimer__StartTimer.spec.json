@@ -1,0 +1,3 @@
+[
+ {"text": "■ StartTimer(Objective, Seconds)\n이벤트 방 시작 때: ObjectiveText = Objective, ProgressText는 비운다.\nEndTime = 현재 게임 시간 + Seconds, bRunning = true → 타이머를 보인다. 남은 시간 글자는 Tick이 갱신.", "all": true, "color": "ui", "pad": 48}
+]

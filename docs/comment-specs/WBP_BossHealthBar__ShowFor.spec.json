@@ -1,0 +1,3 @@
+[
+ {"text": "■ ShowFor(Boss, BossName)\n보스 방이 부른다(HUD.ShowBossBar 경유): BossNameText = BossName,\nHealthBar.Setup(Health / MaxHealth, BarColor 어두운 빨강, 숫자 표시) → BindToActor(Boss) → 바 전체를 보인다.", "all": true, "color": "ui", "pad": 48}
+]

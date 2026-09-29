@@ -1,0 +1,3 @@
+[
+ {"text": "■ ShowBanner(Title, Subtitle, Duration)\n방 진입·클리어 때 화면 위쪽 큰 제목과 부제를 채우고 배너를 보인다(HitTestInvisible).\nPendingDuration = Duration(HUD 기본 3초)을 저장하고 HideLater로 자동 숨김을 예약한다.", "all": true, "color": "ui", "pad": 48}
+]

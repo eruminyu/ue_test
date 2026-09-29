@@ -1,0 +1,5 @@
+[
+ {"text": "■ Refresh()\nBoundASC가 유효할 때만 슬롯 상태를 다시 그린다. Sequence로 두 가지를 차례로 한다:\n쿨타임 오버레이·남은 초, 그리고 비용 부족이면 배경색 바꾸기.", "all": true, "color": "ui", "pad": 56, "maxw": 0},
+ {"text": "■ 쿨타임 오버레이와 남은 초\nCooldownTag가 붙은 활성 효과가 있으면(개수 > 0) 첫 효과의 남은/전체 시간으로\nCooldownBar 퍼센트와 CooldownText(소수 1자리)를 채우고 둘 다 보인다.\n효과가 없으면 CooldownBar·CooldownText를 Collapsed로 숨긴다.", "names": ["GetActiveEffectsWithAllTags#6", "Branch#0", "GetActiveGameplayEffectRemainingDuration#8", "GetActiveGameplayEffectTotalDuration#9", "SetPercent#11", "SetText(Text)#13", "SetVisibility#14", "SetVisibility#15", "SetVisibility#16", "SetVisibility#17"], "color": "ui", "maxw": 0},
+ {"text": "■ 비용 부족 표시\nCost > 0이고 현재 CostAttribute 값 < Cost면 Background를 NoCostColor로,\n아니면 NormalColor로 칠한다(Select 인덱스 = 두 조건 AND).", "names": ["SetBrushColor#20"], "color": "logic", "maxw": 0}
+]
