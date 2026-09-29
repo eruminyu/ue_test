@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ InitHUD()\nBeginPlay에서 한 번. WBP_PlayerHUD를 만들어 AddToViewport(ZOrder 0)하고 HUD 변수에 저장,\n폰이 있으면 BindToPawn(폰)으로 체력·SP 등 표시를 연결한다.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

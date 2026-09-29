@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ ReleaseCombatInput(InputTag)\n전투 입력 뗌을 넘긴다(가드 해제, 점프 뗌):\nGetPawnCombat이 유효하면 Combat.ReleaseInput(InputTag).",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

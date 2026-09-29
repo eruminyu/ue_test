@@ -1,0 +1,116 @@
+[
+ {
+  "text": "■ BeginPlay: 초기 상태\nPortalTrigger 콜리전을 끄고(NoCollision, 열리기 전엔 못 들어감)\nInteractable.OnInteracted를 OnInteracted_Event에 연결.",
+  "names": [
+   "EventBeginPlay#0",
+   "SetCollisionEnabled#7",
+   "AssignOnInteracted#0"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ 상호작용 안내 (InteractSphere 반경 400)",
+  "names": [],
+  "wrap": [
+   2,
+   3
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ 겹침 시작: 안내 켜기\n플레이어 폰이고 아직 안 열렸으면(NOT bIsOpen)\nBP_SCPlayerController.SetInteractable(Interactable, true)\n→ HUD에 \"F 게이트 열기\".",
+  "names": [
+   "OnComponentBeginOverlap(InteractSphere)#0",
+   "Branch#0",
+   "CastToBP_SCPlayerController#0",
+   "SetInteractable#11"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ 겹침 끝: 안내 끄기\n플레이어 폰이면 SetInteractable(Interactable, false).",
+  "names": [
+   "OnComponentEndOverlap(InteractSphere)#1",
+   "Branch#1",
+   "CastToBP_SCPlayerController#1",
+   "SetInteractable#14"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ F 입력 → 게이트 열기\nInteractable.OnInteracted → OpenGate.",
+  "names": [
+   "OnInteracted_Event#1",
+   "OpenGate#28"
+  ],
+  "color": "event",
+  "maxw": 0
+ },
+ {
+  "text": "■ OpenGate: 게이트 열기 (한 번만)",
+  "names": [],
+  "wrap": [
+   6,
+   7
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ 열림 상태와 안내 끄기\n이미 열렸으면 무시. bIsOpen = true →\nInteractable.bEnabled = false, SetInteractable(false)로 HUD 안내를 숨긴다.",
+  "names": [
+   "OpenGate#0",
+   "Branch#2",
+   "SetbIsOpen#1",
+   "Sequence#0",
+   "SetbEnabled#2",
+   "CastToBP_SCPlayerController#2",
+   "SetInteractable#17"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 문짝 열기와 포털 켜기\nPortalPlane 보이기 → DoorL을 -Y, DoorR을 +Y로 DoorSlideDistance(240)만큼\nMoveComponentTo(OpenTime 1초). DoorL 이동이 끝나면 PortalTrigger 콜리전 QueryOnly(진입 가능).",
+  "names": [
+   "Sequence#1",
+   "SetHiddenInGame#18",
+   "MoveComponentTo#20",
+   "SetCollisionEnabled#21",
+   "MoveComponentTo#23"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 포털 진입 → 던전 입장 창\n플레이어 폰이고 bIsOpen이고 창이 없을 때(NOT bEntryOpen): bEntryOpen = true →\nPC.OpenDungeonEntry(DungeonTitle \"시련의 회랑\", DungeonDescription, DungeonLevelName \"L_Dungeon_01\")\n→ 반환 위젯의 OnCancelled를 OnCancelled_Event에 연결.",
+  "names": [
+   "OnComponentBeginOverlap(PortalTrigger)#2",
+   "Branch#3",
+   "CastToBP_SCPlayerController#3",
+   "SetbEntryOpen#3",
+   "OpenDungeonEntry#27",
+   "AssignOnCancelled#1"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ 입장 취소 → 게이트 앞으로 돌려보내기\nbEntryOpen = false. 플레이어를 게이트 정면(ActorForward) ReturnDistance(300) 앞\n(높이는 플레이어 Z 유지)으로 텔레포트하고, 게이트 Yaw로 몸과 카메라(ControlRotation)를 돌린다.\n포털에서 빠져나와 창이 바로 다시 뜨지 않게 한다.",
+  "names": [
+   "OnCancelled_Event#2",
+   "SetbEntryOpen#4",
+   "IsValid#0",
+   "SetActorLocationAndRotation#40",
+   "SetControlRotation#42"
+  ],
+  "color": "logic",
+  "maxw": 0
+ }
+]

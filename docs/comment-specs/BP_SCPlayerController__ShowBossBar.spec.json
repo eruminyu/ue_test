@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ ShowBossBar(Boss, BossName)\nUI 허브: HUD가 있으면 HUD.ShowBossBar(Boss, BossName).\n보스 방 시작 때 부른다.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

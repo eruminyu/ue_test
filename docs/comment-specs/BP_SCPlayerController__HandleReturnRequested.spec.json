@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ HandleReturnRequested()\n클리어 창 '필드로 복귀'(OnReturnRequested). 게임 입력으로 되돌리고(커서 끔)\nBP_SCGameInstance.ReturnToField()로 필드 GateReturn 위치로 이동.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

@@ -1,0 +1,27 @@
+[
+ {
+  "text": "■ OnPossess: 판단 타이머 시작\n빙의한 폰을 BP_EnemyBase로 캐스트해 Enemy에 저장하고,\nThink를 ThinkInterval(0.2초)마다 반복 호출하는 타이머를 건다(매 프레임 판단하지 않음).",
+  "names": [
+   "EventOnPossess#2",
+   "CastToBP_EnemyBase#0",
+   "SetEnemy#0",
+   "SetTimerbyFunctionName#8"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ Tick: 추격 이동\nThink가 정한 bChasing이 true이고 Enemy·Target이 유효하며 Combat.CanMove(State.HitStun·Attacking 등 이동 차단 태그 없음)일 때만\n대상 방향(Z = 0 수평, 정규화)으로 AddMovementInput. 판단은 0.2초마다지만 이동은 매 프레임 부드럽게 한다.",
+  "names": [
+   "EventTick#1",
+   "Branch#0",
+   "IsValid#0",
+   "CanMove#9",
+   "Branch#1",
+   "IsValid#1",
+   "AddMovementInput#16"
+  ],
+  "color": "logic",
+  "maxw": 0
+ }
+]

@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ HandleMoveCompleted()\nIA_Move Completed. 이동 입력을 놓으면\nCombat.DesiredFacing = (0,0,0) (원하는 방향 없음).",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

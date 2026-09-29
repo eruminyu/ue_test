@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ HandleLook(Value: Vector2D)\nIA_MouseLook Triggered. 폰이 있으면\nAddControllerYawInput(X) → AddControllerPitchInput(Y).",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

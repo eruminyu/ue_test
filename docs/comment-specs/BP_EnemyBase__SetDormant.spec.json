@@ -1,0 +1,3 @@
+[
+ {"text": "■ SetDormant(bDormant) - 휴면(대기) 상태 켜기/끄기\n방 웨이브·봉인석처럼 나중에 등장할 적을 숨겨 둔다. bActive = !bDormant(AI Think가 확인),\n숨김·콜리전·머리 위 바(bShowOverheadBar일 때만)를 함께 바꾸고, 휴면이면 DisableMovement, 깨어나면 Walking.", "all": true, "color": "setup", "pad": 56, "maxw": 0}
+]

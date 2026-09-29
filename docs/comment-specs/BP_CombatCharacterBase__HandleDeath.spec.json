@@ -1,0 +1,3 @@
+[
+ {"text": "■ HandleDeath() - 사망 시 래그돌 전환\nCombat.OnDied가 부르면 이동을 끄고(DisableMovement) 캡슐 콜리전을 NoCollision으로 끈 뒤,\nMesh를 Ragdoll 프로필 + SetSimulatePhysics(true)로 바꿔 쓰러지게 한다. 입력 없음, 출력 없음.", "all": true, "color": "damage", "pad": 56, "maxw": 0}
+]

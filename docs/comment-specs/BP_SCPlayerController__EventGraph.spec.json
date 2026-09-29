@@ -1,0 +1,116 @@
+[
+ {
+  "text": "■ 시작 설정과 HUD 생성·연결",
+  "names": [],
+  "wrap": [
+   1,
+   2
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ BeginPlay: 입력 매핑 등록과 HUD 생성\n로컬 컨트롤러일 때만 Enhanced Input 서브시스템에\nIMC_Default(0), IMC_MouseLook(0), IMC_SoulCombat(1)을 추가하고\nInitHUD로 WBP_PlayerHUD를 만들어 화면에 붙인다.",
+  "names": [
+   "EventBeginPlay#0",
+   "Branch#0",
+   "AddMappingContext#23",
+   "AddMappingContext#24",
+   "AddMappingContext#25",
+   "InitHUD#49"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ OnPossess: HUD를 새 폰에 연결\n폰에 빙의할 때 HUD가 있으면\nBindToPawn(PossessedPawn)으로 표시 대상을 바꾼다.",
+  "names": [
+   "EventOnPossess#2",
+   "IsValid#0",
+   "BindToPawn#45"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ 이동·카메라 입력\nIA_Move Triggered → HandleMove(카메라 Yaw 기준 이동,\nCombat.DesiredFacing 갱신), Completed → HandleMoveCompleted\n(DesiredFacing = 0). IA_MouseLook → HandleLook(Yaw/Pitch).",
+  "names": [
+   "EnhancedInputActionIA_Move#3",
+   "HandleMove#32",
+   "HandleMoveCompleted#33",
+   "EnhancedInputActionIA_MouseLook#4",
+   "HandleLook#34"
+  ],
+  "color": "event",
+  "maxw": 0
+ },
+ {
+  "text": "■ 상호작용 입력\nIA_Interact Started → HandleInteract:\nCurrentInteractable이 있으면\nInteract(조종 중인 폰).",
+  "names": [
+   "EnhancedInputActionIA_Interact#12",
+   "HandleInteract#44"
+  ],
+  "color": "event",
+  "maxw": 0
+ },
+ {
+  "text": "■ 전투 입력 (InputTag로 전투 컴포넌트에 전달)\nStarted → PressCombatInput(InputTag.X), Completed → ReleaseCombatInput.\n폰의 AC_CombatComponent가 태그로 어빌리티를 처리한다.\nAttack·Dash·Skill.1~3은 누름만, Jump·Guard는 누름과 뗌 둘 다.",
+  "names": [
+   "EnhancedInputActionIA_Attack#6",
+   "PressCombatInput#37",
+   "EnhancedInputActionIA_Jump#5",
+   "PressCombatInput#35",
+   "ReleaseCombatInput#36",
+   "EnhancedInputActionIA_Guard#7",
+   "PressCombatInput#38",
+   "ReleaseCombatInput#39",
+   "EnhancedInputActionIA_Dash#20",
+   "PressCombatInput#40",
+   "EnhancedInputActionIA_Skill1#9",
+   "PressCombatInput#41",
+   "EnhancedInputActionIA_Skill2#10",
+   "PressCombatInput#42",
+   "EnhancedInputActionIA_Skill3#11",
+   "PressCombatInput#43"
+  ],
+  "color": "damage",
+  "maxw": 0
+ },
+ {
+  "text": "■ 던전 입장·클리어 창 이벤트\nOpenDungeonEntry/OpenDungeonClear가 창을 만든 뒤 BindEntryWidget/BindClearWidget을 불러\n위젯 디스패처를 아래 이벤트에 연결한다(Assign 노드는 EventGraph에서만 만들 수 있다).",
+  "names": [],
+  "wrap": [
+   7,
+   8
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ 입장 창 (WBP_DungeonEntry)\nOnConfirmed → HandleEntryConfirmed\n(창 닫고 던전으로 이동)\nOnCancelled → HandleEntryCancelled(창 닫기)",
+  "names": [
+   "BindEntryWidget#0",
+   "AssignOnConfirmed#0",
+   "AssignOnCancelled#1",
+   "OnConfirmed_Event#2",
+   "HandleEntryConfirmed#46",
+   "OnCancelled_Event#3",
+   "HandleEntryCancelled#47"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ 클리어 창 (WBP_DungeonClear)\nOnReturnRequested →\nHandleReturnRequested(필드로 복귀)",
+  "names": [
+   "BindClearWidget#1",
+   "AssignOnReturnRequested#2",
+   "OnReturnRequested_Event#4",
+   "HandleReturnRequested#48"
+  ],
+  "color": "ui",
+  "maxw": 0
+ }
+]

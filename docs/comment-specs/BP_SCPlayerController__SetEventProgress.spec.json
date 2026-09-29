@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ SetEventProgress(Progress)\nUI 허브: HUD가 있으면 HUD.SetEventProgress(Progress)\n(예: \"봉인석 n/3\").",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

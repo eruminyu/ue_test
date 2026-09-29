@@ -1,0 +1,29 @@
+[
+ {
+  "text": "■ SetInteractable(Interactable, bAvailable)\n상호작용 대상 등록·해제 (UI 허브). 게이트 InteractSphere 겹침 시작/끝과 게이트가 열릴 때 부른다.",
+  "all": true,
+  "color": "ui",
+  "pad": 56
+ },
+ {
+  "text": "■ 해제 (bAvailable false)\n지금 대상과 같을 때만 CurrentInteractable = None,\nHUD HideInteractPrompt.",
+  "names": [
+   "Branch#1",
+   "SetCurrentInteractable#1",
+   "IsValid#1",
+   "HideInteractPrompt#1"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ 등록 (bAvailable true)\nCurrentInteractable = Interactable,\nHUD ShowInteractPrompt(PromptKey, PromptText).",
+  "names": [
+   "SetCurrentInteractable#0",
+   "IsValid#0",
+   "ShowInteractPrompt#0"
+  ],
+  "color": "ui",
+  "maxw": 0
+ }
+]

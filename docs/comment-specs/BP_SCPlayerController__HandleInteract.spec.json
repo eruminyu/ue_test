@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ HandleInteract()\nIA_Interact Started. 지금 등록된 상호작용 대상(CurrentInteractable)이 있으면\nInteract(Interactor = 조종 중인 폰) (예: 게이트 열기).",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

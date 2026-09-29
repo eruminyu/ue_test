@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ HandleEntryConfirmed()\n입장 창 '입장'(OnConfirmed). 창을 닫고(RemoveFromParent, EntryWidget = None)\n게임 입력으로 되돌린 뒤(커서 끔) BP_SCGameInstance.EnterDungeon(PendingDungeonLevel).",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

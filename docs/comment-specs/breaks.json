@@ -8,5 +8,12 @@
  "GA_Player_Guard__EventGraph": "AddGameplayCueToOwner#1,WaitGameplayEvent#1",
  "GA_Player_Dash__EventGraph": "GetCombat#1,ApplyGameplayEffectToOwner#7,PlayMontageAndWait#0 (+ layout 수동 이동: x>=2192 노드 x+96)",
  "GA_Boss_Slam__EventGraph": "GetAvatarCharacter#3,PlayMontageAndWait#0,GetCombat#13",
- "GA_Boss_Charge__EventGraph": "Sequence#0,WaitDelay#4 (+ layout 수동 이동: y>=600 노드 y+96)"
+ "GA_Boss_Charge__EventGraph": "Sequence#0,WaitDelay#4 (+ layout 수동 이동: y>=600 노드 y+96)",
+ "BP_EnemyBase__EventGraph": "CastToWBP_AttributeBar#0 (+ layout 수동 이동: y>=544이고 x<3300인 노드 y+96)",
+ "BP_Enemy_Boss__EventGraph": "SetbEnraged#0",
+ "BP_EnemyAIController__Think": "SetTarget#2,ForLoop#1 (+ layout 수동 배치: SetbChasing#0/#1 → (304|656, 560), #3/#4/#5/#6 → x 1568/1984/2288/2576 y 1040, 추격 결정 노드(LastIndex#2, Get#3, float*#5, float>#6, MakeLiteralFloat#14)는 ReturnNode 오른쪽 +320 열 y 144, SetbChasing#8은 그 오른쪽 y 0)",
+ "BP_SCPlayerController__EventGraph": "(블록 수동 배치: layout 결과의 체인들을 블록별 열로 다시 쌓음 - [BeginPlay, OnPossess](세로 간격 352) | [IA_Move, IA_MouseLook] | [IA_Interact] / 아래 행: [IA_Attack, IA_Jump, IA_Guard, IA_Dash] + [IA_Skill1~3] | [BindEntryWidget, OnConfirmed, OnCancelled] + [BindClearWidget, OnReturnRequested](열 간격 352), 블록 간격 480)",
+ "BP_SCPlayerController__HandleMove": "CanMove#8",
+ "BP_SCPlayerController__SetInteractable": "Branch#1 (+ layout 수동 이동: y>=400 노드 y+96)",
+ "BP_DungeonGate__EventGraph": "(블록 수동 배치: 왼쪽 열 [BeginPlay] / [InteractSphere 겹침 시작, 끝](간격 352) / [OnInteracted_Event], 오른쪽 위 [OpenGate](+ y>=500 노드 y+96), 오른쪽 아래 [PortalTrigger 겹침] | [OnCancelled_Event], 블록 간격 480~560)"
 }

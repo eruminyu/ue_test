@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ OpenDungeonEntry(Title, Description, LevelName) → Widget\n던전 입장 창: WBP_DungeonEntry 생성 → EntryWidget, PendingDungeonLevel = LevelName 저장 →\nSetup(Title, Description) → AddToViewport(10) → BindEntryWidget(확인·취소 연결) →\nUI 전용 입력 + 마우스 커서. 위젯을 반환해 게이트가 OnCancelled를 따로 받는다.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ PressCombatInput(InputTag)\n전투 입력 누름을 폰의 전투 컴포넌트로 넘긴다:\nGetPawnCombat이 유효하면 Combat.PressInput(InputTag).",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

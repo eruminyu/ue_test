@@ -1,0 +1,59 @@
+[
+ {
+  "text": "■ Think() - 적 AI의 판단 한 번 (OnPossess 타이머가 ThinkInterval 0.2초마다 호출)\n조건이 하나라도 안 맞으면 bChasing = false로 멈춘다. 사거리 안의 공격이 있으면 쓰고, 없으면 추격 여부만 정한다(실제 이동은 Tick).",
+  "all": true,
+  "color": "setup",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ 가드: 내 상태\nEnemy가 없거나, 휴면 중(bActive false)이거나\n죽었으면(Combat.bIsDead) 추격 중지.",
+  "names": [
+   "Think#0",
+   "IsValid#0",
+   "Branch#0",
+   "SetbChasing#0",
+   "SetbChasing#1"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 대상과 거리 검사\nTarget = 플레이어 폰(GetPlayerPawn 0). 캐릭터가 아니거나 죽었으면 중지.\n내가 State.HitStun(경직)·State.Attacking(공격 중)이면 이번엔 판단하지 않음.\n거리 > AggroRange(기본 2500)이거나 AttackRanges가 비었으면(허수아비·봉인석) 중지.",
+  "names": [
+   "SetTarget#2",
+   "CastToBP_CombatCharacterBase#0",
+   "Branch#1",
+   "Branch#2",
+   "Branch#3",
+   "SetbChasing#3",
+   "SetbChasing#4",
+   "SetbChasing#5",
+   "SetbChasing#6"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 공격 선택 루프 (배열 순서 = 우선순위)\ni = 0..AttackTags 길이-1: AttackMinRanges[i] ≤ 거리 ≤ AttackRanges[i]면 대상 쪽 Yaw로 회전하고\nCombat.PressInput(AttackTags[i]). 발동되면(쿨타임·비용 통과) bChasing = false 후 바로 끝낸다.\n예: 보스는 돌진(500~1500) → 내려찍기(0~600) → 연속 베기(0~260) 순으로 시도.",
+  "names": [
+   "ForLoop#1",
+   "Branch#4",
+   "SetActorRotation#12",
+   "PressInput#13",
+   "Branch#5",
+   "SetbChasing#7",
+   "ReturnNode#0"
+  ],
+  "color": "damage",
+  "maxw": 0
+ },
+ {
+  "text": "■ 추격 결정 (루프가 공격 없이 끝남)\nbChasing = 거리 > 마지막 AttackRanges × 0.8.\n배열 마지막(가장 짧은) 사거리의 80% 안쪽까지 붙으면 멈춘다.",
+  "names": [
+   "SetbChasing#8"
+  ],
+  "color": "logic",
+  "maxw": 0
+ }
+]

@@ -350,5 +350,99 @@
 
 - L_Dungeon_01 PIE: PlayerStart (0,0)가 Room_Start 트리거(x·y ±400) 안인데 3초 뒤 `bStarted`/`bCleared` false. 플레이어를 (-500,0,100)으로 옮겼다가 (0,0,100)으로 돌려놓으면 바로 true/true가 됐다. 트리거 크기·위치는 맞다.
 - 원인(그래프 읽기로 확인, `find_nodes` EventGraph): 처리기는 `OnComponentBeginOverlap(RoomTrigger)` → `OtherActor == GetPlayerPawn(0)` AND NOT bStarted → StartRoom 하나뿐이다. PIE에서 폰은 월드 BeginPlay 전에 스폰되고, 첫 겹침은 빙의 전에 생긴다. 그래서 그때는 GetPlayerPawn(0)이 None이고, 조건이 거짓이 되는 것으로 본다. 그 뒤로는 겹침이 새로 생기지 않는다.
-- 고치려면 BP 수정이 필요하다(이번 작업 범위 밖): BP_DungeonRoom BeginPlay에서 한 틱 뒤(Delay 0) `RoomTrigger.IsOverlappingActor(GetPlayerPawn(0))`이고 시작 전이면 StartRoom. 레벨만 바꾸는 대안은 Start 트리거를 스폰 지점 앞(예 x[100,400])으로 옮겨 걸어 들어가게 하는 것이다.
+- (고침: 아래 '7c 검증 지적 수정: 방 초기 겹침 확인' 절) 고치려면 BP 수정이 필요하다(이번 작업 범위 밖): BP_DungeonRoom BeginPlay에서 한 틱 뒤(Delay 0) `RoomTrigger.IsOverlappingActor(GetPlayerPawn(0))`이고 시작 전이면 StartRoom. 레벨만 바꾸는 대안은 Start 트리거를 스폰 지점 앞(예 x[100,400])으로 옮겨 걸어 들어가게 하는 것이다.
 - PIE 중 `AcT set_actor_transform`은 되지만, 로그에 `LogUtils: Error: The Editor is currently in a play mode.`와 `LevelEditorSubsystem: Error: GetCurrentLevel...`가 한 번씩 남는다(툴이 남기는 것). PIE 로그 검사에서 이 두 줄과 `list_properties`가 남기는 `LogJson: Warning: ... unhandled during Json schema generation`은 빼고 본다.
+
+## 7c 흐름 테스트 (에디터 B, 키보드 없이 게임 루프 검증)
+
+결과는 `flowtest-report.md`에 있다. 여기에는 다시 쓸 레시피와 함정만 적는다.
+
+### 적 즉사 도우미 (GE 스펙 + SetByCaller, DSL)
+
+- `/Game/_Scratch/BP_TestKiller`: `add_variable Interval float` → `add_function_graph KillActive` → 아래 DSL → `compile_blueprint {"warnings_as_errors":true}` → CDO `{"Interval":1.0}`.
+  ```
+  (fn KillActive ()
+    (bind enemies (Actor|GetAllActorsOfClass :ActorClass "/Game/SoulCombat/Characters/Enemies/BP_EnemyBase.BP_EnemyBase_C"))
+    (for e enemies
+      (bind combat (Class|BPCombatCharacterBase|GetCombat :self e))
+      (if (and (Class|BPEnemyBase|GetActive :self e) (not (Class|ACCombatComponent|GetIsDead :self combat)))
+        (bind asc (Ability|GetAbilitySystemComponent :Actor e))
+        (bind spec (GameplayEffects|MakeOutgoingSpec :self asc :GameplayEffectClass "/Game/SoulCombat/GAS/Effects/GE_Damage.GE_Damage_C" :Level 1.0 :Context (GameplayEffects|MakeEffectContext :self asc)))
+        (bind spec2 (Ability|GameplayEffect|AssignTagSetbyCallerMagnitude :SpecHandle spec :DataTag "(TagName=\"Data.Damage\")" :Magnitude 100000.0))
+        (GameplayEffects|ApplyGameplayEffectSpecToSelf :self asc :SpecHandle spec2))))
+  ```
+  - `MakeOutgoingSpec`의 `Level` 기본값은 0.0이라 1.0을 꼭 넣는다.
+  - `AssignTagSetbyCallerMagnitude`는 실행 노드다. 출력 스펙을 bind해서 Apply에 넘긴다.
+  - bool 멤버 Get은 `GetActive`/`GetIsDead`(b 빠짐)로 쓰고, 만들어진 노드는 `|GetbActive`로 읽힌다.
+- 타이머: `(event EventBeginPlay (Utilities|Time|SetTimerbyFunctionName :Object self :FunctionName "KillActive" :Time (Variables|Default|GetInterval) :bLooping true))`.
+- 킬러 GE도 `GC_Hit`를 부른다. 그래서 봉인석에서 `spine_03` 소켓 경고가 난다(보고서 B2).
+
+### 순서대로 움직이는 드라이버 액터 (Delay 체인, DSL)
+
+- BeginPlay 한 줄에 `(Utilities|FlowControl|Delay :Duration x)`를 문장으로 이어 쓰면 Completed에 순서대로 붙는다. 캐스트 뒤에는 `(:then ...)` 안에 Delay를 계속 넣어도 된다.
+- 벡터 × 실수: `(* fwd (Variables|Default|GetFrontDistance))` → `Math|Vector|vector*vector` 노드가 되지만 B 핀이 `Float (double-precision)`으로 잡혀 경고 없이 컴파일된다. 게이트 앞 = `(+ (+ (Transformation|GetActorLocation :self g) (* fwd 250)) (Math|Vector|MakeVector :X 0.0 :Y 0.0 :Z 100.0))`.
+- 플레이어 순간이동(BP 안): `(Transformation|SetActorLocation :self (Game|GetPlayerPawn :PlayerIndex 0) :NewLocation v :bSweep false :bTeleport true)`.
+- 다른 BP의 컴포넌트 함수: `(Class|ACInteractable|Interact :self (Class|BPDungeonGate|GetInteractable :self gate) :Interactor pawn)`. 게이트는 `Actor|GetActorOfClass :ActorClass "/Game/SoulCombat/Dungeon/BP_DungeonGate.BP_DungeonGate_C"`로 찾는다(출력이 BP 타입으로 잡힌다).
+- 다른 위젯의 디스패처 방송(버튼 클릭 대용): `(Default|CallOnConfirmed :self w)`, `(Default|CallOnCancelled :self w)`. `w`는 `(Class|BPSCPlayerController|GetEntryWidget :self pc)`이고 self 핀 타입은 `WBP Dungeon Entry Object Reference`다.
+- 진행 확인용 `Step`(int) 변수를 단계마다 Set하면, 폴링에서 드라이버가 어디까지 왔는지 바로 보인다.
+
+### PIE 상태 폴링 (ProgrammaticToolset)
+
+- 한 PT 스크립트에서 `ObjectTools.get_properties`를 액터마다 부르고, `ActorTools.get_actor_transform`과 `AbilitySystemInspectorToolset.GetAttributeValues/GetActiveEffects`를 같이 부른다. 속성 20여 개면 백그라운드 PIE(3 fps)에서 5~10초가 걸린다.
+- 한 번의 폴링 안에서도 값끼리 프레임이 어긋난다. 예: 방 `bCleared` false인데 뒤에 읽은 배너 제목은 이미 '클리어'. 판정은 다시 한 번 읽어서 한다.
+- 설정 JSON을 스크립트 문자열에 넣을 때 `CFG = %s % json.dumps(cfg)`로 넣으면 `true`가 파이썬에서 `name 'true' is not defined`가 된다. `CFG = json.loads(%r)`로 넣는다.
+- 방·적 상태 프로퍼티: 방 `bStarted`, `bCleared`, Mob `CurrentWave`·`MaxWave`·`AliveCount`, Event `DestroyedCount`·`TotalCrystals`·`bEventDone`, Boss `CurrentBoss`, 문 `bIsOpen`, 적 `bActive`·`bHidden`(액터 숨김), 적 `<액터>.Combat`의 `bIsDead`, 게이트 `bIsOpen`·`bEntryOpen`, 게이트 컴포넌트 `<게이트>.DoorL`의 `RelativeLocation`, `<게이트>.PortalPlane`의 `bHiddenInGame`·`bVisible`.
+- PC 위젯: `get_properties(PC, ["HUD","ClearWidget","EntryWidget","bShowMouseCursor"])`. 위젯이 없으면 문자열 `"None"`이 온다(dict가 아님). 있으면 `{"refPath":"/Engine/Transient.UnrealEdEngine_0:BP_SCGameInstance_C_<n>.WBP_DungeonClear_C_0"}`.
+  - `<n>`은 PIE 세션마다 하나씩 늘었다.
+  - 레벨을 이동하면 HUD가 `WBP_PlayerHUD_C_1`처럼 새로 생긴다.
+  - 위젯 안 글자는 `<위젯>.WidgetTree_0.<TextBlock>`의 `text`로 읽는다(예: `...WBP_DungeonClear_C_0.WidgetTree_0.TimeText` → '클리어 시간 4.3초').
+- HUD 자식 표시 여부: `get_properties(HUD, ["BossBar","EventTimer","RoomBanner"])` → 각 ref의 `visibility`. `Collapsed`는 숨김, `HitTestInvisible`/`SelfHitTestInvisible`은 표시다. 배너 제목은 `RoomBanner.WidgetTree_0.TitleText`에서 읽는다. 한 번도 표시되지 않았으면 디자인 기본값 '방 제목'이 그대로 남아 있다.
+- 레벨 이동(OpenLevel) 뒤에는 PIE 경로가 바뀐다(`/Game/SoulCombat/Maps/UEDPIE_0_L_CombatField.L_CombatField:PersistentLevel.BP_PlayerCharacter_C_0`). 옛 경로를 쓰면 `Parameter error: ... is not valid Object for property 'instance'`가 난다. 이동 여부는 `find_actors {"actor_type":{"refPath":"/Script/Engine.GameModeBase"}}`로 본다. 로그 `LogNet: Browse: /Game/SoulCombat/Maps/L_CombatField#GateReturn`도 남는다.
+- 대기: `python -c "import time;time.sleep(N)"`(Bash 쪽). PT 스크립트 안에서는 기다리지 않는다(스크립트가 도는 동안 게임이 멈출 수 있다, 검증 안 함).
+- 짧게 떴다 사라지는 창(클리어 창 2초 뒤 표시, 5초 카운트다운)은 순간이동 직후 Bash 루프로 1~2초마다 한 번씩 작은 PT 스크립트(ClearWidget ref → 글자 3개)를 불러야 잡힌다.
+
+### PIE 안 UMG 버튼 누르기 (SlateInspector) — 함정과 우회
+
+- `SlateInspectorToolset Windows {"action":"list"}` → `[{"index":0,"title":"SoulCombat - Unreal Editor"}, ...]`. 뷰포트 PIE는 메인 창 안에 있다.
+- `Snapshot {"ref":"","maxDepth":80}`(약 14 KB)에서 PIE 위젯이 보인다. 예: `button "입장" [pos=922,627 size=129,47] [ref=b22]`, `button "취소" [...] [ref=b23]`. ref는 스냅샷마다 바뀐다(다음 PIE에서 취소는 `b63`). 매번 새로 찾는다.
+- **함정**: `Click {"ref":"b22"}` → `true`인데 OnClicked가 불리지 않았다. 다음 스냅샷에서 버튼이 `[focused]`로만 바뀌어 있었다.
+- **우회(확인)**: `Click`으로 포커스를 준 뒤 `PressKey {"key":"Enter"}` → `true` → 버튼 OnClicked가 불렸다. '입장'은 L_Dungeon_01로 이동했고, '취소'는 창이 닫히고 bEntryOpen false가 됐다.
+- 참고: 입장 창의 `bIsFocusable`이 false라 SetInputModeUIOnly 포커스 에러가 로그에 남는다(보고서 B4). 창을 열자마자 Enter를 보내면 어디에도 먹지 않는다. 먼저 Click으로 버튼에 포커스를 준다.
+
+### 로그 필터 (PIE 흐름 테스트)
+
+- 제외할 줄: `LogJson: Warning ... unhandled during Json schema generation`(list_properties), `LogUtils: Error: The Editor is currently in a play mode.`와 `LevelEditorSubsystem: Error: GetCurrentLevel...`(PIE 중 set_actor_transform), `LogAudioMixerWasapi` 경고.
+- 로그 시각은 UTC다(로컬 21:17 = 로그 12:17). 비교할 때는 `l[1:20] >= '2026.09.29-12.17.10'`처럼 문자열로 비교한다.
+- 이번에 새로 잡힌 게임 쪽 경고와 에러:
+  - `GetSocketInfoByName(spine_03)` (봉인석, GC_Hit)
+  - `Invalid material [MI_SC_Telegraph] used on Nanite static mesh [SM_Cylinder]`
+  - `LogPlayerController: Error: InputMode:UIOnly - Attempting to focus Non-Focusable widget`
+
+## 7c 검증 지적 수정: 방 초기 겹침 확인 (에디터 B)
+
+### 스폰 지점이 트리거 안일 때 방 시작 (BP_DungeonRoom BeginPlay) — 버그 B1 수정
+
+- BeginPlay 추가: `BT add_event {"blueprint":{"refPath":"/Game/SoulCombat/Dungeon/BP_DungeonRoom.BP_DungeonRoom"},"event_name":"ReceiveBeginPlay","position":{"x":0,"y":700}}` → `K2Node_Event_3`. 자식 BP_Room_*의 EventGraph에 BeginPlay가 없어서(find_nodes entry_points_only로 확인) 그대로 상속된다.
+- 대기 시간 변수: `add_variable {"name":"InitialCheckDelay","type_name":"float"}` → `set_variable_category "Room"` → `set_variable_instance_editable true` → 컴파일 뒤 CDO `{"InitialCheckDelay":0.2}`.
+- DSL(EventGraph에 Assign 노드가 없어 read_graph_dsl 버그와 무관):
+  ```
+  (event EventBeginPlay
+    (Utilities|FlowControl|Delay :Duration (Variables|Room|GetInitialCheckDelay))
+    (bind p (Game|GetPlayerPawn :PlayerIndex 0))
+    (if (and (not (Variables|Room|State|GetStarted))
+             (Collision|IsOverlappingActor :Other p))
+      (CallFunction|StartRoom)))
+  ```
+- PIE 결과: 스폰 직후 Room_Start가 시작·클리어되고 배너('시련의 회랑')와 부활 지점(-350,0,100)이 설정됐다. 다른 방은 영향 없음.
+
+### 같은 type_id가 두 클래스에 있을 때 (함정: IsOverlappingActor)
+
+- `find_node_types {"type_id_filter":"IsOverlappingActor"}` → `["Collision|IsOverlappingActor","Collision|IsOverlappingActor"]`(Actor 버전, PrimitiveComponent 버전). DSL은 Actor 버전을 골라 `(Collision|IsOverlappingActor :self (Variables|Default|GetRoomTrigger) :Other p)`가 `RuntimeError: Could not connect pin RoomTrigger to self`로 실패한다(write 전체가 롤백되어 노드는 남지 않음). `Class|PrimitiveComponent|IsOverlappingActor`는 `does not exist`.
+- 우회: DSL은 `:self` 없이(Actor 버전, self 기본) 쓰고, 컴포넌트 버전을 직접 만든다.
+  - `BT create_node {"graph":{"refPath":"...BP_DungeonRoom:EventGraph"},"type_id":"Collision|IsOverlappingActor","pos":{"x":1680,"y":900},"declaring_class":{"refPath":"/Script/Engine.PrimitiveComponent"}}` → `get_node_infos`로 self 핀 타입 `Primitive Component Object Reference` 확인.
+  - `create_node {"type_id":"Variables|Default|GetRoomTrigger"}` → `connect_pins`(Get 출력 0 → 새 노드 입력 0 self, GetPlayerPawn 출력 0 → 입력 1 Other) → Actor 버전 `delete_node` → 새 노드 출력 0 → AND 입력 1(B) `connect_pins` → `compile_blueprint warnings_as_errors` 통과.
+
+### 부모에 새 변수를 더하면 자식 CDO·레벨 인스턴스는 기본값 0 (함정)
+
+- 부모 BP_DungeonRoom CDO에 `InitialCheckDelay` 0.2를 넣고 자식 4개를 다시 컴파일해도 자식 CDO는 0이었다. 레벨에 놓인 방 인스턴스(L_Dungeon_01)도 0이었고, 레벨이 dirty가 됐다.
+- 해결: 자식 CDO마다 `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/Dungeon/BP_Room_Start.BP_Room_Start"},"values":"{\"InitialCheckDelay\":0.2}"}`, 레벨 인스턴스는 `SceneTools find_actors {"actor_type":{"refPath":"/Game/SoulCombat/Dungeon/BP_DungeonRoom.BP_DungeonRoom_C"}}`로 모아 같은 값을 넣고 레벨을 저장(`save_assets`에 `/Game/SoulCombat/Maps/L_Dungeon_01` 명시). 이후 부모·자식 재컴파일 뒤에도 0.2 유지를 확인했다.

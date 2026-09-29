@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ OpenDungeonClear(ClearSeconds)\n던전 클리어 창: WBP_DungeonClear 생성 → ClearWidget 저장 → Setup(ClearSeconds) →\nAddToViewport(10) → BindClearWidget(복귀 버튼 연결) → 게임+UI 입력 + 마우스 커서.\nBP_DungeonGameMode가 마지막 방 클리어 2초 뒤 부른다.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

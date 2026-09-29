@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ ShowEventTimer(Objective, Seconds)\nUI 허브: HUD가 있으면 HUD.ShowEventTimer(Objective, Seconds).\n이벤트 방(봉인석) 시작 때 부른다.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

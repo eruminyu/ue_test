@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ ReturnToField()\n필드로 돌아간다. OpenLevel(\"L_CombatField#GateReturn\", bAbsolute true)\n= FieldLevelName + \"#\" + ReturnPortal. '#' 뒤 문자열이 Portal이 되어\n엔진이 PlayerStartTag가 GateReturn인 PlayerStart(게이트 앞)를 고른다.",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

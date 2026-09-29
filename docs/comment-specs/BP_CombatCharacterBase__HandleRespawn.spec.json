@@ -1,0 +1,3 @@
+[
+ {"text": "■ HandleRespawn() - 부활 시 래그돌 해제와 복귀\nCombat.OnRespawned가 부른다. 물리를 끄고 Mesh를 캡슐에 다시 붙여 InitialMeshTransform(BeginPlay 때 저장)으로 되돌린 뒤,\n프로필 CharacterMesh, 캡슐 QueryAndPhysics, 이동 Walking을 복구하고 Combat.RespawnTransform으로 텔레포트한다.", "all": true, "color": "setup", "pad": 56, "maxw": 0}
+]

@@ -1,0 +1,8 @@
+{"blocks":[
+ {"x":0,"y":0,"cols":[["K2Node_Event_0"]]},
+ {"x":0,"y":{"below":0,"gap":480},"vgap":352,"cols":[["K2Node_ComponentBoundEvent_0","K2Node_ComponentBoundEvent_1"]]},
+ {"x":0,"y":{"below":1,"gap":480},"cols":[["K2Node_CustomEvent_1"]]},
+ {"x":{"right_of":1,"gap":560},"y":0,"cols":[["K2Node_CustomEvent_0"]]},
+ {"x":{"right_of":1,"gap":560},"y":{"below":3,"gap":480},"cols":[["K2Node_ComponentBoundEvent_2"]]},
+ {"x":{"right_of":4,"gap":480},"y":{"below":3,"gap":480},"cols":[["K2Node_CustomEvent_2"]]}
+]}

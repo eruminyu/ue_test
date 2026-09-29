@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ ShowRoomBanner(Title, Subtitle)\nUI 허브: HUD가 있으면 HUD.ShowBanner(Title, Subtitle).\n방 입장·이벤트 결과 배너(BP_DungeonRoom 등)에서 부른다.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

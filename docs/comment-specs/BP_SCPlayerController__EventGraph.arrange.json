@@ -1,0 +1,7 @@
+{"blocks":[
+ {"x":0,"y":0,"vgap":352,"cols":[["K2Node_Event_0","K2Node_Event_2"]]},
+ {"x":{"right_of":0,"gap":480},"y":0,"cols":[["K2Node_EnhancedInputAction_3","K2Node_EnhancedInputAction_4"]]},
+ {"x":{"right_of":1,"gap":400},"y":0,"cols":[["K2Node_EnhancedInputAction_12"]]},
+ {"x":0,"y":{"below":0,"gap":480},"cols":[["K2Node_EnhancedInputAction_6","K2Node_EnhancedInputAction_5","K2Node_EnhancedInputAction_7","K2Node_EnhancedInputAction_20"],["K2Node_EnhancedInputAction_9","K2Node_EnhancedInputAction_10","K2Node_EnhancedInputAction_11"]]},
+ {"x":{"right_of":3,"gap":480},"y":{"below":0,"gap":480},"cgap":352,"cols":[["K2Node_CustomEvent_0","K2Node_CustomEvent_2","K2Node_CustomEvent_3"],["K2Node_CustomEvent_1","K2Node_CustomEvent_4"]]}
+]}

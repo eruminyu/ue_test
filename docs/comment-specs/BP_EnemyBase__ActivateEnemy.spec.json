@@ -1,0 +1,3 @@
+[
+ {"text": "■ ActivateEnemy() - 휴면 해제\n웨이브 시작이나 봉인석 개방 때 외부에서 부른다.\nSetDormant(false)와 같다.", "all": true, "color": "event", "pad": 48, "maxw": 0}
+]

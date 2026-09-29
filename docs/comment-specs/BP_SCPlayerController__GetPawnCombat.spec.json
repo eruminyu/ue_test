@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ GetPawnCombat() → Combat\n조종 중인 폰의 AC_CombatComponent를 찾아 반환한다.\n폰이 없으면 None. 입력 전달 함수들이 공통으로 쓴다.",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

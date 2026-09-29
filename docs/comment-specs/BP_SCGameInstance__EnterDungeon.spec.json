@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ EnterDungeon(LevelName)\n던전 레벨로 이동한다. OpenLevel(LevelName, bAbsolute true).\n게이트 입장 창의 '입장'(컨트롤러 HandleEntryConfirmed)에서 부른다.",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

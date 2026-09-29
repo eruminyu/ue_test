@@ -1,0 +1,30 @@
+[
+ {
+  "text": "■ HandleMove(Value: Vector2D)\nIA_Move Triggered. 카메라(컨트롤 회전 Yaw) 기준으로 입력을 월드 방향으로 바꿔 이동한다.\n입력 Y = 전방, X = 오른쪽.",
+  "all": true,
+  "color": "setup",
+  "pad": 56
+ },
+ {
+  "text": "■ 원하는 방향 기록\n전방·오른쪽 벡터 × 입력을 더해 정규화 →\nCombat.DesiredFacing (공격·대시가 이 방향을 본다).",
+  "names": [
+   "HandleMove#0",
+   "GetPawnCombat#0",
+   "IsValid#0",
+   "SetDesiredFacing#0"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 이동 (Combat.CanMove일 때만)\n공격·경직 중에는 CanMove가 false라 이동 입력을 넣지 않는다.\nAddMovementInput(전방, Y) → AddMovementInput(오른쪽, X).",
+  "names": [
+   "CanMove#8",
+   "Branch#0",
+   "AddMovementInput#10",
+   "AddMovementInput#11"
+  ],
+  "color": "logic",
+  "maxw": 0
+ }
+]

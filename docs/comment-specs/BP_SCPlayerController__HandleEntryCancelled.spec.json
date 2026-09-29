@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ HandleEntryCancelled()\n입장 창 '취소'(OnCancelled). 창을 닫고(RemoveFromParent, EntryWidget = None)\n게임 입력으로 되돌린다(커서 끔). 플레이어를 게이트 앞으로 옮기는 것은 게이트 쪽 OnCancelled.",
+  "all": true,
+  "color": "ui",
+  "pad": 48
+ }
+]

@@ -1,0 +1,5 @@
+[
+ {"text": "■ BeginPlay: 전투 준비\n래그돌 뒤 복구용으로 Mesh 상대 트랜스폼을 InitialMeshTransform에 저장 → Combat.InitializeCombat(ASC·스탯·어빌리티)\n→ Combat.OnDied / OnRespawned에 아래 두 이벤트를 연결한다.", "names": ["EventBeginPlay#0", "SetInitialMeshTransform#0", "InitializeCombat#11", "AssignOnDied#1", "AssignOnRespawned#2"], "color": "setup", "maxw": 0},
+ {"text": "■ 사망 알림 (OnDied)\nState.Dead가 붙고 GE_Death가 적용된 뒤 방송된다.\nHandleDeath로 래그돌 전환.", "names": ["OnDied_Event#1", "HandleDeath#14"], "color": "damage", "maxw": 0},
+ {"text": "■ 부활 알림 (OnRespawned)\nRespawnDelay 뒤 체력이 가득 찬 다음 방송된다.\nHandleRespawn으로 원상 복구.", "names": ["OnRespawned_Event#2", "HandleRespawn#15"], "color": "event", "maxw": 0}
+]
