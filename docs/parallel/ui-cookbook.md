@@ -125,3 +125,58 @@
 - 중첩 위젯 한 개의 값만 고치기: `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/UI/WBP_PlayerHUD.WBP_PlayerHUD:WidgetTree.StaminaBar"},"values":"{\"fillColor\":{\"r\":1.0,\"g\":0.85,\"b\":0.1,\"a\":1}}"}` → true, HUD 컴파일 뒤 유지.
 - `read_graph_dsl`과 `CompileWidgetBlueprint`/`compile_blueprint`만 해도 WBP가 dirty가 된다(읽기 전용 검증 뒤 9개 모두 is_dirty true). 검증 뒤에는 `UMG CompileWidgetBlueprint` → `BT compile_blueprint {"warnings_as_errors":true}` → `AT save_assets {"asset_paths":[9개 경로]}` → `AT is_dirty` false 확인까지 한다.
 - 로그 툴셋 전체 이름은 `EditorToolset.LogsToolset`이다(`LogsToolset`만 쓰면 `Toolset 'LogsToolset' not found`). `GetLogEntries {"pattern":"WBP_.*(Warning|Error)","category":"","maxEntries":50}` → `[]`.
+
+## 5단계 몬스터 1/2 (에디터 B): 적 BP, AI 컨트롤러, 몬스터 GA
+
+같은 병렬 워크플로의 기록 위치라서 UI 문서에 이어 적는다. 표기: `AcT` = `editor_toolset.toolsets.actor.ActorTools`, `APP` = `EditorToolset.EditorAppToolset`, `SI` = `SlateInspectorToolset.SlateInspectorToolset`, `PT` = ProgrammaticToolset.
+
+### 몬스터 GA (GA_ActionBase 자식, 그래프 없음)
+
+- `BT create {"folder_path":"/Game/SoulCombat/GAS/Abilities","asset_name":"GA_Enemy_Melee","asset_type":{"refPath":"/Game/SoulCombat/GAS/Abilities/GA_ActionBase.GA_ActionBase_C"}}` → `compile_blueprint` → EventGraph의 기본 `K2Node_Event_0`(ActivateAbility), `K2Node_CallParentFunction_0`, `K2Node_Event_1`(OnEndAbility)을 `delete_node` → 부모 흐름만 돈다.
+- CDO 한 번에: `OT set_properties` values `{"abilityTags":{"gameplayTags":[{"tagName":"Ability.Enemy.Attack.Melee"}]},"activationBlockedTags":{"gameplayTags":[{"tagName":"State.Dead"},{"tagName":"State.HitStun"}]},"activationOwnedTags":{"gameplayTags":[{"tagName":"State.Attacking"}]},"cooldownGameplayEffectClass":"/Game/SoulCombat/GAS/Effects/GE_Cooldown_Enemy_Melee.GE_Cooldown_Enemy_Melee_C","Montage":"/Game/Variant_Combat/Anims/AM_ComboAttack.AM_ComboAttack","StartSection":"Melee01","PlayRate":0.8,"HitTime":0.467,"Coefficient":1.0,"Radius":130,"ForwardOffset":110,"Knockback":300,"Launch":0,"bFaceInputOnStart":false}` → true.
+- 손자 GA(GA_Enemy_Melee_Boss, 부모 `GA_Enemy_Melee_C`)는 바뀌는 값만 넣으면 태그, 몽타주, bFaceInputOnStart가 부모 CDO에서 상속된다(get_properties로 확인).
+
+### 상속 컴포넌트 값: 손자 BP는 에디터를 먼저 연다 (함정)
+
+- `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/Characters/Enemies/BP_Enemy_Grunt.BP_Enemy_Grunt_C:Combat_GEN_VARIABLE"}, ...}` → `Parameter error: ... is not valid Object for property 'instance'`. 조부모(BP_CombatCharacterBase)의 Combat도, 부모(BP_EnemyBase)의 OverheadBar도 같은 에러였다. `get_components(자식 CDO)`는 부모 경로를 돌려준다(거기 쓰면 모든 자식이 바뀐다).
+- **해결**: `APP OpenEditorForAsset {"assetPath":"/Game/SoulCombat/Characters/Enemies/BP_Enemy_Grunt"}`를 한 번 부르면 같은 `_C:Combat_GEN_VARIABLE` 경로가 해석되고 set/get이 모두 된다(에디터가 상속 컴포넌트 템플릿을 만든다). 부모 BP_EnemyBase 값(AbilitySet None, bDestroyOnDeath false)은 그대로이고, 컴파일·저장 뒤에도 자식 값이 유지됐다.
+- 새 자식 BP 순서: `BT create` → `compile_blueprint` → `OpenEditorForAsset` → 기본 이벤트 4개(BeginPlay+Parent, ActorBeginOverlap, Tick) `delete_node` → CDO / `Default__X_C:CharacterMesh0` / `Default__X_C:CharMoveComp` / `X_C:Combat_GEN_VARIABLE`에 set_properties. 삭제와 설정은 PT 스크립트 하나로 돌렸다.
+- 클래스 프로퍼티 비우기: `{"AIControllerClass":null}` → get은 `"None"`. `AutoPossessAI`는 `"Disabled"`, `"PlacedInWorldOrSpawned"` 문자열. 스켈레탈 메시 없애기: `CharacterMesh0`에 `{"SkeletalMeshAsset":null,"AnimClass":null}`.
+
+### DSL이 부모 호출 노드를 지운다 (함정)
+
+- 자식 BP의 기본 BeginPlay에는 `Parent: BeginPlay`(`K2Node_CallParentFunction_0`)가 붙어 있다. `break_pins`로 연결을 먼저 끊어 두어도 `write_graph_dsl`에 `(event EventBeginPlay ...)`를 쓰면 **부모 호출 노드가 삭제됐다**. DSL로는 다시 만들 수 없다.
+- 복구(사람 개입 없음, SlateInspector): `compile_blueprint` → `APP OpenEditorForAsset` → `SI Windows {"action":"select","index":<BP 창>}` → `SI Click` EventGraph 탭 → 이벤트 노드를 빈 곳으로 옮긴다 `BT set_node_position {"node":<BeginPlay>,"pos":{"x":0,"y":-600}}`(다른 노드와 겹치면 우클릭이 다른 노드에 간다) → `SI Snapshot {"ref":<창>,"maxDepth":40}`에서 그 좌표의 제목 줄 `image`(크기 169x24)를 찾아 `SI Click {"ref":"i94","button":"right"}` → 새 창을 `Snapshot` → `text "Add Call to Parent Function"` Click → `K2Node_CallParentFunction_1`(type `|Parent:BeginPlay`)이 연결 없이 생긴다 → `break_pins`(BeginPlay then → 첫 DSL 노드), `connect_pins`(BeginPlay then index 1 → 부모 execute index 0), `connect_pins`(부모 then index 0 → 첫 DSL 노드 execute index 0).
+- 화면 좌표 찾기: 그래프 줌 0.25에서 화면 x = 642 + 0.25 × 노드 x, y = 539 + 0.25 × 노드 y였다(같은 열 노드들의 위치로 역산).
+
+### 디스패처 바인딩 이름 충돌
+
+- 부모 BP(BP_CombatCharacterBase)에 이미 `OnDied_Event`가 있으면 자식의 `(Default|AssignOnDied :self (Variables|Default|GetCombat))`는 `OnDied_Event_0`을 만든다. 본문 DSL 머리는 `(event Custom|OnDied_Event_0 (DeadActor) ...)`, OnRespawned는 `(event Custom|OnRespawned_Event_0 (Actor) ...)`. 이 두 번째 write에서는 스트레이 이벤트가 생기지 않았다.
+
+### 출력 없는 함수의 루프 안 return (함정)
+
+- 출력 파라미터가 없는 함수에서 `(return)`은 Return 노드를 만들지 않고 그 실행 줄만 끝낸다. 분기 뒤라면 문제없지만 **ForLoop 본문 안에서는 다음 반복이 계속 돈다**(Think에서 공격 성공 뒤에도 루프와 Completed가 이어져 bChasing을 덮어쓴다).
+- 해결: `BT create_node {"graph":<Think>,"type_id":"|AddReturnNode...","pos":{"x":14560,"y":600}}` → `K2Node_FunctionResult_0` → `connect_pins`(루프 안 마지막 노드 then → Return execute index 0).
+
+### AI 컨트롤러 (AIController 부모)
+
+- 새 AIController BP의 EventGraph에는 BeginPlay, Tick만 있다. OnPossess: `BT add_event {"blueprint":BP,"event_name":"ReceivePossess"}` → type `AddEvent|EventOnPossess`, 출력 `PossessedPawn`. DSL 머리 `(event EventOnPossess (PossessedPawn) ...)`.
+- 함수 이름 타이머(델리게이트 핀 문제 회피): `(Utilities|Time|SetTimerbyFunctionName :Object self :FunctionName "Think" :Time (Variables|AI|GetThinkInterval) :bLooping true)`.
+- 노드 ID: `Utilities|Casting|CastToBP_EnemyBase`, `Utilities|Casting|CastToBP_CombatCharacterBase`, `Class|BPEnemyBase|GetAttackTags`/`GetAttackRanges`/`GetAttackMinRanges`/`GetAggroRange`/`GetActive`(bool은 b 제거), `Class|BPCombatCharacterBase|GetCombat :self enemy`(BP_EnemyBase 참조를 바로 연결한다. read_graph_dsl은 `Class|GASCBase|GetCombat`로 틀리게 읽는다), `Class|ACCombatComponent|PressInput :self c :InputTag t`(출력 `bActivated`), `Class|ACCombatComponent|CanMove`(실행 노드, 출력 `bCanMove`), `Class|ACCombatComponent|GetIsDead`, `Class|ACCombatComponent|GetASC`, `GameplayTags|HasMatchingGameplayTag :self asc :TagToCheck "(TagName=\"State.HitStun\")"`(ASC를 인터페이스 핀에 바로 연결), `Game|GetPlayerPawn :PlayerIndex 0`, `Transformation|GetDistanceTo :self a :OtherActor b`, `Math|Rotator|FindLookatRotation :Start :Target`, `Transformation|SetActorRotation :self a :NewRotation (Math|Rotator|MakeRotator :Yaw (.yaw r))`, `Pawn|Input|AddMovementInput :self enemy :WorldDirection v :ScaleValue 1.0`, `Utilities|Array|Length`, `Utilities|Array|LastIndex`, `Utilities|Array|Get(acopy)`.
+- `(for i (range (Utilities|Array|Length tags)) ...)` → ForLoop LastIndex = Length - 1(int-int 노드). 루프 뒤 문장은 Completed에 붙는다.
+
+### WidgetComponent (머리 위 바)
+
+- `AcT add_component {"owner":<BP>,"component_type":{"refPath":"/Script/UMG.WidgetComponent"},"name":"OverheadBar"}` → 캡슐 아래에 붙는다. 프로퍼티(OT, 소문자 시작): `{"space":"Screen","widgetClass":"/Game/SoulCombat/UI/WBP_AttributeBar.WBP_AttributeBar_C","drawSize":{"x":120,"y":12},"relativeLocation":{"x":0,"y":0,"z":115},"BodyInstance":{"collisionProfileName":"NoCollision","collisionEnabled":"NoCollision"},"bGenerateOverlapEvents":false,"CanCharacterStepUpOn":"ECB_No"}` → true. 기본값은 World, 500×500, 프로필 `UI`(Pawn 겹침)였다.
+- 그래프: `(bind bar (Utilities|Casting|CastToWBP_AttributeBar :Object (UserInterface|GetUserWidgetObject :self (Variables|Default|GetOverheadBar))) (:then (Class|WBPAttributeBar|Setup :self bar :InAttribute "<Health 리터럴>" :InMaxAttribute "<MaxHealth 리터럴>" :InLabel "" :InFillColor "(R=0.450000,G=0.030000,B=0.030000,A=1.000000)" :bInShowNumbers false) (Class|WBPAttributeBar|BindtoActor :self bar :Actor self)) (:CastFailed))`. 켜고 끄기는 `Rendering|SetVisibility :self <OverheadBar> :bNewVisibility b`(SceneComponent 버전).
+- 휴면 숨김은 `Rendering|SetActorHiddenInGame`만으로는 Screen 공간 위젯이 남을 수 있어서 OverheadBar 가시성도 같이 끈다.
+
+### 스태틱 메시 추가 컴포넌트 (BP_SealCrystal)
+
+- `AcT add_component`(StaticMeshComponent `CrystalMesh`) → 캡슐 아래. SM_ChamferCube 바운드는 (-50..50)³(피벗 중심)이라 위치 (0,0,0)이면 캡슐 중심이다. `{"StaticMesh":"/Game/LevelPrototyping/Meshes/SM_ChamferCube.SM_ChamferCube","RelativeLocation":{"x":0,"y":0,"z":0},"RelativeRotation":{"pitch":0,"yaw":45,"roll":0},"RelativeScale3D":{"x":0.8,"y":0.8,"z":1.6},"OverrideMaterials":["/Game/SoulCombat/Materials/MI_SC_Crystal.MI_SC_Crystal"],"BodyInstance":{"collisionProfileName":"NoCollision","collisionEnabled":"NoCollision"}}` → 캡슐(반높이 88)이 몸통 역할을 유지한다.
+
+### 도구 쪽 주의
+
+- 한글 값: 결과를 콘솔에 print하면 깨져 보인다(cp949). 실제 값은 `--out` 파일을 `encoding='utf-8'`로 읽어 `unicode_escape`로 비교해 확인했다(정상 저장). 인자 파일은 `json.dump` 기본값(ensure_ascii, `\uXXXX`)으로 쓰는 편이 안전하다.
+- `GetLogEntries`의 `\[Compiler\]` 패턴을 셸 인자 JSON에 넣으면 이스케이프가 깨진다 → Python으로 인자 파일을 만든다(`json.dump({'pattern':r'\[Compiler\]','category':'','maxEntries':30}, ...)`).
+- 레이아웃: Think(65노드)와 컨트롤러 EventGraph는 `arrange_nodes` 뒤 PT 스크립트로 같은 x 열을 추정 너비 + 90 간격으로 다시 벌리고, 열 안에서는 추정 높이(50 + 28 × 핀 수) + 40만큼 아래로 밀었다. BP_EnemyBase EventGraph는 arrange가 이벤트를 체인 중간에 흩어 놓아 `set_node_position`으로 직접 배치했다(BeginPlay 줄 y 0, Sequence then_1 줄 y 480, OnDied 줄 y 1000, OnRespawned 줄 y 1350).
