@@ -2,10 +2,24 @@
 
 `02-build-plan.md`의 단계를 진행하면서 채운다. 판정: **성공**(전용 MCP 툴만으로) / **우회**(다른 툴·UI 자동화·설계 변경으로) / **사람**(사용자가 에디터에서 직접) / **실패**.
 
+## 요약
+
+| 항목 | 결과 |
+| --- | --- |
+| 만든 것 | `/Game/SoulCombat` 에셋 104개(블루프린트 72개: GA 14, GE 19, GC 6, 캐릭터 7, 컴포넌트 2, Core 5, Dungeon 7, Combat 2, AI 1, UI 9), 맵 2개, C++ 클래스 2개(SCAttributeSet, SCAbilitySet) |
+| 그래프 정리·주석 | 그래프 약 120개 재배치, 한국어 주석 박스 약 230개. 모든 그래프에서 전후 로직 동일성 확인 |
+| 검증 | BP 72개 컴파일 에러·경고 0. 입력 없는 PIE 테스트로 플레이어 조작 10항목, 던전 전체 흐름(5개 방 → 클리어 → 필드 복귀), 이벤트 실패, 입장·취소, 콤보 입력 큐 통과(`04-final-qa.md`) |
+| MCP로 된 것 | 태그·스탯 테이블·GE·큐·입력·머티리얼 인스턴스·Niagara 생성, BP 변수·함수·이벤트·디스패처·그래프(DSL), 컴포넌트와 상속 컴포넌트 값, UMG 위젯 트리, 레벨 복제·배치·월드 설정, 프로젝트 설정, PIE 실행과 GAS 인스펙터 |
+| 우회한 것 | 주석 박스(클립보드 T3D 붙여넣기 + SlateInspector UI 자동화), 부모 함수 호출 노드(SlateInspector 컨텍스트 메뉴), Enhanced Input 이벤트 노드(DSL 대신 노드 API), 클래스 참조 변수(C++ 데이터 에셋), 몽타주 노티파이(바이너리에서 읽은 노티파이 시간 + WaitDelay), PIE 키 입력(테스트 조종 BP가 같은 입력 경로 호출) |
+| 사람 개입 | 1회: 두 번째 에디터를 강제 종료한 뒤 뜬 패키지 복구 창을 사용자가 닫음. (에디터 시작 때 GameFeatures 에셋 매니저 경고의 'Add entry'도 누군가 눌렀다) |
+| 병렬 작업 | 프로젝트 사본을 두 번째 에디터(포트 8001, `Tools/mcp_http.py`)로 열어 UI, 레벨 지형, 몬스터, 방 로직, UI·방 주석을 나눠 만들고 파일을 복사해 병합(충돌 0) |
+| 알려진 한계 | 애니메이션은 템플릿(맨손) 것이라 가드는 차지 자세, 피격은 라이플 기준 additive 움찔이다. 지면 넉백은 마찰 때문에 짧다(수치는 GA 변수로 조정). 사용자 플레이 테스트로 타격감을 확인해야 한다 |
+
 ## 진행 상태
 
 - 2026-09-29 준비: 이전 ActionDemo 파일 삭제. 새 프로젝트 `SoulCombat`(UE 5.8.2) 생성: 템플릿 콘텐츠 복사(`Tools/Setup-Project.ps1`), C++ 모듈(`SCAttributeSet`, `SCAbilitySet`) 빌드 성공, 게임플레이 태그 ini 작성, 에디터 실행과 MCP 서버 자동 시작 확인. 커밋 `fa30f08`.
 - 2026-09-29 MCP 기능 탐색(`docs/mcp/`, `docs/mcp-cookbook.md`)과 엔진 API 검증(`docs/engine-api-notes.md`) 진행.
+- 2026-09-29 ~ 09-30 1~7단계 제작(두 에디터 병렬), 9단계 그래프 정리·주석, 8단계 최종 QA와 콤보 입력 큐 수정까지 완료. 단계별 커밋은 git 로그 참고. 푸시는 하지 않음(사용자 요청).
 
 ## 환경
 
@@ -129,6 +143,12 @@
 | 8-QA3-4 | 필드 입장: 게이트 → 포털 → 입장 창(B4 에러 없음) → '입장' Click → L_Dungeon_01 로드, 새 PIE에서 '취소' | EditorAppToolset, SlateInspectorToolset Snapshot/Click, ObjectTools, LogsToolset (ProgrammaticToolset) | 성공 | 없음 | Non-Focusable 0줄. B4 수정 뒤에는 SlateInspector Click 한 번으로 버튼이 눌렸다(Enter 필요 없음). 취소 뒤 플레이어 (0,1900), bEntryOpen false |
 | 8-QA3-5 | PIE 스크린샷 3장(pie_field_hud, pie_dungeon_boss, pie_entry_window) | SlateInspectorToolset Screenshot(ref sp4) + AssetTools write_file(.txt) (ProgrammaticToolset), 로컬 Python base64 디코드 | 성공 | 없음 | base64를 컨텍스트에 넣지 않고 Saved/QA에 텍스트로 쓴 뒤 풀었다. HUD 샷은 폴링과 촬영을 한 스크립트에 넣어 E·R 쿨타임(3.7, 5.3)이 보이게 찍음. 보스 샷은 세 번째 시도에서 채택(앞 두 장은 카메라가 보스에 파묻히거나 이펙트에 가림) |
 | 8-QA3-6 | 로그 정리, 마무리 상태 확인, 보고서 작성 | LogsToolset GetLogEntries, AssetTools is_dirty, SceneTools load_level/get_current_level | 성공 | 없음 | 콘텐츠 Error·Warning 0. 남은 줄은 도구 잡음(set_actor_transform의 LogUtils/LevelEditorSubsystem 에러, 무효 경로 읽기)과 오디오 장치뿐. PIE 꺼짐, 현재 레벨 L_CombatField, /Game/SoulCombat·/Game/_Scratch dirty 0. docs/04-final-qa.md 3부와 맨 위 종합 판정 |
+| 8-QA4-1 | 콤보 입력 큐 수정 준비: GA_Player_BasicAttack 덤프(106노드), 주석 박스 좌표 읽기, PressInput 확인 | graph_layout.py dump(find_nodes + get_node_infos, ProgrammaticToolset), SlateInspectorToolset Click/PressKey(Ctrl+A, Ctrl+C) + 클립보드 T3D 읽기, BlueprintTools list_variables/get_variable_category | 성공 | 없음 | PressInput은 SendGameplayEvent 뒤에 TryActivateAbility를 부르므로 활성화한 첫 누름은 콤보 입력으로 안 들어간다. 그래서 4연타가 모두 1타 연결 시점 전에 오면 쌓일 입력은 3개다 |
+| 8-QA4-2 | 변수 추가: QueuedInputs(int, Combo\|State, 기본 0), MaxQueuedInputs(int, Combo, 인스턴스 편집, 기본 3) | BlueprintTools add_variable/set_variable_category/set_variable_instance_editable/compile_blueprint (ProgrammaticToolset), ObjectTools set_properties/get_properties | 우회(설계 값 변경) | 없음 | 지시는 MaxQueuedInputs = 2였지만 2면 4연타(1타 연결 시점 전)가 3타에서 끝나 요구한 "4타"를 만족하지 못한다. 남은 타 수와 같은 3으로 했다. 기존 bInputBuffered의 타입은 바꾸지 않았다(모달 위험) |
+| 8-QA4-3 | 그래프 국소 수정: 발동 시 QueuedInputs = 0, 입력 처리 else에서 QueuedInputs = Min(QueuedInputs + 1, MaxQueuedInputs), BeginStepTimers의 bInputBuffered 초기화 삭제, 연결 시점 Branch 조건을 QueuedInputs > 0으로 바꾸고 참이면 QueuedInputs - 1 뒤 AdvanceStep. bInputBuffered 노드 3개와 변수 삭제 | BlueprintTools create_node(Variables\|Combo\|State\|Get/SetQueuedInputs, Utilities\|Operators\|Add/Greater(>)/Subtract, Math\|Integer\|Min(Integer))/connect_pins/break_pins/set_pin_value/delete_node/set_node_position/remove_variable/compile_blueprint(warnings_as_errors) (ProgrammaticToolset) | 성공 | 없음 | DSL로 다시 쓰지 않고 노드 10개 추가·3개 삭제. 덤프 비교 결과 차이는 이 노드들과 연결 7곳, AdvanceStep(연결 시점) 위치 이동뿐. 새 노드는 기존 블록 박스 안(스크린샷으로 겹침 없음 확인). 컴파일 null, [Compiler] 로그 0줄 |
+| 8-QA4-4 | 주석 2개 교체: '입력 버퍼'(bInputBuffered 설명) → '입력 버퍼 (큐)', '단계 상태 초기화'(bInputBuffered = false) → bPastChainPoint만 초기화, 큐는 유지 | SlateInspectorToolset Snapshot/Click/PressKey(Ctrl+C로 선택 확인, Delete), Tools/graph_comments.py ui-run(좌표 지정 spec, --fit-all), AssetTools save_assets(경로 명시) | 우회(UI 자동화) | 없음 | 제목을 클릭할 수 있게 먼저 knot을 붙여넣고 set_node_position으로 박스 안에 옮긴 뒤 Home(줌 1:1) → delete_node → 스냅샷에서 제목 ref 클릭. 새 주석은 옛 박스와 같은 x·y·w·h. 주석 15개 그대로, mismatch 0. 나머지 박스(연결 시점 등)는 여전히 맞아 그대로 둠 |
+| 8-QA4-5 | 테스트: /Game/_Scratch/BP_TestPlayerDriver에 시나리오 이벤트 7개(ComboQA~QF, ComboQEnd)와 ComboQueueTest(bool, 기본 true) 추가, BeginPlay에서 분기 | BlueprintTools add_event/add_variable/write_graph_dsl/create_node/connect_pins/break_pins/compile_blueprint (ProgrammaticToolset + mcp_http.py), ObjectTools set_properties | 성공 | 없음 | ComboQueueTest를 false로 하면 원래 A~J 시나리오가 돈다 |
+| 8-QA4-6 | PIE(L_CombatTest): 같은 프레임 4연타, 0.1초 간격 4회, 0.35초 간격 4회, 1회, 0.1초 간격 8회, 같은 프레임 8연타 | EditorAppToolset StartPIE/StopPIE, ObjectTools get_properties 폴링(ProgrammaticToolset), LogsToolset, AssetTools is_dirty, SceneTools load_level | 성공 | 없음 | 6개 모두 통과: 4회·8회는 모두 -50/-55/-65/-100 = -270(4타 피니시)이고 끝나면 State.Attacking 없음, 1회는 -50 한 번. PIE는 이번에도 3fps(0.1초 지정 → 실제 0.33초). 런타임 에러 0. 끝에 L_CombatField로 복귀, /Game/SoulCombat 미저장 0 |
 
 ## 문제와 해결 기록
 

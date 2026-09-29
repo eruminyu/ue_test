@@ -134,3 +134,12 @@ spec 예 (`docs/comment-specs/AC_CombatComponent__ApplyHit.spec.json`):
 도구 시간: 덤프 3초(BP 전체), layout·preview 1초 미만, apply 2초, ui-run 8~11초, 컴파일·저장·닫기 합쳐 5초.
 나머지는 spec을 쓰는 시간이다: 헤더 박스만 쓰는 작은 함수 약 1분, 블록 4~6개짜리 큰 그래프 3~5분(preview 1~2회 반복 포함).
 **BP 하나 평균 3~6분**으로 잡으면 남은 약 40개 BP는 3~4시간이다. 그래프 수가 많은 BP(컨트롤러, 방 로직)는 10분 이상.
+
+## 추가: 위젯 BP와 작은 창 (두 번째 에디터 작업에서 확인)
+
+- 위젯 블루프린트의 그래프 모드 워터마크는 `WIDGET BLUEPRINT`다. `graph_comments.py`의 `ui_find`/`open_graph`가 이제 둘 다 인식한다.
+- 에디터 창이 작아 워터마크 밑에 노드가 깔리면 오른쪽 클릭이 노드로 가고 Ctrl+V가 무시된다(보정 knot이 안 생김). 이때는 `GC_ANCHOR=zoom`을 주면 그래프 패널 오른쪽 위의 `Zoom ...` 글자를 앵커로 쓴다(워터마크를 못 찾을 때도 자동으로 이쪽을 쓴다).
+  ```
+  GC_ANCHOR=zoom python Tools/graph_comments.py ui-run <spec> <graph_ref> --window <창 ref> --layout <layout> --shot <png> --port 8001 --fit-all
+  ```
+- 위젯 BP 에디터가 Designer 모드로 열리면 먼저 SlateInspector로 'Graph'를 눌러 그래프 모드로 바꾼다. 자세한 기록은 `docs/parallel/ui-cookbook.md`.

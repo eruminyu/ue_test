@@ -244,3 +244,40 @@ PIE 여섯 번(던전 킬러 있음 2회, 킬러 없음 1회, 필드 2회, 전�
 ### 3부 결론
 
 흐름 테스트 보고서의 시나리오를 최종 맵 복제본에서 다시 돌렸고, 모든 항목이 통과했다. 버그 B1(시작 방이 시작되지 않음), B2(봉인석 소켓 경고), B3(예고원 Nanite 경고), B4(입장 창 포커스 에러), B5(스파링 잡몹 추격)가 모두 고쳐진 것을 확인했다. B4 수정 덕분에 '입장'·'취소' 버튼이 SlateInspector `Click` 한 번으로 눌린다. 스크린샷 3장은 HUD, 보스전, 입장 창을 사양대로 보여 준다.
+
+## 콤보 입력 큐 수정
+
+- 일시: 2026-09-30, 에디터 A(포트 8000), MCP 툴만 사용. 대상 `/Game/SoulCombat/GAS/Abilities/GA_Player_BasicAttack`.
+- 문제(2-3 비고): 입력 버퍼가 bool 하나(`bInputBuffered`)라 한 타에 입력을 하나만 기억했고, `BeginStepTimers`가 다음 타를 시작할 때 그 값을 지웠다. 그래서 현재 타의 연결 시점 전에 두 번째 입력이 오면 사라졌고, 빠른 4연타가 3타에서 끝날 수 있었다.
+
+### 바꾼 것 (국소 수정, 나머지 로직 동일)
+
+| 위치 | 전 | 후 |
+| --- | --- | --- |
+| 변수 | `bInputBuffered`(bool) | `QueuedInputs`(int, Combo\|State, 기본 0), `MaxQueuedInputs`(int, Combo, 인스턴스 편집, 기본 **3**). `bInputBuffered`는 쓰는 노드를 모두 지운 뒤 변수도 삭제 |
+| ActivateAbility | ComboStep = 1 → WaitGameplayEvent | ComboStep = 1 → **QueuedInputs = 0** → WaitGameplayEvent |
+| 입력 처리(EventMagnitude > 0.5) | 연결 시점 지남 → AdvanceStep, 아니면 bInputBuffered = true | 연결 시점 지남 → AdvanceStep(그대로), 아니면 **QueuedInputs = Min(QueuedInputs + 1, MaxQueuedInputs)** |
+| BeginStepTimers | bInputBuffered = false, bPastChainPoint = false | bPastChainPoint = false만. **큐는 비우지 않는다** |
+| 연결 시점(ChainTime WaitDelay 뒤) | bPastChainPoint = true → bInputBuffered면 AdvanceStep | bPastChainPoint = true → **QueuedInputs > 0이면 QueuedInputs - 1 → AdvanceStep** |
+
+- 덤프 비교(`graph_layout.py dump` 전후): 노드 106 → 113(추가 10, 삭제 3). 바뀐 연결은 위 표의 7곳, 옮긴 노드는 연결 시점의 AdvanceStep 하나(같은 박스 안에서 아래로)뿐이다. 새 노드는 모두 기존 블록 박스 안에 넣었고 스크린샷으로 겹침이 없음을 확인했다.
+- 주석: '입력 버퍼' 박스와 '단계 상태 초기화' 박스가 bInputBuffered를 설명하고 있어 틀리게 됐으므로 두 개만 같은 좌표·크기로 다시 붙였다(‘■ 입력 버퍼 (큐)’, ‘bPastChainPoint = false. 쌓인 입력(QueuedInputs)은 비우지 않는다.’). 다른 박스(입력 대기, 콤보 연결 시점 등)는 여전히 맞아서 그대로 뒀다. 주석 수 15개 그대로.
+- 컴파일(warnings_as_errors) null, `[Compiler]` 로그 0줄, 저장 뒤 `/Game/SoulCombat` 미저장 0.
+- **MaxQueuedInputs를 2가 아니라 3으로 한 이유**: 첫 누름은 `PressInput`에서 이벤트를 보낸 **뒤에** 어빌리티를 활성화하므로 콤보 입력으로 들어가지 않는다. 그래서 4연타가 모두 1타 연결 시점(0.533초) 전에 오면 쌓아야 할 입력은 3개다. 최대 2면 1타 → 2타 → 3타에서 끝난다. 3이면 남은 타 수(2~4타)와 같아 더 쌓여도 4타를 넘지 않는다(4타에서는 연결 시점 타이머가 없고 AdvanceStep도 ComboStep ≥ 4면 무시). 줄이고 싶으면 인스턴스 편집 값으로 바꾼다.
+
+### PIE 결과 (`/Game/_Scratch/L_CombatTest`, 드라이버 `BP_TestPlayerDriver`)
+
+드라이버에 시나리오 이벤트 `ComboQA`~`ComboQF`, `ComboQEnd`와 bool `ComboQueueTest`(기본 true, false면 원래 A~J 시나리오)를 추가했다. 시나리오마다 ResetPos → 0.8초 → 누름 → 4.5초 뒤 기록. 더미 HP는 `WaitForAttributeChanged` 이벤트로 타격마다 기록했다. 이번에도 에디터가 백그라운드라 PIE가 3fps였다(Delay 0.1초는 실제 0.33초).
+
+| 시나리오 | 기대 | 결과 (더미 HP 변화) | 판정 |
+| --- | --- | --- | --- |
+| QA: 같은 프레임에 4번 누름(가장 빠른 연타, 모두 1타 연결 시점 전) | 4타, 합 -270, 끝남 | 누름 ok = true, false, false, false. -50(+0.67초), -55(+1.33), -65(+2.0), -100(+3.0) = **-270**. 끝에 State.Attacking 없음 | 통과 (이전 구조에서는 3타에서 끝나던 경우) |
+| QB: 0.1초 간격 4번(실제 0.33초) | 4타 -270 | 2·3번째 누름이 1타 연결 시점 전후에 들어옴. -50, -55, -65, -100 = **-270**, 끝남 | 통과 |
+| QC: 0.35초 간격 4번(실제 0.33~0.67초) | 4타 -270 | -50, -55, -65, -100 = **-270**, 끝남 | 통과 |
+| QD: 1번 | 1타 -50 | -50 한 번, 끝남(2타로 넘어가지 않음) | 통과 |
+| QE: 0.1초 간격 8번(실제 약 2.3초에 걸침) | 4타에서 끝남 | -50, -55, -65, -100 = **-270**. 8번째 누름은 피니시 중(무시). 끝에 State.Attacking 없음 | 통과 |
+| QF: 같은 프레임에 8번 | 4타에서 끝남(무한 콤보 없음) | 큐는 3에서 멈춤. -50, -55, -65, -100 = **-270**, 끝남 | 통과 |
+
+- ComboStep이 4까지 간 것은 4번째 타격이 -100(계수 2.0, 4타 전용)인 것으로 확인했다.
+- 런타임 에러(`Accessed None`, `Blueprint Runtime Error`) 0줄. 테스트 뒤 PIE 종료, 현재 레벨을 L_CombatField로 되돌렸다. 테스트 에셋은 `/Game/_Scratch`에만 있다.
+- 남은 확인: 3fps라 0.1초 단위 입력 간격은 검증하지 못했다. 같은 프레임 연타(QA, QF)가 가장 가혹한 경우라 큐 동작 자체는 확인됐다. 실제 손 입력 느낌은 사용자 플레이 테스트에서 본다.

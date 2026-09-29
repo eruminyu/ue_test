@@ -379,7 +379,7 @@ def ui_paste_and_read(graph_ref, anchor, knot, copy, port):
 def ui_find(window_ref, port):
     """BP 창 스냅샷에서 그래프 탭, My Blueprint 항목, 워터마크(빈 곳 앵커) ref를 찾는다."""
     tree = mcp(SI, "Snapshot", {"ref": window_ref, "maxDepth": 40}, port)
-    found = {"tabs": {}, "items": {}, "watermark": [], "zoom": None}
+    found = {"tabs": {}, "items": {}, "watermark": [], "zoom": None, "zoom_refs": []}
     for line in tree.splitlines():
         m = re.match(r'\s*(tab|listitem|text) "([^"]*)" \[.*?\] \[ref=(\w+)\]', line)
         if not m:
@@ -389,10 +389,11 @@ def ui_find(window_ref, port):
             found["tabs"][label] = ref
         elif kind == "listitem":
             found["items"][label] = ref
-        elif label == "BLUEPRINT":
+        elif label in ("BLUEPRINT", "WIDGET BLUEPRINT"):   # 위젯 BP 그래프 모드의 워터마크는 'WIDGET BLUEPRINT'
             found["watermark"].append(ref)
         elif label.startswith("Zoom"):
             found["zoom"] = label
+            found["zoom_refs"].append(ref)
     return found
 
 
@@ -446,8 +447,13 @@ def open_graph(window, graph, port):
     if not ok:
         raise SystemExit("click on graph tab/item returned false (stale ref?)")
     f = ui_find(window, port)
-    if len(f["watermark"]) != 1:
-        raise SystemExit(f"expected one BLUEPRINT watermark, got {f['watermark']}")
+    # 앵커 = 그래프 패널에 포커스를 주려고 오른쪽 클릭할 곳. 기본은 워터마크.
+    # 창이 작아 워터마크 밑에 노드가 깔리면 오른쪽 클릭이 노드로 가서 Ctrl+V가 무시된다.
+    # 그럴 때는 환경 변수 GC_ANCHOR=zoom 으로 패널 오른쪽 위의 'Zoom ...' 글자를 앵커로 쓴다.
+    if os.environ.get("GC_ANCHOR", "watermark") == "zoom" or len(f["watermark"]) != 1:
+        if len(f["zoom_refs"]) == 1:
+            return f["zoom_refs"][0]
+        raise SystemExit(f"no usable anchor: watermark {f['watermark']}, zoom {f['zoom_refs']}")
     return f["watermark"][0]
 
 

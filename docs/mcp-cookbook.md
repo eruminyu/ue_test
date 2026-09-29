@@ -298,3 +298,14 @@
 - **B4 수정 뒤 UMG 버튼 클릭**: 입장 창(`bIsFocusable` true)에서는 SlateInspector `Snapshot {"ref":"sp4","maxDepth":60}`의 `button "입장"` ref를 `Click` 한 번만 해도 OnClicked가 불렸다. 흐름 테스트 때처럼 `PressKey Enter`를 이어서 보낼 필요가 없다(보내면 이미 레벨 이동 중).
 - **레벨 액터의 BP 변수가 인스턴스 편집이 아니면** `set_properties`가 `could not be set: Interval`로 실패한다(BP_TestKiller). 테스트 동안 끄려면 `SceneTools remove_from_scene` → 테스트 → `add_to_scene_from_class`로 다시 넣고 맵을 저장한다.
 - 보스 스크린샷은 보스가 붙어 있으면 카메라가 보스 몸에 파묻힌다. 촬영 직전에 `set_actor_transform`으로 보스를 (9000,0), 플레이어를 (8300,0) Yaw 0으로 떨어뜨리고 0.4초 간격으로 여러 장 찍어 고른다.
+
+### 기존 그래프 국소 수정과 주석 하나 교체 (콤보 입력 큐 수정)
+
+- **DSL 없이 노드 끼워 넣기**: `BT create_node {"graph":G,"type_id":"Variables|Combo|State|SetQueuedInputs","pos":{"x":960,"y":176}}` → `get_node_infos`로 핀 index 확인 → `break_pins`(옛 exec 연결) → `connect_pins` 두 번. 체인 전체를 다시 쓰지 않으니 나머지 노드·위치·주석이 그대로다(덤프 비교로 확인).
+- **정수 연산 노드(Promotable)**: `find_node_types "Math|Integer|"`에는 `int+int`류가 안 나온다. `create_node "Utilities|Operators|Add"`(또는 `Greater(>)`, `Subtract`)로 와일드카드 노드를 만들고 A 핀에 int 출력을 `connect_pins`하면 `Math|Integer|int+int`/`integer>integer`/`int-int`로 바뀐다. 그다음 `set_pin_value {"pin":<B>,"value":"1"}`(타입이 정해진 뒤에 설정). Min은 `Math|Integer|Min(Integer)`(`K2Node_CommutativeAssociativeBinaryOperator`, 입력 A=0, B=1).
+- **함정: 커스텀 이벤트의 출력 index 0은 `OutputDelegate`**, exec `then`은 index 1이다. `connect_pins {"output_pin":{"node":<K2Node_CustomEvent>,"direction":"EGPD_Output","index_id":0},...}`는 `Could not connect pin OutputDelegate to execute` 에러(스크립트 중단, 앞의 delete_node는 이미 실행됨).
+- **변수 삭제**: Get/Set 노드를 모두 `delete_node`한 뒤 `BT remove_variable {"blueprint":BP,"name":"bInputBuffered"}` → null, 컴파일 경고 없음.
+- **주석 박스 좌표 읽기**: 그래프 포커스(워터마크 오른쪽 클릭 + Escape) → `PressKey Ctrl+A` → `PressKey Ctrl+C` → `graph_comments.get_clipboard()` + `parse_t3d()` → `EdGraphNode_Comment`의 NodePosX/Y/Width/Height/NodeComment. 끝나면 더미 knot 붙여넣기 + `delete_node`로 선택 해제.
+- **주석 하나만 지우기(줌 -11에서는 제목이 겹쳐 클릭 불가)**: knot T3D를 붙여넣고(`K2Node_Knot_Focus`) `set_node_position`으로 지울 박스 안(제목 근처)에 옮긴 뒤 `PressKey Home`(선택된 knot에 맞춰 줌 1:1) → 2초 → `delete_node` knot → `Snapshot {"ref":"<BP 창>","maxDepth":40}`에서 주석 제목 `text` ref → `Click`(왼쪽) → **`PressKey Ctrl+C` + 클립보드 파싱으로 그 주석 하나만 선택됐는지 확인** → `PressKey Delete`. 스냅샷 텍스트는 콘솔 인코딩 때문에 한글이 깨져 보여도, ASCII 부분(예: `bInputBuffered`)으로 찾으면 된다.
+- **같은 자리에 새 주석**: spec에 좌표를 직접 준다 `[{"text":"■ ...","x":1840,"y":2560,"w":1344,"h":992,"color":"logic","bubble":false}]`(안쪽 박스는 bubble false) → `graph_comments.py preview` → `ui-run <spec> <그래프 ref> --window <창> --shot <png> --fit-all`(layout 없이도 된다). 제목 줄 수는 `title_height(text,18,w)`로 미리 재서 박스 위쪽 여백(노드까지 거리)보다 작게 줄바꿈한다.
+- **작은 영역 확인 스크린샷**: 위의 knot → Home → delete_node 뒤 `save_shot`(`SlateInspectorToolset Screenshot {"ref":""}`)으로 줌 1:1 화면을 찍으면 새 노드 겹침을 눈으로 볼 수 있다(추정 크기보다 실제 Promotable 노드가 훨씬 작다).

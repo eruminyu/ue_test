@@ -51,8 +51,8 @@
 
 - `VFX/NS_SC_Shockwave`: `/Niagara/DefaultAssets/Templates/Systems/SimpleExplosion`을 템플릿으로 생성(한 번 터짐).
 - 큐 (부모 / 태그 / 이펙트):
-  - GC_Hit: Burst / GameplayCue.Hit / `/Game/Variant_Combat/VFX/NS_Damage`. 배치 SocketName `spine_03`(없으면 발밑에 생김)
-  - GC_Guard_Block: Burst / GameplayCue.Guard.Block / `/Niagara/DefaultAssets/Templates/Systems/DirectionalBurst` 복제본 `VFX/NS_SC_GuardSpark` (없으면 NS_Damage), SocketName `spine_03`
+  - GC_Hit: Burst / GameplayCue.Hit / `/Game/Variant_Combat/VFX/NS_Damage`. 배치 SocketName 없음(대상 액터 위치 = 캡슐 중심에 생김. 처음엔 `spine_03`이었으나 메시 없는 봉인석에서 경고가 나 흐름 테스트 B2로 제거)
+  - GC_Guard_Block: Burst / GameplayCue.Guard.Block / `/Niagara/DefaultAssets/Templates/Systems/DirectionalBurst` 복제본 `VFX/NS_SC_GuardSpark` (없으면 NS_Damage), SocketName 없음(B2)
   - GC_Guard_Active: Looping(액터에 붙음) / GameplayCue.Guard.Active / `/Game/LevelPrototyping/Interactable/JumpPad/Assets/NS_JumpPad`
   - GC_Skill_GroundSlam: Burst / GameplayCue.Skill.GroundSlam / NS_SC_Shockwave
   - GC_Enemy_Slam: Burst / GameplayCue.Enemy.Slam / NS_SC_Shockwave
@@ -154,9 +154,9 @@
   - `StepHitTimes` = [0.467, 0.467, 0.40, 0.367] (AN_AttackDamage 시점)
   - `StepChainTimes` = [0.533, 0.567, 0.90] (1~2타는 AN_AttackCombo 시점. 상한: Melee01·02는 0.8, Melee03은 1.467 전이어야 점프가 먹는다)
   - `PlayRate` = 1.0, `StepCoefficients` = [1.0, 1.1, 1.3, 2.0], `StepRadii` = [160, 160, 170, 220], `StepOffsets` = [120, 120, 130, 120], `StepKnockbacks` = [200, 200, 250, 450], `StepLaunches` = [0, 0, 0, 350]
-- 상태: `ComboStep`(1~4), `bInputBuffered`, `bPastChainPoint`.
-- ActivateAbility: CommitAbility 실패 → End. ComboStep = 1 → `WaitGameplayEvent(InputTag.Attack, 반복)`: EventMagnitude > 0.5이면 bPastChainPoint면 `AdvanceStep`, 아니면 bInputBuffered = true → FaceDesiredInput → PlayMontageAndWait(ComboMontage, PlayRate, ComboSections[0]) — **모든 출력(Completed/BlendOut/Interrupted/Cancelled): ComboStep ≤ 3일 때만 EndAbility** → `BeginStepTimers`.
-- `BeginStepTimers` (커스텀 이벤트): bInputBuffered = false, bPastChainPoint = false → WaitDelay(StepHitTimes[ComboStep-1] / PlayRate) → `Combat.HitTargetsInFront(반경, 오프셋, 계수, 넉백, 띄우기)`. ComboStep ≤ 3이면 따로 WaitDelay(StepChainTimes[ComboStep-1] / PlayRate) → bPastChainPoint = true → bInputBuffered면 `AdvanceStep`.
+- 상태: `ComboStep`(1~4), `QueuedInputs`(입력 큐), `bPastChainPoint`. 설정: `MaxQueuedInputs`(3). (처음에는 bool 버퍼 `bInputBuffered`였으나, 빠른 4연타가 3타에서 끊겨 최종 QA에서 큐로 바꿨다. 첫 클릭은 어빌리티 발동에 쓰이므로 남은 2~4타를 위해 최대 3개를 쌓는다.)
+- ActivateAbility: CommitAbility 실패 → End. ComboStep = 1, QueuedInputs = 0 → `WaitGameplayEvent(InputTag.Attack, 반복)`: EventMagnitude > 0.5이면 bPastChainPoint면 `AdvanceStep`, 아니면 QueuedInputs = min(QueuedInputs + 1, MaxQueuedInputs) → FaceDesiredInput → PlayMontageAndWait(ComboMontage, PlayRate, ComboSections[0]) — **모든 출력(Completed/BlendOut/Interrupted/Cancelled): ComboStep ≤ 3일 때만 EndAbility** → `BeginStepTimers`.
+- `BeginStepTimers` (커스텀 이벤트): bPastChainPoint = false(큐는 비우지 않는다) → WaitDelay(StepHitTimes[ComboStep-1] / PlayRate) → `Combat.HitTargetsInFront(반경, 오프셋, 계수, 넉백, 띄우기)`. ComboStep ≤ 3이면 따로 WaitDelay(StepChainTimes[ComboStep-1] / PlayRate) → bPastChainPoint = true → QueuedInputs > 0이면 하나 꺼내고(−1) `AdvanceStep`.
 - `AdvanceStep` (커스텀 이벤트): ComboStep ≥ 4면 무시. ComboStep++ → FaceDesiredInput →
   - ComboStep ≤ 3: `MontageJumpToSection(ComboSections[ComboStep-1])` → BeginStepTimers
   - ComboStep == 4: PlayMontageAndWait(FinisherMontage, PlayRate, FinisherSection) — 모든 출력 → EndAbility → BeginStepTimers

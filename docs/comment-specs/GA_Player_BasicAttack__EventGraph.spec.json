@@ -55,12 +55,12 @@
   "color": "logic"
  },
  {
-  "text": "■ 입력 버퍼\n누름(EventMagnitude > 0.5)이면: 연결 시점이 지났으면 바로 AdvanceStep, 아니면 bInputBuffered = true로 기억해 둔다.",
+  "text": "■ 입력 버퍼 (큐)\n누름(EventMagnitude > 0.5): 연결 시점이 지났으면 바로 AdvanceStep,\n아니면 QueuedInputs = min(QueuedInputs + 1, MaxQueuedInputs)로 쌓는다.",
   "names": [
    "Branch#5",
    "Branch#6",
    "AdvanceStep#13",
-   "SetbInputBuffered#1"
+   "SetQueuedInputs#7"
   ],
   "color": "logic"
  },
@@ -76,10 +76,9 @@
   "pad": 56
  },
  {
-  "text": "■ 단계 상태 초기화\nbInputBuffered = false, bPastChainPoint = false.",
+  "text": "■ 단계 상태 초기화\nbPastChainPoint = false. 쌓인 입력(QueuedInputs)은 비우지 않는다.",
   "names": [
    "BeginStepTimers#0",
-   "SetbInputBuffered#2",
    "SetbPastChainPoint#3",
    "Sequence#0"
   ],

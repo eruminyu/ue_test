@@ -11,9 +11,19 @@
 ## 문서
 
 - `docs/01-game-spec.md`: 게임 사양(조작, 수치, 태그, 에셋 목록, 던전 흐름, 완료 기준)
-- `docs/02-build-plan.md`: MCP 작업 순서
-- `docs/03-build-log.md`: 단계별 결과 기록
-- `docs/mcp-cookbook.md`: 이 에디터 버전에서 확인한 MCP 툴 사용법과 제약
+- `docs/02-build-plan.md`: MCP 작업 순서와 에셋별 상세 설계
+- `docs/03-build-log.md`: 단계별 결과 기록 (두 번째 에디터 작업분은 `docs/parallel/`)
+- `docs/04-final-qa.md`: 최종 QA(정적 점검, 입력 없는 PIE 전투 테스트, 전체 흐름 회귀)
+- `docs/mcp-cookbook.md`, `docs/parallel/*-cookbook.md`: 이 에디터 버전에서 확인한 MCP 레시피와 함정
+- `docs/engine-api-notes.md`: 설계 전제를 엔진 소스로 검증한 노트
+- `docs/comment-pass-recipe.md`: 그래프 정리·주석 절차
+
+## 도구 (`Tools/`)
+
+- `Setup-Project.ps1`: 템플릿 콘텐츠 복사, 빌드, 에디터 실행
+- `mcp_http.py`: MCP 서버를 HTTP로 직접 부르는 클라이언트. 세션 MCP 연결이 없는 두 번째 에디터(`-ModelContextProtocolPort=8001`)에 쓴다
+- `graph_layout.py`: 그래프 덤프, 자동 배치, 전후 로직 동일성 검사(`same-logic`)
+- `graph_comments.py`: 주석 박스를 클립보드 T3D 붙여넣기로 만든다(`ui-run`). 클립보드는 모든 에디터가 공유하므로 프로세스 잠금이 걸려 있다. 병렬 작업 중에는 `ui-*` 명령만 쓴다
 
 ## Unreal MCP 사용 규칙
 
@@ -27,6 +37,8 @@
 - 에셋을 바꾸면 `AssetTools.save_assets`로 저장한다. 블루프린트는 `compile_blueprint`가 에러·경고 없이 통과해야 끝난 것이다.
 - 전용 툴이 없으면 ProgrammaticToolset(툴 묶어 호출)이나 SlateInspectorToolset(UI 조작)을 쓰되, 기록에 그렇게 남긴다.
 - 스크린샷은 컨텍스트를 많이 먹는다. 검증 단계에서만 찍고, 이미지는 파일로 저장한다.
+- 알려진 MCP 함정: 디스패처 Assign 노드가 있는 그래프를 `read_graph_dsl`로 읽으면 빈 `<Dispatcher>_Event_N` 이벤트가 매번 새로 생긴다(대신 `find_nodes` + `get_node_infos`). 클래스 참조(TSubclassOf) 변수는 만들 수 없다(조용히 int가 된다). 주석 박스와 부모 함수 호출 노드는 전용 툴이 없어 UI 자동화로 만든다. 자세한 것은 쿡북.
+- 병렬 작업: 에디터를 여러 개 띄울 때는 프로젝트 사본(저장소 밖)을 다른 포트로 열고, 에셋마다 담당 에디터를 하나로 정한 뒤 끝나면 파일을 복사해 합친다. 열려 있는 에셋 파일을 밖에서 덮어쓰지 않는다(에디터를 닫거나 그 에셋을 내린 뒤 복사).
 
 ## 블루프린트 작성 규칙
 
