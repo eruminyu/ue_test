@@ -1,0 +1,7 @@
+[
+ {"text": "■ ApplyHit(Target, Coefficient, Knockback, Launch) → bGuarded\n대상 한 명에게 타격 하나를 적용한다: 유효성 검사 → 가드 판정·피해(GAS) → 반응 이벤트 → 넉백. 반환값 bGuarded = 가드로 막혔는지.", "all": true, "color": "setup", "pad": 56},
+ {"text": "■ 유효성 검사\n대상 ASC와 내 ASC가 모두 있어야 진행한다. 없으면 false 반환.", "names": ["IsValid#2", "IsValid#3", "ReturnNode#6", "ReturnNode#7"], "color": "logic"},
+ {"text": "■ 가드 판정과 피해 적용 (GAS)\n가드면 계수 × GuardDamageScale. GE_Damage 스펙에 SetByCaller Data.Damage = 공격력 × 계수를 넣어 대상 ASC에 적용한다.", "names": ["IsBlockedByGuard#22", "GetAttackPower#23", "AssignTagSetByCallerMagnitude#28", "ApplyGameplayEffectSpecToTarget#29"], "color": "damage"},
+ {"text": "■ 반응 이벤트\n가드됐으면 대상에게 Event.Guard.Blocked, 아니면 Event.HitReact(EventMagnitude = 넉백)를 보내 경직 어빌리티를 깨운다.", "names": ["Sequence#1", "Branch#3", "SendGameplayEventToActor#30", "SendGameplayEventToActor#31"], "color": "logic"},
+ {"text": "■ 넉백\n대상이 Character이고 State.SuperArmor가 없으면 (대상 - 나) 수평 방향 × 넉백 + (0,0,Launch)로 LaunchCharacter. 마지막에 bGuarded 반환.", "names": ["CastToCharacter#1", "Branch#4", "LaunchCharacter#40", "ReturnNode#5"], "color": "logic"}
+]

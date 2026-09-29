@@ -234,3 +234,17 @@
 - **시작 맵**: `ConfigSettingsToolset SetSectionProperties {"containerName":"Project","categoryName":"Project","sectionName":"Maps","propertiesJson":"{\"EditorStartupMap\":{\"refPath\":\"/Game/SoulCombat/Maps/L_CombatField.L_CombatField\"},\"GameDefaultMap\":{\"refPath\":\"/Game/SoulCombat/Maps/L_CombatField.L_CombatField\"}}"}` → true, DefaultEngine.ini에 바로 기록.
 - **PIE 확인**: `find_actors`에 `actor_type` `/Script/Engine.GameModeBase`, `/Script/Engine.PlayerController`, BP 캐릭터 클래스를 주면 PIE 월드(`UEDPIE_0_...`) 액터가 나온다. 컨트롤러 BP 변수도 읽힌다: `OT get_properties {"instance":<PIE PC>,"properties":["HUD"]}` → `/Engine/Transient.UnrealEdEngine_0:BP_SCGameInstance_C_0.WBP_PlayerHUD_C_0`(위젯 존재 확인). PIE 로그는 `Creating play world package` 줄 뒤만 보고 LogAudio 경고(장치 문제)는 제외한다.
 - 스크린샷 툴(CaptureViewport 등)은 base64를 응답으로만 돌려주고 파일로 저장하는 툴이 없다(AssetTools write_file은 텍스트 전용). 컨텍스트를 아끼려면 프로퍼티·로그 검사로 대신한다.
+
+### 그래프 정리·주석 패스 (9단계 파일럿: BP_DungeonDoor, AC_CombatComponent, GA_Player_BasicAttack)
+
+전체 절차는 `docs/comment-pass-recipe.md`. 도구 `Tools/graph_layout.py`(dump/layout/rows/apply/same-logic), `Tools/graph_comments.py`(preview/ui-run/ui-shot/ui-close).
+- **MCP를 HTTP로 직접 부르기(8000번 메인 에디터)**: `python Tools/mcp_http.py --port 8000 --out f.txt call <toolset> <tool> '<json>'` — 덤프·스냅샷·스크린샷처럼 큰 결과를 파일로 받는다. Git Bash에서는 `export MSYS_NO_PATHCONV=1`(안 하면 `/Game/...` 인자가 `C:/Program Files/Git/Game/...`으로 바뀌어 `is not valid Blueprint` 에러).
+- **그래프 덤프(그래프를 바꾸지 않음)**: ProgrammaticToolset 스크립트 한 번에 `list_graphs` → 그래프마다 `find_nodes {"graph":G,"title":"","entry_points_only":false}` → `get_node_infos {"nodes":[...]}`. 핀 `type_id`는 exec가 `"Exec"`, 그 밖에 `"Boolean"`, `"Actor Object Reference"` 등. 두 덤프의 노드·연결·핀 값 비교로 "위치만 바뀌었는지" 검증한다(`graph_layout.py same-logic`).
+- **그래프 패널 포커스**: SlateInspector `Click {"ref":"<text BLUEPRINT>","button":"right"}` → `PressKey {"key":"Escape"}` → 이제 `Ctrl+V`/`Ctrl+Z`/`Home`이 그래프에 간다. 왼쪽 클릭은 워터마크 밑 노드의 체크박스를 눌러 **bool 핀 기본값을 뒤집었다**(CanMove Return true→false). 그래프 탭 `Click`만으로는 포커스가 안 가서 Ctrl+V가 무시됐다.
+- **붙여넣은 것만 검증**: 붙여넣은 직후 `PressKey Ctrl+C` → 선택된 붙여넣기 결과(주석 + 균형추)만 복사된다. Ctrl+A 불필요.
+- **선택 해제**: Escape는 안 된다. 더미 knot T3D를 붙여넣고 `delete_node` → 선택이 빈다.
+- **Home 스크린샷**: `PressKey Home` 뒤 1.5초 기다린 다음 `Screenshot`(맞춤 애니메이션). 최소 줌은 -12 근처라 높이 ~8000 넘는 그래프는 잘린다 → 체인을 여러 열로 배치.
+- **주석 속성 바꾸기(텍스트·위치 제외)**: `ObjectTools set_properties {"instance":{"refPath":"<BP>.<BP>:<Graph>.EdGraphNode_Comment_X"},"values":"{\"bCommentBubbleVisible_InDetailsPanel\":false}"}` → true, 축소 시 말풍선이 바로 사라짐(PostEditChange가 bCommentBubbleVisible도 맞춘다). T3D로 붙일 때는 `bCommentBubbleVisible=False`를 직접 써야 한다(InDetailsPanel만 쓰면 말풍선이 남는다). 안쪽(중첩) 박스는 끄고 최상위 박스만 켠다.
+- **주석 되돌리기/지우기**: 붙여넣은 직후 포커스 상태에서 `PressKey Ctrl+Z` 한 번 = 붙여넣기 전체 취소(노드 위치·연결 그대로, same-logic 확인). 나중에 하나만 지우기: 읽을 수 있는 줌에서 `Snapshot` → `text "■ ..."`(주석 제목) ref 왼쪽 클릭 → `PressKey Delete`.
+- **Snapshot**: `maxDepth` 4~6이면 창 이미지만 나온다. 40으로. My Blueprint `listitem` ref는 스냅샷마다 번호가 바뀐다(찾은 직후 클릭, 더블클릭 `{"doubleClick":true}`로 함수 그래프 탭 열기). 에셋 탭 닫기 = 그 `tab "<에셋>"` 아래 `button` Click(활성 탭일 때만 보임).
+- 자동 배치(`graph_layout.py layout`): exec 첫 출력 같은 행, 나머지 새 행(분기는 긴 가지를 같은 행), 새 행은 가로로 안 겹치는 가장 위 자리, 순수 노드는 소비 노드 왼쪽 아래. 노드 크기 추정은 스크린샷 실측(줌 비율로 역산)과 폭은 ±20%, 핀 많은 노드 높이는 +10%.

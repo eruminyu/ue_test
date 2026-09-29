@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ IsValidTarget(Target) → bool\n공격 대상 조건: 내 소유자가 아니고, ASC가 있고, State.Dead가 없고, 내 TeamTag가 없으면서 Team.Player 또는 Team.Enemy를 가진다.",
+  "all": true,
+  "color": "logic",
+  "pad": 48
+ }
+]

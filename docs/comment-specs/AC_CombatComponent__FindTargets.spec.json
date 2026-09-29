@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ FindTargets(Center, Radius) → Actor 배열\nSphereOverlapActors(Pawn 채널, 소유자 제외)로 모은 액터 중 IsValidTarget인 것만 지역 변수 Targets에 모아 반환한다.",
+  "all": true,
+  "color": "logic",
+  "pad": 48
+ }
+]

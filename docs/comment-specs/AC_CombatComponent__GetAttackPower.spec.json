@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ GetAttackPower() → float\n내 ASC에서 SCAttributeSet.AttackPower 현재값을 읽어 반환한다(피해 = 공격력 × 계수).",
+  "all": true,
+  "color": "damage",
+  "pad": 48
+ }
+]

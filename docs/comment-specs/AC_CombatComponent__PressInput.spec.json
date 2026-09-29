@@ -1,0 +1,34 @@
+[
+ {
+  "text": "■ PressInput(InputTag) → bool\n컨트롤러가 입력을 눌렀을 때 호출한다. 입력 이벤트를 먼저 보내고 그다음 어빌리티를 발동한다(반대 순서면 방금 발동한 평타가 자기 입력을 콤보 입력으로 받는다).",
+  "all": true,
+  "color": "event",
+  "pad": 56
+ },
+ {
+  "text": "■ 사망 확인\n죽었으면 false.",
+  "names": [
+   "Branch#0",
+   "ReturnNode#1"
+  ],
+  "color": "logic"
+ },
+ {
+  "text": "■ 입력 이벤트 전달\n소유자에게 InputTag 이벤트(EventMagnitude 1 = 누름). 실행 중인 어빌리티가 WaitGameplayEvent로 받는다.",
+  "names": [
+   "SendGameplayEventToActor#1"
+  ],
+  "color": "event",
+  "maxw": 0
+ },
+ {
+  "text": "■ 어빌리티 발동\nGrantedInputTags에서 인덱스를 찾아 같은 인덱스의 GrantedHandles로 TryActivateAbility, 결과 반환. 없으면 false.",
+  "names": [
+   "Branch#1",
+   "TryActivateAbility#3",
+   "ReturnNode#3",
+   "ReturnNode#2"
+  ],
+  "color": "damage"
+ }
+]

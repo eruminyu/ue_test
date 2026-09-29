@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ CanMove() → bool\n이동을 막는 상태 태그(GetMovementBlockingTags: State.Dead, Attacking, Casting, HitStun, Dashing, Guard) 중 하나라도 ASC에 있으면 false. ASC가 아직 없으면 true(막을 태그가 없음).",
+  "all": true,
+  "color": "logic",
+  "pad": 48
+ }
+]

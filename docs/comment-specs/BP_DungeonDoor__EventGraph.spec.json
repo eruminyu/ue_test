@@ -1,0 +1,59 @@
+[
+ {
+  "text": "■ 시작 상태 적용 (BeginPlay)\n닫힌 위치(ClosedLocation)를 저장하고, bStartOpen이면 문을 열린 위치로 즉시 옮긴 뒤 bIsOpen을 맞춘다.",
+  "names": [
+   "K2Node_Event_0",
+   "K2Node_VariableSet_0",
+   "K2Node_VariableSet_1",
+   "K2Node_CallFunction_1",
+   "K2Node_VariableSet_2",
+   "K2Node_VariableGet_1",
+   "K2Node_VariableGet_0",
+   "K2Node_Select_0",
+   "K2Node_PromotableOperator_0",
+   "K2Node_VariableGet_2",
+   "K2Node_VariableGet_3"
+  ],
+  "color": "setup"
+ },
+ {
+  "text": "■ 문 열기 (OpenDoor)\n닫혀 있을 때만: bIsOpen = true, 목표 위치 = 닫힌 위치 + OpenOffset → MoveDoor.",
+  "names": [
+   "K2Node_CustomEvent_0",
+   "K2Node_IfThenElse_0",
+   "K2Node_VariableSet_3",
+   "K2Node_VariableSet_4",
+   "K2Node_CallFunction_3",
+   "K2Node_CallFunction_2",
+   "K2Node_VariableGet_4",
+   "K2Node_PromotableOperator_1",
+   "K2Node_VariableGet_5",
+   "K2Node_VariableGet_6"
+  ],
+  "color": "event"
+ },
+ {
+  "text": "■ 문 닫기 (CloseDoor)\n열려 있을 때만: bIsOpen = false, 목표 위치 = 닫힌 위치 → MoveDoor.",
+  "names": [
+   "K2Node_CustomEvent_1",
+   "K2Node_IfThenElse_1",
+   "K2Node_VariableSet_5",
+   "K2Node_VariableSet_6",
+   "K2Node_CallFunction_4",
+   "K2Node_VariableGet_7",
+   "K2Node_VariableGet_8"
+  ],
+  "color": "event"
+ },
+ {
+  "text": "■ 문 이동 (MoveDoor)\nMoveComponentTo 하나를 열기·닫기가 같이 쓴다. 이동 중 반대 명령이 오면 새 목표로 방향만 바뀐다.",
+  "names": [
+   "K2Node_CustomEvent_2",
+   "K2Node_CallFunction_5",
+   "K2Node_VariableGet_9",
+   "K2Node_VariableGet_10",
+   "K2Node_VariableGet_11"
+  ],
+  "color": "logic"
+ }
+]

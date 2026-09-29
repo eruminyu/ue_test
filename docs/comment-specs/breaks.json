@@ -1,0 +1,6 @@
+{
+ "AC_CombatComponent__EventGraph": "ForEachLoop#5,WaitForAttributeChanged#1,Delay#56",
+ "AC_CombatComponent__PressInput": "SendGameplayEventToActor#1,Branch#1",
+ "AC_CombatComponent__ApplyHit": "IsBlockedByGuard#22,Sequence#1",
+ "GA_Player_BasicAttack__EventGraph": "WaitGameplayEvent#0,FaceDesiredInput#2,WaitDelay#2,PlayMontageAndWait#4"
+}

@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ HitTargetsInFront(Radius, ForwardOffset, Coefficient, Knockback, Launch) → int\n중심 = 소유자 위치 + 전방 × ForwardOffset. FindTargets로 찾은 대상마다 ApplyHit, 찾은 대상 수를 반환한다.",
+  "all": true,
+  "color": "damage",
+  "pad": 48
+ }
+]

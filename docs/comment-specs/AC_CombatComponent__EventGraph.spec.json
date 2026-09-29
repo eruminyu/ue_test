@@ -1,0 +1,13 @@
+[
+ {"text": "■ InitializeCombat (커스텀 이벤트, 소유 캐릭터의 BeginPlay가 호출)\n전투에 필요한 것을 순서대로 준비한다. InitStats가 AttributeSet을 먼저 만들어야 비용 검사와 UI가 동작한다.", "names": [], "wrap": [1, 2, 3, 4, 5, 6], "color": "event", "pad": 56},
+ {"text": "■ ASC 찾기와 스탯 초기화\n소유 액터의 AbilitySystemComponent를 ASC에 저장하고, AbilitySet.AttributeTable로 SCAttributeSet을 InitStats.", "names": ["InitializeCombat#0", "SetASC#1", "Sequence#2", "IsValid#4", "InitStats#36"], "color": "setup"},
+ {"text": "■ 어빌리티 부여\nAbilitySet.Abilities마다 GiveAbility(레벨 1). 핸들과 InputTag를 같은 인덱스로 배열에 저장(PressInput이 찾음).", "names": ["ForEachLoop#5", "GiveAbility#37", "Add#4", "Add#5"], "color": "damage"},
+ {"text": "■ 시작 이펙트\nAbilitySet.StartupEffects를 자신에게 적용(예: 플레이어 자원 회복).", "names": ["ForEachLoop#6", "ApplyGameplayEffectToSelf#39"], "color": "damage"},
+ {"text": "■ 팀 태그와 슈퍼아머\nTeamTag를 루스 태그로 추가. bSuperArmor면 State.SuperArmor도 추가(피격 경직·넉백 무시).", "names": ["Sequence#3", "AddLooseGameplayTags#41", "Branch#1", "AddLooseGameplayTags#43"], "color": "setup"},
+ {"text": "■ 기본값 저장\n캐릭터면 BaseWalkSpeed = 현재 MaxWalkSpeed. 부활 위치 = 지금 액터 트랜스폼.", "names": ["Sequence#4", "CastToCharacter#1", "SetBaseWalkSpeed#2", "SetRespawnTransform#3"], "color": "setup"},
+ {"text": "■ 체력 감시\nHealth가 바뀔 때마다 OnHealthChanged(새 값, MaxHealth) 방송(HUD가 받음). 새 값 ≤ 0이고 아직 살아 있으면 Die.", "names": ["WaitForAttributeChanged#1", "CallOnHealthChanged#1", "Branch#2", "Die#48"], "color": "ui"},
+ {"text": "■ Die (커스텀 이벤트)\n체력이 0이 되면 한 번만 실행된다.", "names": [], "wrap": [8, 9], "color": "event", "pad": 56},
+ {"text": "■ 사망 처리\n이미 State.Dead면 무시. bIsDead = true, State.Dead 태그, GE_Death 적용(모든 어빌리티 취소), OnDied 방송.", "names": ["Die#1", "Branch#3", "SetbIsDead#4", "AddLooseGameplayTags#53", "ApplyGameplayEffectToSelf#55", "CallOnDied#2"], "color": "damage"},
+ {"text": "■ 부활 또는 제거\nRespawnDelay 뒤 bRespawnOnDeath면 Respawn, 아니고 bDestroyOnDeath면 소유 액터 파괴.", "names": ["Delay#56", "Branch#4", "Respawn#57", "Branch#5", "DestroyActor#58"], "color": "logic"},
+ {"text": "■ Respawn (커스텀 이벤트)\nState.Dead 태그 제거 → GE_RestoreFull로 체력·자원 가득 → bIsDead = false → OnRespawned 방송(캐릭터가 래그돌 해제·텔레포트).", "names": ["Respawn#2", "RemoveLooseGameplayTags#61", "ApplyGameplayEffectToSelf#63", "SetbIsDead#5", "CallOnRespawned#3"], "color": "event"}
+]

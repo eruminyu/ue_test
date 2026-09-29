@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ SetRespawnTransform(T)\n부활 위치를 바꾼다(던전 방에 들어가면 BP_DungeonRoom이 RespawnPoint로 호출).",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

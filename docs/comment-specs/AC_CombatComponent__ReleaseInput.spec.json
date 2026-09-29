@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ ReleaseInput(InputTag)\n입력을 뗐을 때 호출한다. 소유자에게 InputTag 이벤트를 EventMagnitude 0(= 뗌)으로 보낸다. 가드처럼 누르는 동안 유지하는 어빌리티가 받는다.",
+  "all": true,
+  "color": "event",
+  "pad": 48
+ }
+]

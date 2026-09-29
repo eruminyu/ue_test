@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ IsBlockedByGuard(Target) → bool\n대상 ASC에 State.Guard가 있고, 대상 전방과 (대상→공격자) 방향의 수평 내적이 GuardConeDot 이상이면(정면에서 막음) true.",
+  "all": true,
+  "color": "logic",
+  "pad": 48
+ }
+]
