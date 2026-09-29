@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ DestroyTelegraph()\nTelegraph(예고원)가 유효하면 DestroyActor 후 변수를 비운다.\n타격 직후, Combat이 없을 때, 어빌리티가 끝날 때 부른다.",
+  "all": true,
+  "color": "ui",
+  "pad": 48,
+  "maxw": 0
+ }
+]

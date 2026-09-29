@@ -1,0 +1,75 @@
+[
+ {
+  "text": "■ 보스 내려찍기 (AI.Attack.2)\n바닥 예고원 1.2초 뒤 반경 500 타격. 활성 중 State.Attacking, 쿨타임 GE_Cooldown_Boss_Slam(8초).\nState.Dead·State.HitStun이면 발동하지 않는다.",
+  "names": [],
+  "wrap": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ 커밋\nCommitAbility(쿨타임 적용)가 실패하면 EndAbility.",
+  "names": [
+   "EventActivateAbility#0",
+   "CommitAbility#0",
+   "Branch#0",
+   "EndAbility#2"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ 예고원 스폰\n보스 발밑(캡슐 바닥 + TelegraphZOffset 2)에 BP_TelegraphCircle 스폰 → Telegraph에 저장\n→ Init(TelegraphRadius 500, TelegraphTime 1.2): 1.2초 동안 0에서 500까지 커진다.",
+  "names": [
+   "GetAvatarCharacter#3",
+   "SpawnActorBPTelegraphCircle#0",
+   "SetTelegraph#0",
+   "Init#11"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ 차지 자세와 대기\nAM_ChargedAttack을 Charge 섹션부터 재생 → TelegraphTime 1.2초 뒤\nAttack 섹션으로 점프 → HitDelay 0.45초. 몽타주가 끝나면(4출력) EndAbility.",
+  "names": [
+   "PlayMontageAndWait#0",
+   "WaitDelay#1",
+   "MontageJumpToSection#12",
+   "WaitDelay#2",
+   "EndAbility#18",
+   "EndAbility#19",
+   "EndAbility#20",
+   "EndAbility#21"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 내려찍기 타격\nCombat.HitTargetsInFront(반경 500, 전방 0, 계수 2.5, 넉백 200, 띄우기 600)\n→ GameplayCue.Enemy.Slam → DestroyTelegraph. Combat이 없으면 예고원만 지운다.",
+  "names": [
+   "GetCombat#13",
+   "IsValid#0",
+   "HitTargetsInFront#14",
+   "ExecuteGameplayCueOnOwner#15",
+   "DestroyTelegraph#16",
+   "DestroyTelegraph#17"
+  ],
+  "color": "damage",
+  "maxw": 0
+ },
+ {
+  "text": "■ 어빌리티 종료 정리\n어떤 이유로 끝나든(취소·사망 포함)\nDestroyTelegraph로 예고원을 지운다.",
+  "names": [
+   "EventOnEndAbility#1",
+   "DestroyTelegraph#22"
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ }
+]

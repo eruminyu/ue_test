@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ TryHit(Target)\nSourceCombat이 유효하고, Target이 HitActors에 없고, SourceCombat.IsValidTarget(Target)이면\nHitActors에 추가 → SourceCombat.ApplyHit(Coefficient, Knockback, Launch). 관통하며 적마다 한 번만 맞힌다.",
+  "all": true,
+  "color": "damage",
+  "pad": 48,
+  "maxw": 0
+ }
+]

@@ -286,3 +286,69 @@
   - `BT list_graphs {"blueprint":{"refPath":"/Game/SoulCombat/Characters/Enemies/BP_Enemy_Boss.BP_Enemy_Boss"}}` → `UserConstructionScript`, `EventGraph`, `OnEnraged`(디스패처)
   - 같은 호출을 `/Game/SoulCombat/Core/BP_SCPlayerController.BP_SCPlayerController`에 하면 입력 함수 7개와 EventGraph뿐이다. `ShowRoomBanner`는 없다.
 - 6단계 작업자 주의: 바인딩을 넣은 뒤에는 그 그래프(BP_Room_Boss나 BP_Enemy_Boss EventGraph)에 `read_graph_dsl`을 쓰지 않는다. Assign 노드가 있는 그래프를 읽을 때마다 연결 없는 `OnEnraged_Event_N`/`OnHealthChanged_Event_N`이 새로 생긴다. 확인은 `find_nodes {"graph":G,"title":"","entry_points_only":true}` + `get_node_infos`로 한다. BP_Enemy_Boss의 진입 노드는 지금 3개다(`AddEvent|EventBeginPlay`, `AddEvent|Custom|InitEnrage`, `AddEvent|Custom|OnHealthChanged_Event`). 넷째가 보이면 스트레이다.
+
+## 6단계 방 로직과 던전 게임 모드 (에디터 B)
+
+같은 병렬 워크플로 기록이라 여기에 잇는다. 표기는 위와 같다(`AcT`, `ST` = SceneTools, `APP`, `PT`).
+
+### 부모 방 BP (BP_DungeonRoom)
+
+- 루트 이름 붙이기: `AcT add_component`(SceneComponent `Root`) → `AcT set_parent_component {"component":{"refPath":"...BP_DungeonRoom_C:DefaultSceneRoot_GEN_VARIABLE"},"parent":{"refPath":"...BP_DungeonRoom_C:Root_GEN_VARIABLE"}}` → `compile_blueprint`. 그 뒤 BoxComponent `RoomTrigger`, ArrowComponent `RespawnPoint`가 Root 아래로 붙는다.
+- BoxComponent 기본값은 이미 `OverlapAllDynamic`(Pawn Overlap), `bGenerateOverlapEvents` true, `bHiddenInGame` true다. 그래서 크기·위치만 넣었다: `{"BoxExtent":{"x":800,"y":800,"z":250},"RelativeLocation":{"x":0,"y":0,"z":250}}`. Arrow도 `bHiddenInGame` true.
+- 자기 클래스 타입 디스패처 인자: `add_event_dispatcher OnRoomCleared` → `add_object_function_param {"graph":{"refPath":"...BP_DungeonRoom:OnRoomCleared"},"param_name":"Room","object_class":{"refPath":"/Game/SoulCombat/Dungeon/BP_DungeonRoom.BP_DungeonRoom_C"},"input_param":true}` → 핀 타입 `BP Dungeon Room Object Reference`. 게임 모드 핸들러에서 캐스트 없이 `Class|BPDungeonRoom|GetIsFinalRoom :self Room`을 바로 쓴다.
+- Text가 비었는지: `Utilities|Text|TextIsEmpty`(`IsEmpty`로 찾으면 String/Array 버전이 먼저 나온다). 오브젝트 비교 `(== OtherActor (Game|GetPlayerPawn :PlayerIndex 0))` → `Utilities|Equal(Object)`.
+- 플레이어 전투 컴포넌트: `(Actor|GetComponentbyClass :self pawn :ComponentClass "/Game/SoulCombat/Components/AC_CombatComponent.AC_CombatComponent_C")` → `(Class|ACCombatComponent|SetRespawnTransform :self combat :NewTransform (Transformation|GetWorldTransform :self (Variables|Default|GetRespawnPoint)))`. 컴포넌트 변수 노드는 `Variables|Default|Get<컴포넌트>`.
+- 출력 없는 함수 `BeginRoomLogic`(본문 `(CallFunction|ClearRoom)`)을 부모에 두면 자식이 `BT add_event {"event_name":"BeginRoomLogic"}` → `AddEvent|EventBeginRoomLogic`로 오버라이드한다. DSL 머리는 `(event EventBeginRoomLogic ...)`. 부모 `StartRoom`의 `(CallFunction|BeginRoomLogic)`은 자식 이벤트로 가상 호출된다(PIE에서 BP_Room_Mob 쪽이 돈 것으로 확인).
+- 부모가 BP인 새 Actor 자식의 EventGraph에는 연결 없는 BeginPlay, ActorBeginOverlap, Tick만 있고 Parent 노드는 없다(부모가 BeginPlay를 쓰지 않으므로). 셋 다 `delete_node`.
+
+### 방 자식: 적 배열 순회 + 핸들러 하나로 OnDied 바인딩
+
+- 루프 안에서 적마다 `(bind combat (Class|BPCombatCharacterBase|GetCombat :self e)) (Default|AssignOnDied :self combat)`를 쓴다. Assign 노드 하나가 반복 실행되고, 자동으로 생긴 `OnDied_Event (DeadActor)` 하나가 모든 적을 받는다. 부모 계층에 `OnDied_Event`가 없어서 이름에 숫자가 붙지 않았다. 본문은 두 번째 `write_graph_dsl`로 `(event Custom|OnDied_Event (DeadActor) ...)`.
+- 보스 방: `(bind eb (Utilities|Casting|CastToBP_Enemy_Boss :Object boss) (:then (Default|AssignOnEnraged :self eb)) (:CastFailed))` → `OnEnraged_Event (Boss)` 자동 생성. 같은 그래프에서 Assign 두 종류(OnDied, OnEnraged)를 write 한 번으로 만들었고 스트레이 `*_Event_N`은 생기지 않았다(read_graph_dsl을 쓰지 않았다).
+- **이름 충돌 회피**: OnEnraged 인자 이름이 `Boss`라서 핸들러 이벤트 출력 핀도 `Boss`가 된다. 같은 이름의 멤버 변수를 두지 않으려고 상태 변수를 `CurrentBoss`로 지었다(`remove_variable` 후 다시 추가).
+- break 없이 첫 번째 유효한 적 고르기: `(for e enemies (Utilities|IsValid e (:"Is Valid" (Utilities|IsValid (GetCurrentBoss) (:"Is Valid") (:"Is Not Valid" (SetCurrentBoss e)))) (:"Is Not Valid")))`. 오브젝트 변수를 None으로 초기화할 때는 `(Variables|Room|Boss|State|SetCurrentBoss)`(값 생략).
+- 이름 선택: `(select (Utilities|Text|TextIsEmpty (GetBossNameOverride)) (Class|BPEnemyBase|GetDisplayName :self boss) (GetBossNameOverride))` → Select(Text).
+- 최대 웨이브: `(SetMaxWave (Math|Integer|Max(Integer) :A (GetMaxWave) :B (Class|BPEnemyBase|GetWave :self e)))`. 다른 BP의 변수 Get(`GetWave`, `GetCombat`, `GetDisplayName`, `GetIsDead`)은 VariableGet 노드로 만들어진다.
+- 함수 이름 타이머(이벤트 방): `(Utilities|Time|SetTimerbyFunctionName :Object self :FunctionName "OnTimeUp" :Time (Variables|Room|Event|GetTimeLimit) :bLooping false)`. 해제는 `(Utilities|Time|ClearTimerbyFunctionName :Object self :FunctionName "OnTimeUp")`. 대상은 인자 없는 BP 함수 `OnTimeUp`이다.
+- 플레이어에게 GE 적용: `(bind asc (Ability|GetAbilitySystemComponent :Actor (Game|GetPlayerPawn :PlayerIndex 0)))` → `(GameplayEffects|ApplyGameplayEffectToSelf :self asc :GameplayEffectClass "/Game/SoulCombat/GAS/Effects/GE_RestoreFull.GE_RestoreFull_C" :Level 1.0 :EffectContext (GameplayEffects|MakeEffectContext :self asc))`. Level 기본값이 0이라 1.0을 꼭 넣는다.
+- 진행 문자열: `Append :A "봉인석 " :B (ToString(Integer) n)` → `Append :A s1 :B " / "` → `Append :A s2 :B (ToString(Integer) total)` → `ToText(String)`. 공용 함수 `UpdateProgress`로 뺐다.
+- 배너 겹침 주의(설계): `ClearRoom`이 `ClearBannerTitle`('클리어')을 띄운다. 결과 배너('성공!'/'실패')를 먼저 띄우는 이벤트 방은 CDO `ClearBannerTitle`을 ''로 두었다. 그러지 않으면 '클리어'가 곧바로 덮는다.
+
+### 게임 모드 (BP_DungeonGameMode)
+
+- BP_SCGameModeBase 자식의 EventGraph에는 BeginPlay/Tick만 있고 Parent 노드가 없다(부모에 BeginPlay 없음). DSL `(event EventBeginPlay ...)`로 그대로 이어 썼고 Tick은 지웠다.
+- `(bind rooms (Actor|GetAllActorsOfClass :ActorClass "/Game/SoulCombat/Dungeon/BP_DungeonRoom.BP_DungeonRoom_C")) (for room rooms (Default|AssignOnRoomCleared :self room))` → `OnRoomCleared_Event (Room)`(BP Dungeon Room 타입)이 자동 생성된다. 경과 시간은 Delay 전에 `ClearSeconds`에 저장해서 연출 대기 시간이 기록에 섞이지 않게 했다.
+
+### 레벨 인스턴스 컴포넌트의 구조체 값 (함정)
+
+- **레벨에 놓인 BP 액터의 컴포넌트에 구조체를 한 번에 넣으면 첫 필드만 들어간다.** `OT set_properties {"instance":{"refPath":"/Game/_Scratch/L_RoomSmoke.L_RoomSmoke:PersistentLevel.BP_Room_Mob_C_0.RoomTrigger"},"values":"{\"BoxExtent\":{\"x\":600,\"y\":600,\"z\":250}}"}` → true인데 다시 읽으면 (600, 800, 250)이다. (601, 599, 251)을 넣어도 x만 바뀌었다. 첫 필드가 바뀔 때 컨스트럭션 스크립트가 다시 돌며 컴포넌트가 새로 만들어지는 것으로 보인다. BP 템플릿(`..._C:RoomTrigger_GEN_VARIABLE`)에서는 세 필드가 한 번에 들어갔다.
+- 해결: 필드마다 따로 부른다. `{"BoxExtent":{"x":600}}` → `{"BoxExtent":{"y":600}}` → `{"BoxExtent":{"z":250}}` → (600, 600, 250). 액터 자체 프로퍼티(EntryDoor, ExitDoor, Enemies 배열, bStartDormant와 Wave)는 한 번에 들어갔다.
+- 레벨 액터 참조 넣기: `{"EntryDoor":"<레벨>:PersistentLevel.BP_DungeonDoor_C_0","Enemies":["...BP_Enemy_Grunt_C_0","...BP_Enemy_Grunt_C_1"]}` → 읽으면 `{"refPath":...}`.
+
+### PIE에서 방 진입 테스트
+
+- `APP StartPIE` 뒤 `AcT set_actor_transform {"actor":{"refPath":"/Game/_Scratch/UEDPIE_0_L_RoomSmoke.L_RoomSmoke:PersistentLevel.BP_PlayerCharacter_C_0"},"xform":{"location":{"x":1300,"y":0,"z":100}}}` → true. 순간이동으로도 트리거 BeginOverlap이 불렸다.
+- 기다리기: Bash `sleep`은 막혀 있어서 `python -c "import time;time.sleep(3)"`을 썼다(그동안 에디터는 계속 돈다).
+- HUD 안 중첩 위젯 경로는 `WidgetTree`가 아니라 `WidgetTree_0`이다. `OT get_properties {"instance":<PIE PC>,"properties":["HUD"]}` → HUD ref → `get_properties(HUD, ["RoomBanner"])` → `/Engine/Transient.UnrealEdEngine_0:BP_SCGameInstance_C_0.WBP_PlayerHUD_C_0.WidgetTree_0.RoomBanner`. 그 안의 `titleText`(`...RoomBanner.WidgetTree_0.TitleText`)에서 `text`를 읽어 배너 내용을 확인했다. 배너는 3초(`pendingDuration`) 뒤 Collapsed가 된다.
+- 플레이어 리스폰 위치: `OT get_properties {"instance":{"refPath":"...BP_PlayerCharacter_C_0.Combat"},"properties":["respawnTransform"]}`.
+
+## 7단계 로직 액터 배치 (에디터 B, 실제 맵 L_CombatField·L_Dungeon_01)
+
+### 배치한 BP 액터 컴포넌트: 프로퍼티도 한 호출에 하나씩 (함정 확장)
+
+- 구조체 필드만이 아니다. **서로 다른 프로퍼티 여러 개를 한 번에 넣어도 첫 프로퍼티만 들어간다.** `OT set_properties {"instance":{"refPath":"/Game/SoulCombat/Maps/L_CombatField.L_CombatField:PersistentLevel.BP_Enemy_Grunt_C_1.Combat"},"values":"{\"bRespawnOnDeath\":true,\"bDestroyOnDeath\":false,\"RespawnDelay\":5}"}` → true인데 다시 읽으면 `{"bRespawnOnDeath":true,"bDestroyOnDeath":true,"RespawnDelay":3}`였다.
+- 해결: `{"bRespawnOnDeath":true}` → `{"bDestroyOnDeath":false}` → `{"RespawnDelay":5}`처럼 호출을 나눈다. 그 뒤 `set_actor_folder`, 액터 자체 프로퍼티(`bStartDormant`) 설정에도 값이 유지됐다(get_properties 확인, 저장 후 PIE에서도 적용).
+- 액터 자체 프로퍼티는 여러 개를 한 번에 넣어도 됐지만, 안전하게 PT 스크립트에서 `for k,v in vals.items(): sp(R,{k:v})`로 하나씩 넣고 한 번에 읽어 확인했다(방 RoomIndex·EntryDoor·ExitDoor·bIsFinalRoom·Enemies).
+- 배치 BP 인스턴스의 컴포넌트 ref: `<맵>.<맵>:PersistentLevel.<액터 이름>.<컴포넌트 이름>`(`AcT get_components`가 돌려준다. 예 `.Combat`, `.RoomTrigger`, `.RespawnPoint`, `.DoorMesh`).
+
+### 캐릭터 z와 방 트리거
+
+- 캐릭터 캡슐 반높이 읽기: `OT get_properties {"instance":{"refPath":"/Game/SoulCombat/Characters/Enemies/BP_Enemy_Grunt.Default__BP_Enemy_Grunt_C:CollisionCylinder"},"properties":["CapsuleHalfHeight","CapsuleRadius"]}` → Grunt·Dummy·SealCrystal 88/34, Boss 132/51. 바닥 z=0 위에 놓으려면 z = 반높이 + 2~4(Grunt·Dummy 92, 봉인석 90, 보스 136). PIE에서 떨어져 Grunt 90.2, 보스 134.2로 선다.
+- 방 트리거: 방 액터를 방 중심 (cx,0,0)에 두면 RoomTrigger 기본 RelativeLocation이 (0,0,250)이라 BoxExtent만 필드별로 바꾼다(`{"BoxExtent":{"x":ex}}` → `{"y":ey}` → `{"z":250}`). RespawnPoint는 `{"RelativeLocation":{"x":<방 min x + 250 - cx>}}` 한 필드만 넣으면 y 0, z 100이 유지된다. `AcT get_actor_bounds(방)` = 트리거 범위(예 Room_Mob1 (1200,-800,0)~(2800,800,500))라 바로 대조된다.
+
+### 스폰 지점이 방 트리거 안이면 방이 시작되지 않는다 (BP_DungeonRoom 한계)
+
+- L_Dungeon_01 PIE: PlayerStart (0,0)가 Room_Start 트리거(x·y ±400) 안인데 3초 뒤 `bStarted`/`bCleared` false. 플레이어를 (-500,0,100)으로 옮겼다가 (0,0,100)으로 돌려놓으면 바로 true/true가 됐다. 트리거 크기·위치는 맞다.
+- 원인(그래프 읽기로 확인, `find_nodes` EventGraph): 처리기는 `OnComponentBeginOverlap(RoomTrigger)` → `OtherActor == GetPlayerPawn(0)` AND NOT bStarted → StartRoom 하나뿐이다. PIE에서 폰은 월드 BeginPlay 전에 스폰되고, 첫 겹침은 빙의 전에 생긴다. 그래서 그때는 GetPlayerPawn(0)이 None이고, 조건이 거짓이 되는 것으로 본다. 그 뒤로는 겹침이 새로 생기지 않는다.
+- 고치려면 BP 수정이 필요하다(이번 작업 범위 밖): BP_DungeonRoom BeginPlay에서 한 틱 뒤(Delay 0) `RoomTrigger.IsOverlappingActor(GetPlayerPawn(0))`이고 시작 전이면 StartRoom. 레벨만 바꾸는 대안은 Start 트리거를 스폰 지점 앞(예 x[100,400])으로 옮겨 걸어 들어가게 하는 것이다.
+- PIE 중 `AcT set_actor_transform`은 되지만, 로그에 `LogUtils: Error: The Editor is currently in a play mode.`와 `LevelEditorSubsystem: Error: GetCurrentLevel...`가 한 번씩 남는다(툴이 남기는 것). PIE 로그 검사에서 이 두 줄과 `list_properties`가 남기는 `LogJson: Warning: ... unhandled during Json schema generation`은 빼고 본다.

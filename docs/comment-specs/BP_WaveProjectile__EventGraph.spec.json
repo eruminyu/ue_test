@@ -1,0 +1,22 @@
+[
+ {
+  "text": "■ BeginPlay: 수명\nSetLifeSpan(Lifetime 0.8초).\n0.8초 뒤 스스로 사라진다.",
+  "names": [
+   "EventBeginPlay#0",
+   "SetLifeSpan#3"
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ Hitbox 겹침 시작\n겹친 액터를 TryHit에 넘긴다.\n(중복·대상 판정은 TryHit)",
+  "names": [
+   "OnComponentBeginOverlap(Hitbox)#0",
+   "TryHit#7"
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ }
+]

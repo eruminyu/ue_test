@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ GetAttackPower() → AttackPower\nCombat 컴포넌트의 GetAttackPower(현재 SCAttributeSet.AttackPower)를\n그대로 돌려준다. Combat이 없으면 0.",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

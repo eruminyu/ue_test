@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ Tick: 예고원 키우기\nElapsed += DeltaSeconds → UpdateDiscScale.\nGrowTime 동안 커지고 그 뒤 크기를 유지한다.",
+  "all": true,
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ }
+]

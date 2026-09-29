@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ FaceDirection(Direction)\n수평 길이(VectorLengthXY)가 0.1 이상일 때만 아바타 Yaw를 그 방향으로 돌린다.\nPitch·Roll은 0이라 캐릭터가 기울지 않는다. 입력이 없으면 그대로 둔다.",
+  "all": true,
+  "color": "logic",
+  "pad": 48
+ }
+]

@@ -1,0 +1,52 @@
+[
+ {
+  "text": "■ ActivateAbility: 몽타주 한 번 + 타격 한 번\n스킬 3종과 몬스터 근접 공격이 상속하는 공통 흐름. 수치는 자식의 변수(Montage, HitTime, Coefficient, Radius...)로 정한다.",
+  "names": [],
+  "wrap": [
+   1,
+   2,
+   3
+  ],
+  "color": "event",
+  "pad": 56
+ },
+ {
+  "text": "■ 비용·쿨타임 커밋\nCommitAbility(Cost/Cooldown GE 적용)가 실패하면\n바로 EndAbility.",
+  "names": [
+   "EventActivateAbility#3",
+   "CommitAbility#3",
+   "Branch#0",
+   "Sequence#0",
+   "EndAbility#14"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ 시작 방향, 자식 훅, 돌진\nbFaceInputOnStart면 FaceDesiredInput → OnActionStarted(자식용, 기본 빈 함수).\nLungeSpeed > 0이면 ApplyRootMotionConstantForce(전방, Additive)로 애니 루트 모션에 돌진을 더한다.",
+  "names": [
+   "Branch#1",
+   "FaceDesiredInput#4",
+   "OnActionStarted#5",
+   "Sequence#1",
+   "Branch#2",
+   "ApplyRootMotionConstantForce#3"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 몽타주 재생과 타격 시점\nPlayMontageAndWait(Montage, PlayRate, StartSection) → WaitDelay(HitTime / PlayRate) → OnHitFrame. 몽타주가 끝나면(4출력 모두) EndAbility.",
+  "names": [
+   "PlayMontageAndWait#4",
+   "WaitDelay#5",
+   "OnHitFrame#9",
+   "EndAbility#10",
+   "EndAbility#11",
+   "EndAbility#12",
+   "EndAbility#13"
+  ],
+  "color": "damage",
+  "maxw": 0
+ }
+]

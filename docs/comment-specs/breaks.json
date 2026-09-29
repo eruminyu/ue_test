@@ -2,5 +2,11 @@
  "AC_CombatComponent__EventGraph": "ForEachLoop#5,WaitForAttributeChanged#1,Delay#56",
  "AC_CombatComponent__PressInput": "SendGameplayEventToActor#1,Branch#1",
  "AC_CombatComponent__ApplyHit": "IsBlockedByGuard#22,Sequence#1",
- "GA_Player_BasicAttack__EventGraph": "WaitGameplayEvent#0,FaceDesiredInput#2,WaitDelay#2,PlayMontageAndWait#4"
+ "GA_Player_BasicAttack__EventGraph": "WaitGameplayEvent#0,FaceDesiredInput#2,WaitDelay#2,PlayMontageAndWait#4",
+ "GA_ActionBase__EventGraph": "Branch#1,Sequence#1,PlayMontageAndWait#4 (+ layout 수동 이동: y>=1296 노드 y+128)",
+ "GA_HitReact__EventGraph": "PlaySlotAnimationAsDynamicMontage#9",
+ "GA_Player_Guard__EventGraph": "AddGameplayCueToOwner#1,WaitGameplayEvent#1",
+ "GA_Player_Dash__EventGraph": "GetCombat#1,ApplyGameplayEffectToOwner#7,PlayMontageAndWait#0 (+ layout 수동 이동: x>=2192 노드 x+96)",
+ "GA_Boss_Slam__EventGraph": "GetAvatarCharacter#3,PlayMontageAndWait#0,GetCombat#13",
+ "GA_Boss_Charge__EventGraph": "Sequence#0,WaitDelay#4 (+ layout 수동 이동: y>=600 노드 y+96)"
 }

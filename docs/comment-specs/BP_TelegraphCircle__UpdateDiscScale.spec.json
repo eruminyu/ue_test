@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ UpdateDiscScale()\n진행도 = GrowTime > 0이면 Min(1, Elapsed / GrowTime), 아니면 1.\n반지름 = TargetRadius × Lerp(MinRadiusRatio 0, 1, 진행도).\nDisc 스케일 XY = 반지름 / MeshRadius(50), Z = DiscHeightScale(0.01).",
+  "all": true,
+  "color": "ui",
+  "pad": 48,
+  "maxw": 0
+ }
+]

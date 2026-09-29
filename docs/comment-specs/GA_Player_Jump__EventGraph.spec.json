@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ 점프 (Space)\nCommitAbility → 아바타 Character의 Jump → JumpEndDelay 0.1초 뒤 EndAbility. 점프 자체는 이동 컴포넌트가 이어간다.\nCommit 실패면 바로 EndAbility. HitStun·Casting·Guard·Dead 상태에서는 발동하지 않는다.",
+  "all": true,
+  "color": "event",
+  "pad": 56
+ }
+]

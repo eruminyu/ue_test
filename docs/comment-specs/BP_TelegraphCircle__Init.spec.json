@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ Init(Radius, Duration)\nTargetRadius = Radius, GrowTime = Duration, Elapsed = 0 → UpdateDiscScale(시작 크기 0).\n스스로 파괴하지 않는다(보스 스킬이 DestroyTelegraph로 지운다).",
+  "all": true,
+  "color": "setup",
+  "pad": 48,
+  "maxw": 0
+ }
+]

@@ -1,0 +1,55 @@
+[
+ {
+  "text": "■ 대시 (Left Shift)\n활성 중 State.Dashing. 시작할 때 기본 공격·스킬·가드·피격 경직(Ability.HitReact)을 모두 끊어서 어떤 상황에서도 빠져나갈 수 있다.",
+  "names": [],
+  "wrap": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "color": "event",
+  "pad": 56
+ },
+ {
+  "text": "■ 커밋 (스태미나 25, 쿨타임 0.3초)\nCommitAbility가 GE_Cost_Dash·GE_Cooldown_Dash를 적용한다.\n스태미나가 모자라거나 쿨타임이면 EndAbility.",
+  "names": [
+   "EventActivateAbility#0",
+   "CommitAbility#0",
+   "Branch#0",
+   "EndAbility#13"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ 대시 방향\n입력 방향(Combat.DesiredFacing)이 있으면 그쪽, 없으면(길이 < 0.1)\n지금 보는 전방으로 FaceDirection.",
+  "names": [
+   "GetCombat#1",
+   "FaceDirection#6"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 무적 부여\nGE_DashInvuln으로 0.35초 동안 State.Invulnerable을 줘서\n피해와 경직을 무시한다. ActivationOwnedTags로 주면\n대시가 끝날 때까지 남아서 GE로 준다.",
+  "names": [
+   "ApplyGameplayEffectToOwner#7"
+  ],
+  "color": "damage"
+ },
+ {
+  "text": "■ 대시 모션과 종료\nAM_Dash를 1.3배로 재생(루트 모션으로 이동). 루트 모션이 꺼지는 DashDuration 0.49초 뒤\n또는 몽타주가 끝나면(4출력) EndAbility → State.Dashing 해제.",
+  "names": [
+   "PlayMontageAndWait#0",
+   "WaitDelay#1",
+   "EndAbility#8",
+   "EndAbility#9",
+   "EndAbility#10",
+   "EndAbility#11",
+   "EndAbility#12"
+  ],
+  "color": "logic",
+  "maxw": 0
+ }
+]

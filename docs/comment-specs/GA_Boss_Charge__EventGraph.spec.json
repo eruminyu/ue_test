@@ -1,0 +1,63 @@
+[
+ {
+  "text": "■ 보스 돌진 (AI.Attack.3)\n선딜 0.5초 뒤 전방 2500으로 0.6초 돌진, 경로 반경 200을 세 번 타격. 활성 중 State.Attacking,\n쿨타임 GE_Cooldown_Boss_Charge(10초). State.Dead·State.HitStun이면 발동하지 않는다.",
+  "names": [],
+  "wrap": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ },
+ {
+  "text": "■ 커밋과 초기화\nCommit 실패면 EndAbility. 성공하면 HitActors를 비운다\n(이번 돌진의 중복 타격 기록).",
+  "names": [
+   "EventActivateAbility#0",
+   "CommitAbility#0",
+   "Branch#0",
+   "EndAbility#2",
+   "Clear#0"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ 대상 쪽으로 회전\n플레이어 폰(GetPlayerPawn 0)이 있으면\n그 방향으로 FaceDirection.",
+  "names": [
+   "Sequence#0",
+   "IsValid#0",
+   "FaceDirection#7"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 선딜과 돌진\nAM_ChargedAttack Charge 재생 → WindupTime 0.5초 → AM_Dash 재생\n+ ApplyRootMotionConstantForce(전방, ChargeSpeed 2500, ChargeDuration 0.6초).",
+  "names": [
+   "PlayMontageAndWait#0",
+   "WaitDelay#1",
+   "PlayMontageAndWait#2",
+   "ApplyRootMotionConstantForce#3"
+  ],
+  "color": "logic",
+  "maxw": 0
+ },
+ {
+  "text": "■ 경로 타격과 종료\nHitTimes 0.15 / 0.35 / 0.55초에 HitAlongPath(각 대기 = 다음 시각 − 이전 시각)\n→ EndTime 0.8초에 EndAbility.",
+  "names": [
+   "WaitDelay#4",
+   "HitAlongPath#9",
+   "WaitDelay#5",
+   "HitAlongPath#10",
+   "WaitDelay#6",
+   "HitAlongPath#11",
+   "WaitDelay#7",
+   "EndAbility#12"
+  ],
+  "color": "damage",
+  "maxw": 0
+ }
+]

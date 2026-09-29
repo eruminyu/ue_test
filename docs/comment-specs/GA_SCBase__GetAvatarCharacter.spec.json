@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ GetAvatarCharacter() → AvatarCharacter\n아바타 액터를 Character로 캐스트해 돌려준다(점프·몽타주용).\n캐릭터가 아니면 빈 값을 돌려준다.",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

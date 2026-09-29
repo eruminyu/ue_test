@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ OnHitFrame 오버라이드 (E 대지 강타)\n부모 OnHitFrame으로 자기 중심 반경 450(전방 0), 계수 4.0, 넉백 300, 띄우기 700 타격 뒤\nGameplayCue.Skill.GroundSlam(충격파 이펙트)을 소유자에게 실행한다.",
+  "all": true,
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ }
+]

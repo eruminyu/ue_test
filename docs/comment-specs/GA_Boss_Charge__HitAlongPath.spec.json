@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ HitAlongPath() — 돌진 경로 타격 한 번\n아바타 위치 반경 HitRadius(200) 안의 대상을 Combat.FindTargets로 찾고, HitActors에 없는 대상만\n추가한 뒤 ApplyHit(Coefficient 1.8, Knockback 600, Launch 200). 한 번의 돌진에서 대상마다 한 번만 맞는다.",
+  "all": true,
+  "color": "damage",
+  "pad": 48,
+  "maxw": 0
+ }
+]

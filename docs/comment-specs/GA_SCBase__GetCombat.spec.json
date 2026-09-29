@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ GetCombat() → Combat\n아바타 액터에서 AC_CombatComponent를 찾아 돌려준다. 모든 어빌리티가 타격·가드·이동 판정을 이 컴포넌트에 맡긴다.",
+  "all": true,
+  "color": "setup",
+  "pad": 48
+ }
+]

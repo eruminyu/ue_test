@@ -1,0 +1,36 @@
+[
+ {
+  "text": "■ 피격 경직 (Event.HitReact로 발동)\n가드 실패 때 공격자가 보낸 Event.HitReact로 켜진다. 활성 중 State.HitStun(ActivationOwnedTags)이 붙어 행동이 막힌다.\n경직 중 다시 맞으면 재시작(bRetriggerInstancedAbility)해 시간이 갱신된다. SuperArmor·Invulnerable·Dead면 발동 안 함.",
+  "names": [],
+  "wrap": [
+   1,
+   2
+  ],
+  "color": "event",
+  "pad": 56
+ },
+ {
+  "text": "■ 커밋과 아바타 확인\n시작할 때 공격·가드(Ability.Attack.Basic, Ability.Enemy.Attack, Ability.Guard)를 끊는다.\nCommitAbility 실패 또는 아바타가 Character가 아니면 바로 EndAbility.",
+  "names": [
+   "EventActivateAbility#0",
+   "CommitAbility#6",
+   "Branch#0",
+   "GetAvatarCharacter#7",
+   "IsValid#0",
+   "EndAbility#12",
+   "EndAbility#11"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ 움찔 모션과 경직 시간\n메시 AnimInstance로 MM_HitReact_Front_Lgt_01을 DefaultSlot 동적 몽타주로 재생(블렌드 0.05/0.15, 1.2배).\nStunDuration 0.4초 뒤 EndAbility → State.HitStun이 풀린다.",
+  "names": [
+   "PlaySlotAnimationAsDynamicMontage#9",
+   "WaitDelay#0",
+   "EndAbility#10"
+  ],
+  "color": "damage",
+  "maxw": 0
+ }
+]

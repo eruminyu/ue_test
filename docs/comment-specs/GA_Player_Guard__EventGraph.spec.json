@@ -1,0 +1,45 @@
+[
+ {
+  "text": "■ 가드 (우클릭을 누르는 동안)\n활성 중 State.Guard가 붙어 제자리에 서고, 공격자의 ApplyHit가 전방 120도 공격을 계수 0.2로 줄인다(경직 없음, 넉백 30%).",
+  "names": [],
+  "wrap": [
+   1,
+   2,
+   3
+  ],
+  "color": "event",
+  "pad": 56
+ },
+ {
+  "text": "■ 커밋\n시작할 때 기본 공격(Ability.Attack.Basic)을 끊는다.\nCommitAbility 실패면 EndAbility.",
+  "names": [
+   "EventActivateAbility#0",
+   "CommitAbility#0",
+   "Branch#0",
+   "EndAbility#5"
+  ],
+  "color": "setup",
+  "maxw": 0
+ },
+ {
+  "text": "■ 가드 자세\nGameplayCue.Guard.Active를 켜고(어빌리티가 끝나면 자동 제거)\nAM_ChargedAttack의 Charge 섹션을 반복 재생해 자세를 유지한다.",
+  "names": [
+   "AddGameplayCueToOwner#1",
+   "PlayMontageAndWait#0"
+  ],
+  "color": "ui",
+  "maxw": 0
+ },
+ {
+  "text": "■ 버튼 뗌 감지와 막기 피드백\nInputTag.Guard 이벤트의 EventMagnitude < 0.5(뗌)이면 EndAbility(몽타주도 같이 멈춤).\nEvent.Guard.Blocked를 받을 때마다 GameplayCue.Guard.Block(불꽃)을 재생한다.",
+  "names": [
+   "WaitGameplayEvent#1",
+   "Branch#1",
+   "EndAbility#4",
+   "WaitGameplayEvent#2",
+   "ExecuteGameplayCueOnOwner#2"
+  ],
+  "color": "logic",
+  "maxw": 0
+ }
+]

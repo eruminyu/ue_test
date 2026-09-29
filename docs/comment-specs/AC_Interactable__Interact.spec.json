@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ Interact(Interactor)\nbEnabled(기본 true)면 OnInteracted(Interactor)를 방송한다.\n게이트 같은 소유 액터가 이 디스패처에 바인딩해 반응한다.",
+  "all": true,
+  "color": "event",
+  "pad": 48,
+  "maxw": 0
+ }
+]

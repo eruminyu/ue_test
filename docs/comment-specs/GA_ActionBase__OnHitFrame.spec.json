@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ OnHitFrame() (자식이 오버라이드)\n타격 시점에 Combat.HitTargetsInFront(Radius, ForwardOffset, Coefficient, Knockback, Launch)로\n전방 범위의 적에게 피해를 준다. GroundSlam·WaveSlash는 이 함수를 덮어써 큐·투사체를 더한다.",
+  "all": true,
+  "color": "damage",
+  "pad": 48
+ }
+]

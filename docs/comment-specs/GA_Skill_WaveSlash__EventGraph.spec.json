@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ OnHitFrame 오버라이드 (R 검기 날리기)\n부모의 근접 타격은 부르지 않는다. 아바타 위치 + 전방 × ForwardOffset(100)에 아바타 회전으로\nBP_WaveProjectile을 스폰(Owner = 아바타) → Init(Combat, Coefficient 2.5, Knockback 400, Launch 0).",
+  "all": true,
+  "color": "event",
+  "pad": 56,
+  "maxw": 0
+ }
+]

@@ -1,0 +1,8 @@
+[
+ {
+  "text": "■ FaceDesiredInput()\n공격·대시 직전에 Combat.DesiredFacing(마지막 이동 입력 방향)으로\nFaceDirection을 불러 입력한 쪽을 보게 한다. Combat이 없으면 무시.",
+  "all": true,
+  "color": "logic",
+  "pad": 48
+ }
+]

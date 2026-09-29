@@ -1,0 +1,9 @@
+[
+ {
+  "text": "■ Init(SourceCombat, Coefficient, Knockback, Launch)\n스폰한 어빌리티(WaveSlash)가 준 값을 저장한다. 스폰 순간 이미 겹친 액터는 BeginOverlap이\nInit보다 먼저 와서 놓치므로, GetOverlappingActors로 한 번 더 TryHit.",
+  "all": true,
+  "color": "setup",
+  "pad": 48,
+  "maxw": 0
+ }
+]
