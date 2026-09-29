@@ -77,7 +77,7 @@
 | MI_SC_FloorField, MI_SC_FloorDungeon, MI_SC_Wall | `/Game/LevelPrototyping/Materials/M_PrototypeGrid` | SurfaceColor, TopSurfaceColor, GridColor, SubGridColor (Vector) |
 | MI_SC_Door, MI_SC_Gate, MI_SC_Crystal(보라) | `/Game/LevelPrototyping/Materials/M_FlatCol` | `Base Color` (공백 포함) |
 | MI_SC_Portal(청록), MI_SC_Telegraph(빨강) | `/Game/LevelPrototyping/Interactable/JumpPad/Assets/Materials/M_SimpleGlow` | `Color` |
-| MI_SC_Boss_01, MI_SC_Boss_02 (어두운 빨강) | `/Game/Characters/Mannequins/Materials/MI_Manny_01_New`, `MI_Manny_02_New` | `Paint Tint` |
+| MI_SC_Boss_01, MI_SC_Boss_02 (어두운 빨강) | `/Game/Characters/Mannequins/Materials/Manny/MI_Manny_01_New`, `Manny/MI_Manny_02_New` | `Paint Tint` |
 
 보스 메시 SKM_Manny_Simple의 머티리얼 슬롯 0에 Boss_01, 1에 Boss_02.
 
