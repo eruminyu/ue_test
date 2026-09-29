@@ -180,3 +180,72 @@
 - 한글 값: 결과를 콘솔에 print하면 깨져 보인다(cp949). 실제 값은 `--out` 파일을 `encoding='utf-8'`로 읽어 `unicode_escape`로 비교해 확인했다(정상 저장). 인자 파일은 `json.dump` 기본값(ensure_ascii, `\uXXXX`)으로 쓰는 편이 안전하다.
 - `GetLogEntries`의 `\[Compiler\]` 패턴을 셸 인자 JSON에 넣으면 이스케이프가 깨진다 → Python으로 인자 파일을 만든다(`json.dump({'pattern':r'\[Compiler\]','category':'','maxEntries':30}, ...)`).
 - 레이아웃: Think(65노드)와 컨트롤러 EventGraph는 `arrange_nodes` 뒤 PT 스크립트로 같은 x 열을 추정 너비 + 90 간격으로 다시 벌리고, 열 안에서는 추정 높이(50 + 28 × 핀 수) + 40만큼 아래로 밀었다. BP_EnemyBase EventGraph는 arrange가 이벤트를 체인 중간에 흩어 놓아 `set_node_position`으로 직접 배치했다(BeginPlay 줄 y 0, Sequence then_1 줄 y 480, OnDied 줄 y 1000, OnRespawned 줄 y 1350).
+
+## 5단계 몬스터 2/2 (에디터 B): 예고원, 보스 GA, 보스 BP, PIE 스모크
+
+### 예고원 액터 (BP_TelegraphCircle)
+
+- `StaticMeshTools get_bounds {"mesh":{"refPath":"/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder"}}` → min (-50,-50,0), max (50,50,100). **피벗이 바닥**이라 액터를 바닥 +2에 두면 원판이 바닥 위에 얹힌다. 반지름 50 → XY 배율 = 반지름 / 50, 높이 2 cm → Z 배율 0.02.
+- `AcT add_component`(StaticMeshComponent `Disc`, DefaultSceneRoot 아래) → `OT set_properties {"instance":{"refPath":"...BP_TelegraphCircle_C:Disc_GEN_VARIABLE"},"values":{"StaticMesh":"/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder","RelativeScale3D":{"x":1,"y":1,"z":0.02},"OverrideMaterials":["/Game/SoulCombat/Materials/MI_SC_Telegraph.MI_SC_Telegraph"],"BodyInstance":{"collisionProfileName":"NoCollision","collisionEnabled":"NoCollision"},"bGenerateOverlapEvents":false,"CanCharacterStepUpOn":"ECB_No","CastShadow":false}}` → true.
+- 주의: `get_properties ["BodyInstance.collisionProfileName"]`처럼 점 경로를 주면 `could not be read` 에러가 난다. `["BodyInstance"]` 전체를 읽고 그 안에서 찾는다.
+- 노드 ID: `Transformation|SetRelativeScale3D :self (Variables|Default|GetDisc) :NewScale3D v`, `Math|Float|Lerp :A :B :Alpha`, `Math|Float|Min(Float) :A :B`, `Math|Float|SafeDivide :A :B`. Tick 머리는 `(event EventTick (DeltaSeconds) ...)`.
+- 0 나눗셈 방지: `(select (> grow 0.0) (Math|Float|Min(Float) :A 1.0 :B (Math|Float|SafeDivide :A elapsed :B grow)) 1.0)`. Select는 양쪽 입력을 모두 계산하므로 `/` 대신 SafeDivide를 쓴다.
+
+### 보스 GA (GA_SCBase 자식)
+
+- GA_SCBase 자식을 `BT create`하면 EventGraph에 연결 없는 `ActivateAbility`(K2Node_Event_0)와 `OnEndAbility`(K2Node_Event_1)만 생긴다. Parent 노드는 없다. `(event Ability|EventActivateAbility ...)`와 `(event Ability|EventOnEndAbility (bWasCancelled) ...)`로 쓰면 기존 노드에 그대로 이어진다. 안 쓰는 OnEndAbility는 `delete_node`로 지운다.
+- 캡슐 바닥 위치: `(Components|Capsule|GetScaledCapsuleHalfHeight :self (Class|Character|GetCapsuleComponent :self ch))`. 여기서 `ch = (CallFunction|GetAvatarCharacter)`(GA_SCBase 함수, 실행 노드)다.
+- BP 액터 스폰과 초기화: `(bind tel (Game|SpawnActorfromClass :Class "/Game/SoulCombat/Combat/BP_TelegraphCircle.BP_TelegraphCircle_C" :SpawnTransform (Math|Transform|MakeTransform :Location loc) :CollisionHandlingOverride "AlwaysSpawn" :Owner ch))` → 노드가 `Game|SpawnActorBPTelegraphCircle`로 바뀐다. 이어서 `(Class|BPTelegraphCircle|Init :self tel :Radius r :Duration d)`. BP 타입 오브젝트 변수는 `add_object_variable ... "object_class":{"refPath":"/Game/SoulCombat/Combat/BP_TelegraphCircle.BP_TelegraphCircle_C"}`로 만들고, Set 노드에 바로 연결된다.
+- 파괴: `(Utilities|IsValid t (:"Is Valid" (Actor|DestroyActor :self t) (Variables|Slam|State|SetTelegraph)) (:"Is Not Valid"))`. 슬램 체인과 OnEndAbility가 같은 함수 `DestroyTelegraph`를 부른다.
+- 몽타주 섹션 루프 활용: AM_ChargedAttack의 `Charge` 섹션은 자기 자신으로 루프한다(engine-api-notes D1b). 그래서 다음 순서가 그대로 동작한다.
+  1. `PlayMontageAndWait :StartSection "Charge"`
+  2. `WaitDelay(TelegraphTime)`
+  3. `(Ability|Animation|MontageJumptoSection :SectionName "Attack")` (인터럽트가 나지 않는다)
+  4. `WaitDelay(0.367)` (Attack 섹션 기준 타격 노티파이 시점)
+
+  몽타주가 끝나면 BlendOut/Completed 핀이 EndAbility를 부른다.
+- 두 번째 몽타주(돌진): 첫 PlayMontageAndWait(윈드업)의 Completed/BlendOut/Interrupted/Cancelled 핀은 **연결하지 않는다**. AM_Dash가 시작되면 윈드업 태스크가 OnInterrupted를 동기로 낸다. 여기에 EndAbility를 걸면 돌진이 바로 끊긴다(engine-api-notes B1). 어빌리티 종료는 마지막 WaitDelay → EndAbility에서만 한다.
+- 돌진: `(Ability|Tasks|ApplyRootMotionConstantForce :TaskInstanceName "Charge" :WorldDirection (Transformation|GetActorForwardVector :self av) :Strength speed :Duration dur :bIsAdditive false :VelocityOnFinishMode "ClampVelocity" :ClampVelocityOnFinish 0.0 :bEnableGravity true (:then ...))`. 힘이 끝나면 속도 0으로 멈춘다.
+- 여러 시점 타격: Sequence 대신 WaitDelay를 이어 붙였다(`t0`, `t1-t0`, `t2-t1`, `EndTime-t2`). 시점 값은 float 배열 변수 `HitTimes`([0.15, 0.35, 0.55])와 `EndTime`(0.8)에 둔다. `(bind t0 (Utilities|Array|Get(acopy) times 0))`에서 인덱스는 핀 기본값으로 들어간다.
+- 중복 타격 방지: `(for t targets (if (not (Utilities|Array|ContainsItem (Variables|Charge|State|GetHitActors) t)) (Utilities|Array|Add (Variables|Charge|State|GetHitActors) t) (Class|ACCombatComponent|ApplyHit :self combat :Target t ...)))`. 배열 변수 Get 출력에 Add나 Clear(`Utilities|Array|Clear`)를 연결하면 멤버 배열 자체가 바뀐다. 어빌리티 시작 시 Clear한다.
+- CDO: `{"abilityTags":{...Slam},"activationBlockedTags":{State.Dead, State.HitStun},"activationOwnedTags":{State.Attacking},"cooldownGameplayEffectClass":"/Game/SoulCombat/GAS/Effects/GE_Cooldown_Boss_Slam.GE_Cooldown_Boss_Slam_C"}`와 변수 기본값을 `set_properties` 한 번으로 넣었다. instancingPolicy는 부모에서 InstancedPerActor를 상속한다.
+
+### 보스 BP (BP_EnemyBase 자식): 부모 BeginPlay를 지우지 않고 바인딩 추가
+
+- 새 자식 BP의 `BeginPlay` + `Parent: BeginPlay` 노드는 그대로 둔다. **BeginPlay를 DSL로 쓰면 부모 호출 노드가 지워진다**(1/2 참고). 대신 이렇게 한다.
+  1. `BT add_event {"event_name":"InitEnrage"}`
+  2. `(event Custom|InitEnrage (Default|AssignOnHealthChanged :self (Variables|Default|GetCombat)))`
+  3. 자동으로 생긴 `OnHealthChanged_Event (NewValue MaxValue)`의 본문을 두 번째 write로 쓴다.
+  4. `BT create_node {"type_id":"CallFunction|InitEnrage"}`
+  5. `connect_pins`: Parent:BeginPlay `then`(index 0) → InitEnrage `execute`(index 0)
+
+  SlateInspector 없이 끝난다. 부모 계층에 OnHealthChanged 바인딩이 없어서 이벤트 이름에 숫자가 붙지 않았고(`_Event`), 스트레이 이벤트도 생기지 않았다.
+- 자기 ASC에 GE 적용: `(bind asc (Class|ACCombatComponent|GetASC :self (Variables|Default|GetCombat)))` → `(GameplayEffects|ApplyGameplayEffectToSelf :self asc :GameplayEffectClass "/Game/SoulCombat/GAS/Effects/GE_Boss_Enrage.GE_Boss_Enrage_C" :Level 1.0 :EffectContext (GameplayEffects|MakeEffectContext :self asc))`. **Level 핀 기본값이 0.0**이므로 반드시 명시한다.
+- 오브젝트 인자가 있는 디스패처 방송: `add_event_dispatcher OnEnraged` + `add_object_function_param {"param_name":"Boss","object_class":{"refPath":"/Script/Engine.Actor"}}` → `(Default|CallOnEnraged :Boss self)`.
+- 머티리얼 슬롯: `Default__BP_Enemy_Boss_C:CharacterMesh0`에 `{"OverrideMaterials":["/Game/SoulCombat/Materials/MI_SC_Boss_01.MI_SC_Boss_01","/Game/SoulCombat/Materials/MI_SC_Boss_02.MI_SC_Boss_02"]}`를 넣으면 슬롯 0, 1 순서대로 들어간다.
+- **함정: 루트(캡슐) 배율은 레벨에 배치하면 사라진다.** `CollisionCylinder`의 `RelativeScale3D` 1.5는 CDO에 저장된다. 하지만 `SceneTools add_to_scene_from_class`(xform scale 생략 = 1)로 놓은 액터는 배율이 1이었다. PIE에서 z가 89.6(반높이 88)으로 나왔다. 루트 컴포넌트 트랜스폼을 액터 트랜스폼이 덮기 때문이다.
+  - 해결: 캡슐은 배율 1로 두고 크기 자체를 키운다(`{"CapsuleHalfHeight":132,"CapsuleRadius":51}`). 메시에는 `{"RelativeScale3D":{"x":1.5,"y":1.5,"z":1.5},"RelativeLocation":{"x":0,"y":0,"z":-133.5}}`를 넣는다.
+  - 이렇게 하면 배치 방식과 상관없이 1.5배가 된다(PIE z 134).
+- 이미 배치한 인스턴스에는 BP를 컴파일한 뒤에도 옛 캡슐 값(88/34)이 남았다. `remove_from_scene` 후 `add_to_scene_from_class`로 다시 놓고, 인스턴스 값(`bStartDormant`)을 다시 넣는다.
+
+### PIE 스모크 테스트
+
+- 레벨 준비 순서:
+  1. `AT duplicate {"path":"/Engine/Maps/Templates/Template_Default","new_path":"/Game/_Scratch/L_EnemySmoke"}` → 저장
+  2. 현재 레벨 is_dirty가 false인지 확인 → `ST load_level`
+  3. `WorldSettings_1`에 DefaultGameMode 설정
+  4. `AcT set_actor_transform`으로 `PlayerStart_0`을 (0,0,100)으로 이동
+  5. `ST add_to_scene_from_class`로 적 배치 → 인스턴스에 `OT set_properties {"bStartDormant":false}` → 저장
+- PIE 월드 액터 경로: `/Game/_Scratch/UEDPIE_0_L_EnemySmoke.L_EnemySmoke:PersistentLevel.<액터 이름>`. 이 경로로 다음이 모두 된다.
+  - ASI 툴: GetAttributeValues, GetActiveTags, GetActiveEffects, GetGrantedAbilities
+  - `AcT get_actor_transform`
+  - PIE 액터 인스턴스 `OT get_properties`(예: 예고원 `.Disc`의 RelativeScale3D, `Elapsed`)
+
+  PT 스크립트 하나로 묶어서 폴링했다.
+- 에디터 B가 백그라운드에 있으면 PIE가 `max tick rate 3`으로 돈다(로그: `Bringing World ... up for play (max tick rate 3)`).
+  - 타이머와 WaitDelay가 3 fps 단위로 끊기지만, 전투 흐름을 확인하는 데는 문제없었다.
+  - 한 PT 스크립트 안의 연속 호출도 프레임을 넘긴다. 그래서 값끼리 한 틱 어긋날 수 있다(예: 배율은 Elapsed 0.667 기준인데 Elapsed는 1.0으로 읽힘).
+- 쿨다운 태그로 발동을 확인한다.
+  - `GetActiveTags`에 `Cooldown.Enemy.Attack.1/.2/.3`이 나온다. 각각 보스 근접, 내려찍기, 돌진 쿨다운 GE가 주는 태그다.
+  - `GetActiveEffects`에 `Default__GE_Cooldown_Boss_*_C`와 남은 시간이 나온다.
+  - 예고원은 슬램 중에만 `find_actors`(클래스 BP_TelegraphCircle_C)에 잡히고, 끝나면 사라졌다.
