@@ -1,0 +1,724 @@
+{
+  "base": "81a750f",
+  "branch": "codex/combat-timing",
+  "engine": "UE 5.8.3",
+  "port": 8001,
+  "player_red_failures": [
+    "단타 배율 0.25",
+    "단타 배율 0.5"
+  ],
+  "enemy_red_failures": [
+    "내려찍기 배율0.25",
+    "돌진 끝점",
+    "돌진 첫 표본 사이 옆걸음",
+    "돌진 끝점 옆걸음"
+  ],
+  "player_green": {
+    "done": true,
+    "cases": [
+      {
+        "case": "단타 배율 0.25",
+        "expected_damage": 50,
+        "actual_damage": 50.0,
+        "expected_hits": 1,
+        "actual_hits": 1,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "단타 배율 0.5",
+        "expected_damage": 50,
+        "actual_damage": 50.0,
+        "expected_hits": 1,
+        "actual_hits": 1,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "단타 배율 1.0",
+        "expected_damage": 50,
+        "actual_damage": 50.0,
+        "expected_hits": 1,
+        "actual_hits": 1,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "단타 배율 1.5",
+        "expected_damage": 50,
+        "actual_damage": 50.0,
+        "expected_hits": 1,
+        "actual_hits": 1,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "같은 프레임 4연타",
+        "expected_damage": 270,
+        "actual_damage": 270.0,
+        "expected_hits": 4,
+        "actual_hits": 4,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "같은 프레임 8연타",
+        "expected_damage": 270,
+        "actual_damage": 270.0,
+        "expected_hits": 4,
+        "actual_hits": 4,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "타격 전 대시 취소",
+        "expected_damage": 0,
+        "actual_damage": 0.0,
+        "expected_hits": 0,
+        "actual_hits": 0,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "타격 전 몽타주 중단",
+        "expected_damage": 0,
+        "actual_damage": 0.0,
+        "expected_hits": 0,
+        "actual_hits": 0,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "4연타 배율0.5",
+        "expected_damage": 270,
+        "actual_damage": 270.0,
+        "expected_hits": 4,
+        "actual_hits": 4,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "콤보 중 히트스톱",
+        "expected_damage": 270,
+        "actual_damage": 270.0,
+        "expected_hits": 4,
+        "actual_hits": 4,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "같은 단계 중복 신호",
+        "expected_damage": 50,
+        "actual_damage": 50.0,
+        "expected_hits": 1,
+        "actual_hits": 1,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "다른 몽타주/액터 신호",
+        "expected_damage": 50,
+        "actual_damage": 50.0,
+        "expected_hits": 1,
+        "actual_hits": 1,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "타격 전 피격 취소",
+        "expected_damage": 0,
+        "actual_damage": 0.0,
+        "expected_hits": 0,
+        "actual_hits": 0,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      },
+      {
+        "case": "타격 전 사망 취소",
+        "expected_damage": 0,
+        "actual_damage": 0.0,
+        "expected_hits": 0,
+        "actual_hits": 0,
+        "hit_before_animation_frame": false,
+        "tags": [
+          "Team.Player"
+        ],
+        "passed": true
+      }
+    ],
+    "failures": [],
+    "samples": [
+      {
+        "case": "단타 배율 0.25",
+        "elapsed": 1.8713431991636753,
+        "montage_position": 0.4678356647491455,
+        "damage": 50.0,
+        "dilation": 0.25
+      },
+      {
+        "case": "단타 배율 0.5",
+        "elapsed": 0.9352394007146358,
+        "montage_position": 0.46761971712112427,
+        "damage": 50.0,
+        "dilation": 0.5
+      },
+      {
+        "case": "단타 배율 1.0",
+        "elapsed": 0.4713145010173321,
+        "montage_position": 0.47131437063217163,
+        "damage": 50.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "단타 배율 1.5",
+        "elapsed": 0.32088080048561096,
+        "montage_position": 0.4813212752342224,
+        "damage": 50.0,
+        "dilation": 1.5
+      },
+      {
+        "case": "같은 프레임 4연타",
+        "elapsed": 0.4712185002863407,
+        "montage_position": 0.4712185263633728,
+        "damage": 50.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "같은 프레임 4연타",
+        "elapsed": 1.0007221028208733,
+        "montage_position": 1.467721939086914,
+        "damage": 55.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "같은 프레임 4연타",
+        "elapsed": 1.5074059031903744,
+        "montage_position": 2.4074056148529053,
+        "damage": 65.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "같은 프레임 4연타",
+        "elapsed": 2.369870100170374,
+        "montage_position": 0.0,
+        "damage": 100.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "같은 프레임 8연타",
+        "elapsed": 0.47207050025463104,
+        "montage_position": 0.4720704257488251,
+        "damage": 50.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "같은 프레임 8연타",
+        "elapsed": 1.0074803978204727,
+        "montage_position": 1.4744795560836792,
+        "damage": 55.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "같은 프레임 8연타",
+        "elapsed": 1.505511499941349,
+        "montage_position": 2.4055111408233643,
+        "damage": 65.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "같은 프레임 8연타",
+        "elapsed": 2.365116398781538,
+        "montage_position": 0.0,
+        "damage": 100.0,
+        "dilation": 1.0
+      },
+      {
+        "case": "4연타 배율0.5",
+        "elapsed": 0.9371675997972488,
+        "montage_position": 0.468583881855011,
+        "damage": 50.0,
+        "dilation": 0.5
+      },
+      {
+        "case": "4연타 배율0.5",
+        "elapsed": 2.005198199301958,
+        "montage_position": 1.4695994853973389,
+        "damage": 55.0,
+        "dilation": 0.5
+      },
+      {
+        "case": "4연타 배율0.5",
+        "elapsed": 3.0050255991518497,
+        "montage_position": 2.402512788772583,
+        "damage": 65.0,
+        "dilation": 0.5
+      },
+      {
+        "case": "4연타 배율0.5",
+        "elapsed": 4.732892200350761,
+        "montage_position": 0.0,
+        "damage": 100.0,
+        "dilation": 0.5
+      },
+      {
+        "case": "콤보 중 히트스톱",
+        "elapsed": 0.46746160089969635,
+        "montage_position": 0.46746158599853516,
+        "damage": 50.0,
+        "dilation": 1
+      },
+      {
+        "case": "콤보 중 히트스톱",
+        "elapsed": 1.1020245999097824,
+        "montage_position": 1.4719500541687012,
+        "damage": 55.0,
+        "dilation": 1
+      },
+      {
+        "case": "콤보 중 히트스톱",
+        "elapsed": 1.604094099253416,
+        "montage_position": 2.40701961517334,
+        "damage": 65.0,
+        "dilation": 1
+      },
+      {
+        "case": "콤보 중 히트스톱",
+        "elapsed": 2.4599456004798412,
+        "montage_position": 0.0,
+        "damage": 100.0,
+        "dilation": 1
+      },
+      {
+        "case": "같은 단계 중복 신호",
+        "elapsed": 0.4671238996088505,
+        "montage_position": 0.4671238958835602,
+        "damage": 50.0,
+        "dilation": 1
+      },
+      {
+        "case": "다른 몽타주/액터 신호",
+        "elapsed": 0.47486190125346184,
+        "montage_position": 0.4748619496822357,
+        "damage": 50.0,
+        "dilation": 1
+      }
+    ]
+  },
+  "enemy_green": {
+    "done": true,
+    "cases": [
+      {
+        "case": "내려찍기 배율0.25",
+        "passed": true,
+        "expected_damage": 125,
+        "actual_damage": 125.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 0.0,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "보스 근접 배율0.5",
+        "passed": true,
+        "expected_damage": 60,
+        "actual_damage": 60.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 0.0,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "잡몹 근접 배율0.5",
+        "passed": true,
+        "expected_damage": 25,
+        "actual_damage": 25.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 0.0,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 시작점",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 263.81739573245244,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 첫 표본 사이",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 730.153479188168,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 둘째 표본 사이",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 1109.6454574829597,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 끝점",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 1325.5727543849791,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 시작점 옆걸음",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 1310.8876635750735,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 첫 표본 사이 옆걸음",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 1325.7961606055444,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 둘째 표본 사이 옆걸음",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 1325.6692881241702,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 끝점 옆걸음",
+        "passed": true,
+        "expected_damage": 90,
+        "actual_damage": 90.0,
+        "hits": 1,
+        "hit_before_animation_frame": false,
+        "end_x": 1325.7920363955418,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      },
+      {
+        "case": "돌진 경로 밖 옆걸음",
+        "passed": true,
+        "expected_damage": 0,
+        "actual_damage": 0.0,
+        "hits": 0,
+        "hit_before_animation_frame": false,
+        "end_x": 1322.400982632592,
+        "player_pawn_response": "<CollisionResponseType.ECR_BLOCK: 2>"
+      }
+    ],
+    "failures": [],
+    "samples": [
+      {
+        "case": "내려찍기 배율0.25",
+        "elapsed": 3.0836984999477863,
+        "boss_x": 0.0,
+        "target_x": 0.0,
+        "damage": 125.0,
+        "montage_position": 1.2639901638031006,
+        "montage": "/Game/SoulCombat/Animation/Montages/AM_SCBossSlam.AM_SCBossSlam"
+      },
+      {
+        "case": "보스 근접 배율0.5",
+        "elapsed": 0.8923279009759426,
+        "boss_x": 0.0,
+        "target_x": 0.0,
+        "damage": 60.0,
+        "montage_position": 2.4015488624572754,
+        "montage": "/Game/SoulCombat/Animation/Montages/AM_SCComboAttack.AM_SCComboAttack"
+      },
+      {
+        "case": "잡몹 근접 배율0.5",
+        "elapsed": 1.1250916011631489,
+        "boss_x": 0.0,
+        "target_x": 0.0,
+        "damage": 25.0,
+        "montage_position": 0.45003631711006165,
+        "montage": "/Game/SoulCombat/Animation/Montages/AM_SCEnemyMelee.AM_SCEnemyMelee"
+      },
+      {
+        "case": "돌진 시작점",
+        "elapsed": 0.5005551017820835,
+        "boss_x": -6.125,
+        "target_x": 80.0,
+        "damage": 90.0,
+        "montage_position": 0.0,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      },
+      {
+        "case": "돌진 첫 표본 사이",
+        "elapsed": 0.8501778990030289,
+        "boss_x": 537.9760125811928,
+        "target_x": 625.0,
+        "damage": 90.0,
+        "montage_position": 0.35008490085601807,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      },
+      {
+        "case": "돌진 둘째 표본 사이",
+        "elapsed": 1.0505561977624893,
+        "boss_x": 1037.9878936382474,
+        "target_x": 1125.0,
+        "damage": 90.0,
+        "montage_position": 0.5501837134361267,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      },
+      {
+        "case": "돌진 끝점",
+        "elapsed": 1.1006407998502254,
+        "boss_x": 1273.550093650818,
+        "target_x": 1490.0,
+        "damage": 90.0,
+        "montage_position": 0.6001392602920532,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      },
+      {
+        "case": "돌진 시작점 옆걸음",
+        "elapsed": 0.5000100992619991,
+        "boss_x": -6.125,
+        "target_x": 80.0,
+        "damage": 90.0,
+        "montage_position": 0.0,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      },
+      {
+        "case": "돌진 첫 표본 사이 옆걸음",
+        "elapsed": 0.8500822000205517,
+        "boss_x": 733.7093038558961,
+        "target_x": 625.0,
+        "damage": 90.0,
+        "montage_position": 0.3500746190547943,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      },
+      {
+        "case": "돌진 둘째 표본 사이 옆걸음",
+        "elapsed": 1.0502260997891426,
+        "boss_x": 1210.596236228943,
+        "target_x": 1125.0,
+        "damage": 90.0,
+        "montage_position": 0.5501149892807007,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      },
+      {
+        "case": "돌진 끝점 옆걸음",
+        "elapsed": 1.1003718972206116,
+        "boss_x": 1273.525191307068,
+        "target_x": 1400.0,
+        "damage": 90.0,
+        "montage_position": 0.6001068949699402,
+        "montage": "/Game/Variant_Platforming/Anims/AM_Dash.AM_Dash"
+      }
+    ]
+  },
+  "regression": {
+    "combat": {
+      "count": 37,
+      "failures": []
+    },
+    "timing": {
+      "done": true,
+      "cases": [
+        {
+          "case": "4연타 간격 0.1",
+          "expected": 270,
+          "actual": 270.0,
+          "press_times": [
+            0.008445899933576584,
+            0.10149019956588745,
+            0.20412760227918625,
+            0.3011482022702694
+          ],
+          "passed": true
+        },
+        {
+          "case": "4연타 간격 0.35",
+          "expected": 270,
+          "actual": 270.0,
+          "press_times": [
+            0.008339501917362213,
+            0.3519302010536194,
+            0.701755803078413,
+            1.0613845996558666
+          ],
+          "passed": true
+        },
+        {
+          "case": "R 3대상 관통 및 중복 타격 방지",
+          "expected": [
+            125,
+            125,
+            125
+          ],
+          "actual": [
+            125.0,
+            125.0,
+            125.0
+          ],
+          "passed": true
+        }
+      ],
+      "failures": []
+    }
+  },
+  "static": {
+    "pie": false,
+    "max_queue": 3,
+    "montages": [
+      {
+        "path": "/Game/SoulCombat/Animation/Montages/AM_SCComboAttack.AM_SCComboAttack",
+        "events": [
+          {
+            "time": 0.46700000762939453,
+            "tag": "Event.Combat.HitFrame",
+            "step": 1.0
+          },
+          {
+            "time": 0.5329999923706055,
+            "tag": "Event.Combat.Combo.Chain",
+            "step": 1.0
+          },
+          {
+            "time": 1.4670000076293945,
+            "tag": "Event.Combat.HitFrame",
+            "step": 2.0
+          },
+          {
+            "time": 1.5670000314712524,
+            "tag": "Event.Combat.Combo.Chain",
+            "step": 2.0
+          },
+          {
+            "time": 2.4000000953674316,
+            "tag": "Event.Combat.HitFrame",
+            "step": 3.0
+          },
+          {
+            "time": 2.9000000953674316,
+            "tag": "Event.Combat.Combo.Chain",
+            "step": 3.0
+          }
+        ]
+      },
+      {
+        "path": "/Game/SoulCombat/Animation/Montages/AM_SCChargedAttack.AM_SCChargedAttack",
+        "events": [
+          {
+            "time": 1.1670000553131104,
+            "tag": "Event.Combat.HitFrame",
+            "step": 4.0
+          }
+        ]
+      },
+      {
+        "path": "/Game/SoulCombat/Animation/Montages/AM_SCEnemyMelee.AM_SCEnemyMelee",
+        "events": [
+          {
+            "time": 0.44999998807907104,
+            "tag": "Event.Combat.HitFrame",
+            "step": 1.0
+          }
+        ]
+      },
+      {
+        "path": "/Game/SoulCombat/Animation/Montages/AM_SCBossSlam.AM_SCBossSlam",
+        "events": [
+          {
+            "time": 1.25,
+            "tag": "Event.Combat.HitFrame",
+            "step": 0.0
+          }
+        ]
+      }
+    ]
+  },
+  "save": {
+    "assets": [
+      "/Game/SoulCombat/GAS/Abilities/GA_ActionBase",
+      "/Game/SoulCombat/GAS/Abilities/GA_Player_BasicAttack",
+      "/Game/SoulCombat/GAS/Abilities/GA_Skill_DashSlash",
+      "/Game/SoulCombat/GAS/Abilities/GA_Skill_WaveSlash",
+      "/Game/SoulCombat/GAS/Abilities/GA_Skill_GroundSlam",
+      "/Game/SoulCombat/GAS/Abilities/GA_Enemy_Melee",
+      "/Game/SoulCombat/GAS/Abilities/GA_Enemy_Melee_Boss",
+      "/Game/SoulCombat/GAS/Abilities/GA_Boss_Slam",
+      "/Game/SoulCombat/GAS/Abilities/GA_Boss_Charge",
+      "/Game/SoulCombat/Animation/Notifies/AN_SCGameplayEvent",
+      "/Game/SoulCombat/Animation/Montages/AM_SCComboAttack",
+      "/Game/SoulCombat/Animation/Montages/AM_SCChargedAttack",
+      "/Game/SoulCombat/Animation/Montages/AM_SCEnemyMelee",
+      "/Game/SoulCombat/Animation/Montages/AM_SCBossSlam"
+    ],
+    "dirty": []
+  },
+  "pending": [
+    "통합된 실제 히트스톱/피드백 회귀",
+    "전체 프로젝트·던전 회귀",
+    "Shipping 패키징",
+    "사람 키·화면·소리 확인"
+  ],
+  "clean_editor": {
+    "pie": false,
+    "dirty_content": [],
+    "dirty_maps": []
+  }
+}
