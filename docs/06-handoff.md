@@ -27,6 +27,8 @@
 
 저장소는 `D:\Project\UE\AstraTest\ue_test`, 엔진은 `D:\Program Files\Epic Games\UE_5.8`이다. 이 저장소 루트에서 실행한다. 이미 같은 프로젝트의 에디터가 실행 중이면 중복 실행하지 않는다.
 
+2026-09-30 최종 게임 소스는 `dd559e0`이며 자동 게임 검사258조건·전체 BP77개 엄격 컴파일·주석 GUID 보정 뒤 쿠킹 오류0/경고0과 패키지 시작·응답을 확인했다. 실행 파일은 `SoulCombat/Saved/Packages/Win64Shipping-20260930-Final/SoulCombat.exe`, 전달용 ZIP은 `SoulCombat/Saved/Packages/SoulCombat-Win64-20260930.zip`이다. 최종 결과는 `docs/11-production-validation.md`와 `docs/verification/production-verification.json`을 먼저 읽는다. 작업 에디터와 패키지 검사 프로세스는 종료했으며 이후 편집할 때 다시 실행한다. 키 입력·청취·정상 조작으로 던전 완주·UE 없는 PC·장시간 플레이의 사람 검증은 남아 있다.
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File Tools\Setup-Project.ps1 -EngineDir "D:\Program Files\Epic Games\UE_5.8" -Launch
 ```

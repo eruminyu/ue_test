@@ -71,5 +71,7 @@
 
 ## 제작본 플레이 안내
 
-게임 조작·일시정지·재시작·필드 복귀·패키징 명령은 [실행·플레이 안내](docs/10-play-guide.md)에 있다. 제작 중인 전투 개선의 통합 상태와 자동/사람 검증은 [제작 계획](docs/09-production-plan.md)과 [체크리스트](docs/checklist.md)로 확인한다.
+이 PC의 최종 실행 파일은 `SoulCombat/Saved/Packages/Win64Shipping-20260930-Final/SoulCombat.exe`, 전달용 ZIP은 `SoulCombat/Saved/Packages/SoulCombat-Win64-20260930.zip`이다. 압축을 풀고 폴더 전체를 유지해 실행한다. 게임 소스 `dd559e0` 기준 Win64 Shipping 쿠킹 오류0·경고0과 패키지 시작·응답 관찰을 확인했다. 자동 게임 검사258조건과 BP77개 엄격 컴파일의 근거는 [제작본 검증](docs/11-production-validation.md)에 있으며 실제 입력·청취·정상 던전 완주·UE 없는 PC·장시간 플레이는 별도 확인이 남았다.
+
+게임 조작·일시정지·재시작·필드 복귀·패키징 명령은 [실행·플레이 안내](docs/10-play-guide.md)에 있다. 통합 범위와 남은 확인은 [제작 계획](docs/09-production-plan.md)과 [체크리스트](docs/checklist.md)로 확인한다.
 

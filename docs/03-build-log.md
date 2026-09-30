@@ -1,8 +1,10 @@
 # 03. SoulCombat 제작 기록
 
+최종 Win64 Shipping 빌드의 cook 오류·경고0과 패키지 시작·응답 검사를 확인했다. 현재 제작본은258개 게임 자동 조건, BP77개 엄격 컴파일, 주석 GUID 보정의64개 그래프/925개 실행 노드 동일성을 통과했다. 아래 초기 제작·실패·보정 기록과 최종 배포물 결과를 구분하며 난이도·손맛·실제 입력/청취·정상 종료 UI·UE 없는 PC·장기 플레이는 사람 검증으로 남긴다.
+
 `02-build-plan.md`의 단계를 진행하면서 채운다. 판정: **성공**(전용 MCP 툴만으로) / **우회**(다른 툴·UI 자동화·설계 변경으로) / **사람**(사용자가 에디터에서 직접) / **실패**.
 
-## 요약
+## 초기 제작 요약 (`main/cc31c5c`까지)
 
 | 항목 | 결과 |
 | --- | --- |
@@ -227,11 +229,18 @@
 - 통합 담당이 정지 메뉴의 실제 스크린샷에서 한국어 글자·4개 버튼·조작 안내·배치 겹침 없음을 확인했다. 실제 키/마우스 진입·복귀 검증과 구분한다.
 - `11-production-validation.md`와 체크리스트를 최신 확인 상태로 갱신했다. 이 단계의 제작본 Shipping·시작 스모크는 아래 P4 기록으로 이어 확인하며 초기08 문서의 cc31c5c 패키지 성공을 제작본 성공으로 대신 쓰지 않는다. 실제 키/마우스·손맛·전투 화면·음향 청취·정상 던전 완주·UE 미설치 PC·장기 플레이는 사람 검증으로 남긴다.
 
-### 제작 P4 첫 UAT·주석 GUID 보정·재cook 대기
+### 제작 P4 첫 UAT·주석 GUID 보정·최종 재cook
 
 - 통합 코드4c6ee1a를 기준으로 첫 Win64 Shipping build/cook/stage/archive가 ExitCode0·58.329초에 성공했다. `SoulCombat/Saved/production-packaging-result.json`에32파일·727,456,174바이트, 실행 파일과 vc_redist.x64.exe/vc_redist.arm64.exe2개 설치 파일 존재를 기록했다. 첫 출력은 `SoulCombat/Saved/Packages/Win64Shipping-20260930`이며 로그는 `production-packaging.log`다.
 - cook 경고를 다시 확인해9개 BP의 서로 다른 주석 노드25개에 missing NodeGuid가 있음을 집계했다(`SoulCombat/Saved/comment-guid-cook-red.json`). 반복 출력은 중복 노드로 세지 않았고 첫 UAT 성공을 최종 배포물 채택으로 표시하지 않았다.
 - UE5.8.3 `BlueprintGraphEditor.cpp:1292`의 UBlueprintGraphEditor::AddCommentNode에는 CreateNewGuid 호출이 없다. `EdGraphNode.cpp:693`의 PostLoad는 로드 시 누락 GUID를 생성하지만 그 분기에서 dirty를 표시하지 않는다. 메모리 복구 뒤 dirty0만으로 직렬화된 패키지의 정상화를 확인할 수 없었던 것이 원인이다.
 - 새 에디터 PID24232에서 대상9개 BP의 전체 노드/핀/연결을 사전 기록한 뒤 PostLoad로 복구된 GUID를 only_if_is_dirty=False의 네이티브 패키지 저장으로 직렬화했다(`SoulCombat/Saved/comment-guid-resave-result.json`).9개 저장 성공·피드백 CDO bEnableHitstop=true·dirty 콘텐츠/맵0을 확인했다. `comment-guid-same-logic.json`은9개 BP·64개 그래프·925개 실행 노드의 타입·위치·전체 입력/출력 핀·값·연결이 전후 JSON 구조까지 동일함을 확인한다.
-- 보정 후 `SoulCombat/Saved/full-final-static-after-guid.json`의 전체77개 warnings_as_errors 컴파일77/77, 에셋116·의존227(210에셋+17Script)·누락0·Scratch0·dirty 콘텐츠/맵0·PIE false가 통과했다. 주석의 에디터 메타데이터만 보정했으며 게임 동작·258개 실행 조건의 근거는 유지한다. 에디터 종료 후 별도 새 경로의 재UAT·GUID 경고 해소·최종 패키지 시작 결과는 아직 대기 중이다.
+- 보정 후 `SoulCombat/Saved/full-final-static-after-guid.json`의 전체77개 warnings_as_errors 컴파일77/77, 에셋116·의존227(210에셋+17Script)·누락0·Scratch0·dirty 콘텐츠/맵0·PIE false가 통과했다. 주석의 에디터 메타데이터만 보정했으며 게임 동작·258개 실행 조건의 근거는 유지한다. 에디터를 종료하고 아래 최종 소스로 새 경로 재UAT·cook 경고 해소·패키지 시작을 확인했다.
 - 새 추적 회귀 실행기를 실제 에디터에 연결해 charge-sweep 선택6조건이 약13.1초에 통과했다(`SoulCombat/Saved/runner-charge-integration.json`, done/passed=true·error=null). 기존 full178 결과는 보존했고 새 실행기의 전체/extended 묶음은 실행하지 않았다. 재현 연결 확인을 기존258개와 다른6개 게임 조건으로 중복 합산하지 않는다.
+
+### 최종 Shipping 빌드·시작·응답
+
+- 최종 소스dd559e08481ca1726ed6e1f967eee06de21c185a를 `SoulCombat/Saved/Packages/Win64Shipping-20260930-Final`에 새로 패키징했다. `production-packaging-final-result.json`의 done/passed=true·ExitCode0·51.797초,32파일·727,456,174바이트와 런타임 설치 파일2개 포함을 확인했다. `production-packaging-final.log`는 cook 오류0·경고0이고 missing NodeGuid 출력0이다. 첫 경고 포함 출력은 비교 자료로 보존한다.
+- `production-shipping-smoke.json`은 최종 부트스트랩 PID1616→Shipping 자식 PID468의 실제 실행 파일 경로·부모 PID·창 제목 SoulCombat·창 핸들16912436을 대조했고5~25초의5회 모두 Responding=true였다. done/passed=true·error=null, 총31.029초다. 검사 프로세스는 시작한 경로와 부모 PID를 확인해 Stop-Process로 정리했으며 정상 종료 UI 검사로 표시하지 않는다. 후속 확인에서 게임·작업 에디터 프로세스 잔존 없음과 MCP8000/8001/8002 종료를 확인했다.
+- `SoulCombat-Win64-20260930.zip`은 UAT32파일과 한국어 플레이 안내를 포함한33개 항목의 전체 CRC가 통과했고435,928,098바이트다. SHA256은 `aea0f99dfad2eedca5d9f70623cf1bf04747d9e2c4ef632ee7b6c18d8d9896b5`이며 파일별 SHA256은 `production-package-bundle.json`과 추적 가능한 제작 검증 JSON에 보존했다.
+- P1·P2 구현/자동 검증, P3 자연 AI·전조/분노·사망 복구·던전 흐름 자동 검증, P4 빌드/자동 시작과 전달 ZIP을 완료했다. 실제 난이도·손맛·물리 입력·청취·정상 종료 UI·정상 던전 완주·UE 미설치 PC·장기 플레이는 사람 검증으로 남긴다. 최종 기록·체크리스트를 로컬 커밋하며 Git push는 하지 않는다.

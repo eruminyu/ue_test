@@ -2,8 +2,8 @@
   "schema_version": 1,
   "generated_utc": "2026-09-30T07:53:48.644563+00:00",
   "description": "저장된 실제 PIE·정적 감사 JSON을 읽어 검증한 제작 통합 근거다. 이 파일 작성 중에는 에디터/API를 호출하지 않았다. 전체 조건명과 통과 여부, 대표 실제 관측 행, 원본 파일 경로·SHA256을 보존한다.",
-  "sourceSha": null,
-  "source_sha_status": "pending_root_confirmation",
+  "sourceSha": "dd559e08481ca1726ed6e1f967eee06de21c185a",
+  "source_sha_status": "final_packaged_game_source_confirmed",
   "provenance": {
     "repository_at_collection": "D:/Project/UE/AstraTest/ue_test",
     "main_original_baseline": "5063dcf816b7c8c451424eccf83c92a3ed741222",
@@ -4051,8 +4051,463 @@
     "tracked_runner_full_batches_executed": false,
     "note": "전체11개178조건은 기존 Saved 실행기로 확인했다. 새 추적 실행기는 호스트 검사14개·목록/계획과 실제 돌진 선택6조건 연결을 확인했다. 신 실행기의 기본 전체/확장 전체 묶음은 실행하지 않았다."
   },
-  "package": null,
-  "package_status": "pending",
+  "package": {
+    "adopted_for_distribution": true,
+    "target": "Win64 Shipping",
+    "build": {
+      "done": true,
+      "passed": true,
+      "source_commit": "dd559e08481ca1726ed6e1f967eee06de21c185a",
+      "started_utc": "2026-09-30T08:04:33.647427+00:00",
+      "archive_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final",
+      "log_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\production-packaging-final.log",
+      "error": null,
+      "arguments": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "D:\\Project\\UE\\AstraTest\\ue_test\\Tools\\Package-Game.ps1",
+        "-ArchiveDir",
+        "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final"
+      ],
+      "return_code": 0,
+      "elapsed_seconds": 51.79699999999866,
+      "finished_utc": "2026-09-30T08:05:25.449735+00:00",
+      "file_count": 32,
+      "total_bytes": 727456174,
+      "files": [
+        {
+          "path": "Engine/Binaries/ThirdParty/DbgHelp/dbghelp.dll",
+          "bytes": 2232688
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/MsQuic/v220/win64/msquic.dll",
+          "bytes": 2547080
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/NVIDIA/NVaftermath/Win64/GFSDK_Aftermath_Lib.x64.dll",
+          "bytes": 5799024
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Ogg/Win64/VS2015/libogg_64.dll",
+          "bytes": 59832
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbis_64.dll",
+          "bytes": 1724856
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbisfile_64.dll",
+          "bytes": 48568
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll",
+          "bytes": 858144
+        },
+        {
+          "path": "Engine/Config/StagedBuild_SoulCombat.ini",
+          "bytes": 3
+        },
+        {
+          "path": "Engine/Content/Renderer/TessellationTable.bin",
+          "bytes": 259568
+        },
+        {
+          "path": "Engine/Content/Slate/Cursor/invisible.cur",
+          "bytes": 326
+        },
+        {
+          "path": "Engine/Content/SlateDebug/Fonts/LastResort.tps",
+          "bytes": 930
+        },
+        {
+          "path": "Engine/Content/SlateDebug/Fonts/LastResort.ttf",
+          "bytes": 5395052
+        },
+        {
+          "path": "Engine/Extras/Redist/en-us/vc_redist.arm64.exe",
+          "bytes": 11751688
+        },
+        {
+          "path": "Engine/Extras/Redist/en-us/vc_redist.x64.exe",
+          "bytes": 18569648
+        },
+        {
+          "path": "Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll",
+          "bytes": 17339384
+        },
+        {
+          "path": "Manifest_DebugFiles_Win64.txt",
+          "bytes": 228
+        },
+        {
+          "path": "Manifest_NonUFSFiles_Win64.txt",
+          "bytes": 1607
+        },
+        {
+          "path": "Manifest_UFSFiles_Win64.txt",
+          "bytes": 231428
+        },
+        {
+          "path": "NOTICES.txt",
+          "bytes": 111
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/D3D12/x64/D3D12Core.dll",
+          "bytes": 4831768
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll",
+          "bytes": 4943344
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/DML/x64/DirectML.dll",
+          "bytes": 18538488
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/SoulCombat-Win64-Shipping.exe",
+          "bytes": 167637504
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/SoulCombat-Win64-Shipping.pdb",
+          "bytes": 224350208
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/tbb12.dll",
+          "bytes": 342456
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/tbbmalloc.dll",
+          "bytes": 117176
+        },
+        {
+          "path": "SoulCombat/Content/Paks/global.ucas",
+          "bytes": 3333888
+        },
+        {
+          "path": "SoulCombat/Content/Paks/global.utoc",
+          "bytes": 806
+        },
+        {
+          "path": "SoulCombat/Content/Paks/SoulCombat-Windows.pak",
+          "bytes": 11254701
+        },
+        {
+          "path": "SoulCombat/Content/Paks/SoulCombat-Windows.ucas",
+          "bytes": 224887536
+        },
+        {
+          "path": "SoulCombat/Content/Paks/SoulCombat-Windows.utoc",
+          "bytes": 226614
+        },
+        {
+          "path": "SoulCombat.exe",
+          "bytes": 171520
+        }
+      ],
+      "required_files": {
+        "SoulCombat.exe": true,
+        "SoulCombat/Binaries/Win64/SoulCombat-Win64-Shipping.exe": true,
+        "Engine/Extras/Redist/en-us/vc_redist.x64.exe": true,
+        "Engine/Extras/Redist/en-us/vc_redist.arm64.exe": true
+      }
+    },
+    "cook_errors": 0,
+    "cook_warnings": 0,
+    "missing_node_guid_warnings": 0,
+    "smoke": {
+      "done": true,
+      "passed": true,
+      "launcher": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final\\SoulCombat.exe",
+      "game_executable": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final\\SoulCombat\\Binaries\\Win64\\SoulCombat-Win64-Shipping.exe",
+      "started_utc": "2026-09-30T08:05:50.2838538Z",
+      "samples": [
+        {
+          "seconds": 5.4375884999999995,
+          "pid": 468,
+          "parent_pid": 1616,
+          "executable_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final\\SoulCombat\\Binaries\\Win64\\SoulCombat-Win64-Shipping.exe",
+          "responding": true,
+          "window_handle": 16912436,
+          "window_title": "SoulCombat  "
+        },
+        {
+          "seconds": 10.534384099999999,
+          "pid": 468,
+          "parent_pid": 1616,
+          "executable_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final\\SoulCombat\\Binaries\\Win64\\SoulCombat-Win64-Shipping.exe",
+          "responding": true,
+          "window_handle": 16912436,
+          "window_title": "SoulCombat  "
+        },
+        {
+          "seconds": 15.631197199999999,
+          "pid": 468,
+          "parent_pid": 1616,
+          "executable_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final\\SoulCombat\\Binaries\\Win64\\SoulCombat-Win64-Shipping.exe",
+          "responding": true,
+          "window_handle": 16912436,
+          "window_title": "SoulCombat  "
+        },
+        {
+          "seconds": 20.7325105,
+          "pid": 468,
+          "parent_pid": 1616,
+          "executable_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final\\SoulCombat\\Binaries\\Win64\\SoulCombat-Win64-Shipping.exe",
+          "responding": true,
+          "window_handle": 16912436,
+          "window_title": "SoulCombat  "
+        },
+        {
+          "seconds": 25.821520699999997,
+          "pid": 468,
+          "parent_pid": 1616,
+          "executable_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\Win64Shipping-20260930-Final\\SoulCombat\\Binaries\\Win64\\SoulCombat-Win64-Shipping.exe",
+          "responding": true,
+          "window_handle": 16912436,
+          "window_title": "SoulCombat  "
+        }
+      ],
+      "error": null,
+      "scope": "최종 패키지 부트스트랩·실제 Shipping 자식 프로세스·응답·창 생성 관찰",
+      "limits": "키 입력·소리·렌더링 화면·정상 게임 종료·던전 완주는 검사하지 않음",
+      "cleanup_method": "이 검사에서 만든 실행 파일 경로와 부모 PID가 일치하는 프로세스만 Stop-Process",
+      "launcher_pid": 1616,
+      "finished_utc": "2026-09-30T08:06:21.3116806Z",
+      "elapsed_seconds": 31.0288287
+    },
+    "bundle": {
+      "done": true,
+      "passed": true,
+      "source_commit": "dd559e08481ca1726ed6e1f967eee06de21c185a",
+      "zip_path": "D:\\Project\\UE\\AstraTest\\ue_test\\SoulCombat\\Saved\\Packages\\SoulCombat-Win64-20260930.zip",
+      "zip_bytes": 435928098,
+      "zip_sha256": "aea0f99dfad2eedca5d9f70623cf1bf04747d9e2c4ef632ee7b6c18d8d9896b5",
+      "elapsed_seconds": 13.5,
+      "archive_file_count": 32,
+      "zip_member_count": 33,
+      "crc_verification_passed": true,
+      "member_paths": [
+        "Win64Shipping-20260930-Final/Engine/Binaries/ThirdParty/DbgHelp/dbghelp.dll",
+        "Win64Shipping-20260930-Final/Engine/Binaries/ThirdParty/MsQuic/v220/win64/msquic.dll",
+        "Win64Shipping-20260930-Final/Engine/Binaries/ThirdParty/NVIDIA/NVaftermath/Win64/GFSDK_Aftermath_Lib.x64.dll",
+        "Win64Shipping-20260930-Final/Engine/Binaries/ThirdParty/Ogg/Win64/VS2015/libogg_64.dll",
+        "Win64Shipping-20260930-Final/Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbis_64.dll",
+        "Win64Shipping-20260930-Final/Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbisfile_64.dll",
+        "Win64Shipping-20260930-Final/Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll",
+        "Win64Shipping-20260930-Final/Engine/Config/StagedBuild_SoulCombat.ini",
+        "Win64Shipping-20260930-Final/Engine/Content/Renderer/TessellationTable.bin",
+        "Win64Shipping-20260930-Final/Engine/Content/Slate/Cursor/invisible.cur",
+        "Win64Shipping-20260930-Final/Engine/Content/SlateDebug/Fonts/LastResort.tps",
+        "Win64Shipping-20260930-Final/Engine/Content/SlateDebug/Fonts/LastResort.ttf",
+        "Win64Shipping-20260930-Final/Engine/Extras/Redist/en-us/vc_redist.arm64.exe",
+        "Win64Shipping-20260930-Final/Engine/Extras/Redist/en-us/vc_redist.x64.exe",
+        "Win64Shipping-20260930-Final/Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll",
+        "Win64Shipping-20260930-Final/Manifest_DebugFiles_Win64.txt",
+        "Win64Shipping-20260930-Final/Manifest_NonUFSFiles_Win64.txt",
+        "Win64Shipping-20260930-Final/Manifest_UFSFiles_Win64.txt",
+        "Win64Shipping-20260930-Final/NOTICES.txt",
+        "Win64Shipping-20260930-Final/SoulCombat/Binaries/Win64/D3D12/x64/D3D12Core.dll",
+        "Win64Shipping-20260930-Final/SoulCombat/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll",
+        "Win64Shipping-20260930-Final/SoulCombat/Binaries/Win64/DML/x64/DirectML.dll",
+        "Win64Shipping-20260930-Final/SoulCombat/Binaries/Win64/SoulCombat-Win64-Shipping.exe",
+        "Win64Shipping-20260930-Final/SoulCombat/Binaries/Win64/SoulCombat-Win64-Shipping.pdb",
+        "Win64Shipping-20260930-Final/SoulCombat/Binaries/Win64/tbb12.dll",
+        "Win64Shipping-20260930-Final/SoulCombat/Binaries/Win64/tbbmalloc.dll",
+        "Win64Shipping-20260930-Final/SoulCombat/Content/Paks/global.ucas",
+        "Win64Shipping-20260930-Final/SoulCombat/Content/Paks/global.utoc",
+        "Win64Shipping-20260930-Final/SoulCombat/Content/Paks/SoulCombat-Windows.pak",
+        "Win64Shipping-20260930-Final/SoulCombat/Content/Paks/SoulCombat-Windows.ucas",
+        "Win64Shipping-20260930-Final/SoulCombat/Content/Paks/SoulCombat-Windows.utoc",
+        "Win64Shipping-20260930-Final/SoulCombat.exe",
+        "Win64Shipping-20260930-Final/플레이-안내.txt"
+      ],
+      "package_file_manifest": [
+        {
+          "path": "Engine/Binaries/ThirdParty/DbgHelp/dbghelp.dll",
+          "bytes": 2232688,
+          "sha256": "6c1484085a1f4223880c059fd093a468702d0ecb224981918336fe847f5af92f"
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/MsQuic/v220/win64/msquic.dll",
+          "bytes": 2547080,
+          "sha256": "780959f289e380a21fdab0dba7ac468c8dd0606ea43b755865a7989f3c7221e9"
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/NVIDIA/NVaftermath/Win64/GFSDK_Aftermath_Lib.x64.dll",
+          "bytes": 5799024,
+          "sha256": "e3e777a9644452c2772336c4b35c39ed4d8abeb9b9c0c1dceb9e10bdb378e5a2"
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Ogg/Win64/VS2015/libogg_64.dll",
+          "bytes": 59832,
+          "sha256": "cf34407ec00248c208aa4b156126a725b79a4bce9f5c8034550c798a9b7a1407"
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbis_64.dll",
+          "bytes": 1724856,
+          "sha256": "1cd0eba3df4915ca6498917b91b78dc1dfda1c9155f2fd5b98dedd5b5ba918f3"
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbisfile_64.dll",
+          "bytes": 48568,
+          "sha256": "a00e6b073cec241d85d590ee138906ef9fdf9efef8d0d4989813359cd048a6f9"
+        },
+        {
+          "path": "Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll",
+          "bytes": 858144,
+          "sha256": "9d996ba84395c1e56604792a77775b0a7fa957d7b51b4d8b985040bcd80a6fd5"
+        },
+        {
+          "path": "Engine/Config/StagedBuild_SoulCombat.ini",
+          "bytes": 3,
+          "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+        },
+        {
+          "path": "Engine/Content/Renderer/TessellationTable.bin",
+          "bytes": 259568,
+          "sha256": "edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941"
+        },
+        {
+          "path": "Engine/Content/Slate/Cursor/invisible.cur",
+          "bytes": 326,
+          "sha256": "fef3980fa567e9c45d5d8dcaa432a2c1a3f3bb17fe67d7ab198164f56c142aa1"
+        },
+        {
+          "path": "Engine/Content/SlateDebug/Fonts/LastResort.tps",
+          "bytes": 930,
+          "sha256": "0f775fa99d05e21d43d2d06d55982b23dcdccdb512a9a5a07aff674f212c41b8"
+        },
+        {
+          "path": "Engine/Content/SlateDebug/Fonts/LastResort.ttf",
+          "bytes": 5395052,
+          "sha256": "fff0f8de0b868b964950fe97c9b60f893e9bc85a4f90b3629c5693db058b97b9"
+        },
+        {
+          "path": "Engine/Extras/Redist/en-us/vc_redist.arm64.exe",
+          "bytes": 11751688,
+          "sha256": "ba660394e40765c80b70178a33f07df81aefac2b6cb1f017b13880de88456de3"
+        },
+        {
+          "path": "Engine/Extras/Redist/en-us/vc_redist.x64.exe",
+          "bytes": 18569648,
+          "sha256": "1cf8e061174c320c8e125f1b09996ee0555ef450e515b06ab0fd99cb4c8db6ef"
+        },
+        {
+          "path": "Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll",
+          "bytes": 17339384,
+          "sha256": "9fc1ca0e75480c7805b6d3c4653864eaaee2fca5daa609b5347adf0b4185791a"
+        },
+        {
+          "path": "Manifest_DebugFiles_Win64.txt",
+          "bytes": 228,
+          "sha256": "72d2d888ad62c48ca073312c920f93d1a1a14a36f9856ce734a14ee0c6d80e7c"
+        },
+        {
+          "path": "Manifest_NonUFSFiles_Win64.txt",
+          "bytes": 1607,
+          "sha256": "fc07554630340fd53ba8626e4e8bdc4567c64afe8baf8c2803885a8246512989"
+        },
+        {
+          "path": "Manifest_UFSFiles_Win64.txt",
+          "bytes": 231428,
+          "sha256": "3c5aa3cafcc44cf3bcaf8e380c51c9726e42b88636bbc7220d2efa2fdb249ee3"
+        },
+        {
+          "path": "NOTICES.txt",
+          "bytes": 111,
+          "sha256": "ba49ae5586f817b36a2772269f71f899cb1f54b5f2720fad951319edd5e140b8"
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/D3D12/x64/D3D12Core.dll",
+          "bytes": 4831768,
+          "sha256": "5d262c97239e1aff8b03a7150abcaa84cc7983d311946708f982227d146fbb37"
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll",
+          "bytes": 4943344,
+          "sha256": "66afc2d2918191f9b97026e3c630ac6e93f5f83e3bd0eab34349ec2f66a0b4af"
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/DML/x64/DirectML.dll",
+          "bytes": 18538488,
+          "sha256": "579dd89146322ea2567de7db16b8e10f350eb0cf147ecaafe5b129d9fe175a84"
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/SoulCombat-Win64-Shipping.exe",
+          "bytes": 167637504,
+          "sha256": "c9d7c69b9daf0db929c78f6139949adfc20f7ecfed468bdca97c80d156537d30"
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/SoulCombat-Win64-Shipping.pdb",
+          "bytes": 224350208,
+          "sha256": "7b39a30006d87b0b3d131194e827ec167a5db3cc4b694e8826f34c6925ac2f7b"
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/tbb12.dll",
+          "bytes": 342456,
+          "sha256": "7e58ae38fd5d47c72b750dbdcf2978a1f36719663a0a4500a9cc857316612c34"
+        },
+        {
+          "path": "SoulCombat/Binaries/Win64/tbbmalloc.dll",
+          "bytes": 117176,
+          "sha256": "075ba2869e082ab5f1f159ad06614ce63c31ae51099e18b540822cc758697e56"
+        },
+        {
+          "path": "SoulCombat/Content/Paks/global.ucas",
+          "bytes": 3333888,
+          "sha256": "6dda8003b3f61818c9bd6b9beaef978a61d9330d076890438f3844810170ef44"
+        },
+        {
+          "path": "SoulCombat/Content/Paks/global.utoc",
+          "bytes": 806,
+          "sha256": "e650a8cc028cef1fbfda32ee8fb47975407b6f0556da237f69121d30f8d3951d"
+        },
+        {
+          "path": "SoulCombat/Content/Paks/SoulCombat-Windows.pak",
+          "bytes": 11254701,
+          "sha256": "a20a8f08c72c1137c2c03562eb21fb80c74afe40785c3047409dd98be57e35a4"
+        },
+        {
+          "path": "SoulCombat/Content/Paks/SoulCombat-Windows.ucas",
+          "bytes": 224887536,
+          "sha256": "630bd241e7901962df204db4a91884f74c606cc93d0e734646285638d4ee35ab"
+        },
+        {
+          "path": "SoulCombat/Content/Paks/SoulCombat-Windows.utoc",
+          "bytes": 226614,
+          "sha256": "0ed29d52d72c7fbb884ddbe0d0b73086233cb2f773477f5684d8afba5bb63bd3"
+        },
+        {
+          "path": "SoulCombat.exe",
+          "bytes": 171520,
+          "sha256": "1c75a7f38127f000131d231be3a9e182d5b775a18f1bd9f2332f3ab383332b67"
+        }
+      ]
+    },
+    "evidence": {
+      "production-packaging-final-result.json": {
+        "path": "SoulCombat/Saved/production-packaging-final-result.json",
+        "sha256": "eb7b2977dd2e3acf3ec073b18746cba2b6b9c8d94c7cbf41ad4cdd0d15b0adf3"
+      },
+      "production-packaging-final.log": {
+        "path": "SoulCombat/Saved/production-packaging-final.log",
+        "sha256": "66a6bad46007a061a9ff039686208bb971f4b722f7aa3cdac06fc283afdf38f1"
+      },
+      "production-shipping-smoke.json": {
+        "path": "SoulCombat/Saved/production-shipping-smoke.json",
+        "sha256": "85c290d7149f7a077fbda1165d1164b95bb9dd7c15285891b4a1427e301d2d24"
+      },
+      "production-package-bundle.json": {
+        "path": "SoulCombat/Saved/production-package-bundle.json",
+        "sha256": "090196ba159b7e75aeed58bbc0903f2c48b2eb54595c263755391bed020c4355"
+      }
+    },
+    "note": "최종 게임 소스dd559e0를 별도 새 출력 폴더로 build/cook/stage/archive했다. 패키지 부트스트랩과 실제Shipping 자식의 창 생성·응답5회를 확인한 뒤 검사에서 시작한 PID만 정리했다. 정상 메뉴 종료·물리 입력·청취·일반 던전 완주 검증으로 확대 해석하지 않는다."
+  },
+  "package_status": "final_build_and_start_smoke_and_bundle_passed",
   "human_acceptance": {
     "status": "pending",
     "note": "이 근거는 실제 키·마우스 입력, 화면·소리·손맛, UE 없는 PC에서 설치/패키지 실행을 완료했다는 판정으로 사용하지 않는다."
@@ -4136,9 +4591,9 @@
   },
   "validation_method": "현재 PASS 원본은 done=true, 오류 없음, 실패 배열 비어 있음(있는 경우), 전체 행 passed=true, 기대 조건 수를 확인했다. 역사적 RED는 실패가 원인 재현의 예상 증거이므로 별도 분리했다. 정적 감사의 과거 입력 형식 오류2개는 resolved=true로 확인해 현 compile 실패와 구분했다.",
   "actualvalidated_source_commit": "4c6ee1ac41192bd602abf5b8dd295e22e62eac0d",
-  "validated_commit_note": "검증 결과 수집 당시89062ed 위의 미커밋 통합 스냅샷을 아래 provenance에 보존했다. 이후 Root가 해당 실게임 소스를4c6ee1ac41192bd602abf5b8dd295e22e62eac0d로 커밋했음을 확인했고, 로컬에서도 그 커밋이 존재함을 읽기 전용으로 확인했다. 패키지와 최종 sourceSha 필드는 Root가 마무리한다.",
+  "validated_commit_note": "런타임258조건을 검증한 통합 게임 소스는4c6ee1a다. 이후 주석 GUID만 강제 저장한9개 BP의64개 그래프·925개 실행 노드와 전체 핀·연결·값 불변을 확인하고77개 엄격 컴파일·돌진 선택6조건을 재검증했다. 최종 패키지는 sourceSha dd559e0에서 만들어 쿠킹 오류/경고0·시작 응답·ZIP CRC를 확인했다. 문서 완료 커밋은 게임 소스를 변경하지 않는다.",
   "comment_guid_metadata_repair": {
-    "status": "saved_and_verified_pending_final_cook",
+    "status": "saved_same_logic_strict_compile_and_fresh_cook_zero_warnings",
     "historical_cook_warning_count": 25,
     "affected_blueprints": 9,
     "cause": "현재 엔진 AddCommentNode가 CreateNewGuid를 호출하지 않아 새 주석에 GUID가 없음",
@@ -4564,7 +5019,8 @@
         "sha256": "ff70c0f1cd0b158e3a2646afc83215ad5f410d9eb45ff53aed13c2ddbc650863"
       }
     },
-    "note": "258개 실행 조건은 동작 수정이 끝난4c6ee1a의 결과다. 이후 주석 메타데이터만 강제 저장했으며925개 실행 노드와 전체 핀·연결·값 불변을 확인했다."
+    "note": "258개 실행 조건은 동작 수정이 끝난4c6ee1a의 결과다. 이후 주석 메타데이터만 강제 저장했으며925개 실행 노드와 전체 핀·연결·값 불변을 확인했다.",
+    "final_cook_zero_guid_warnings": true
   },
   "historical_first_production_package": {
     "adopted_for_distribution": false,
@@ -4733,5 +5189,13 @@
       "path": "SoulCombat/Saved/production-packaging-result.json",
       "sha256": "25ceeb4fb7a4cce6b1849e0e168d8cacb2315abb05f7ff9696aa2f1d0089fa10"
     }
+  },
+  "final_workspace_state": {
+    "game_source_commit": "dd559e08481ca1726ed6e1f967eee06de21c185a",
+    "editor_processes_closed": true,
+    "mcp_ports_8000_8001_8002_closed": true,
+    "owned_smoke_processes_cleaned_up": true,
+    "git_push_performed": false,
+    "note": "기록 문서의 최종 커밋은 패키징 이후 이루어질 수 있다. 그 커밋은 게임 소스를 바꾸지 않는다."
   }
 }

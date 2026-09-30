@@ -1,10 +1,12 @@
 # SoulCombat 실행·플레이 안내
 
-이 제작본은 전투 연습 필드와 던전 하나의 싱글 플레이 게임이다. 이번 제작 결과와 실제 통과·미검증 항목은 `09-production-plan.md`와 `checklist.md`에 기록한다.
+이 제작본은 전투 연습 필드와 던전 하나의 싱글 플레이 게임이다. 최종 게임 소스는 `dd559e0`이며 Win64 Shipping 쿠킹 오류0·경고0과 패키지 시작·응답 관찰을 확인했다. 실제 통과·미검증 항목은 `11-production-validation.md`와 `checklist.md`에 기록한다.
 
 ## 실행
 
-패키지는 저장소의 `SoulCombat/Saved/Packages/Win64Shipping`에 만든다. 이 폴더 **전체**를 유지하고 `SoulCombat.exe`를 실행한다. 실행 파일 하나만 옮기면 콘텐츠를 찾을 수 없다. 처음 실행할 Windows x64 PC에서 런타임 설치가 필요하면 함께 있는 `Engine/Extras/Redist/en-us/vc_redist.x64.exe`를 사용한다. 현재 UE 5.8의 `-prereqs`는 Arm64 장치용 `Engine/Extras/Redist/en-us/vc_redist.arm64.exe`도 함께 포함한다. UE 없는 별도 PC의 실제 설치·실행은 아직 사람 검증 항목이다.
+이번 PC의 최종 결과물은 `SoulCombat/Saved/Packages/Win64Shipping-20260930-Final/SoulCombat.exe`다. 전달용 ZIP은 `SoulCombat/Saved/Packages/SoulCombat-Win64-20260930.zip`이며 압축을 풀면 같은 폴더와 간단한 플레이 안내가 나온다. 폴더 **전체**를 유지하고 `SoulCombat.exe`를 실행한다. 실행 파일 하나만 옮기면 콘텐츠를 찾을 수 없다. 첫 제작 패키지와 초기 PC 점검 패키지는 비교 기록으로 보관하며 `-Final` 폴더를 사용한다.
+
+처음 실행할 Windows x64 PC에서 런타임 설치가 필요하면 함께 있는 `Engine/Extras/Redist/en-us/vc_redist.x64.exe`를 사용한다. 현재 UE 5.8의 `-prereqs`는 Arm64 장치용 `Engine/Extras/Redist/en-us/vc_redist.arm64.exe`도 함께 포함하지만 이번 게임 실행 파일의 대상은 Win64다. UE 없는 별도 PC의 실제 설치·실행은 아직 사람 검증 항목이다.
 
 다시 만들 때는 작업 에디터를 저장·종료한 뒤 저장소 루트에서 다음 명령을 실행한다. 스크립트는 다른 에디터를 강제로 종료하지 않는다.
 
@@ -12,7 +14,7 @@
 powershell -ExecutionPolicy Bypass -File Tools/Package-Game.ps1
 ```
 
-다른 엔진 설치 경로는 `-EngineDir`, 출력 폴더는 `-ArchiveDir`로 지정한다. `-PlanOnly`는 실행할 경로·인자와 의존 설치 파일의 예상 경로만 보여 준다. 실제 패키징이 끝나면 실행 파일과 두 의존 설치 파일의 존재를 검사한다.
+다른 엔진 설치 경로는 `-EngineDir`, 출력 폴더는 `-ArchiveDir`로 지정한다. 위 명령의 기본 출력은 `SoulCombat/Saved/Packages/Win64Shipping`이며 이번 최종본은 별도의 `-ArchiveDir`를 지정해 만들었다. `-PlanOnly`는 실행할 경로·인자와 의존 설치 파일의 예상 경로만 보여 준다. 실제 패키징이 끝나면 실행 파일과 두 의존 설치 파일의 존재를 검사한다.
 
 ## 조작과 진행
 

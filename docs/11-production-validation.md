@@ -1,6 +1,6 @@
 # 11. 제작본 통합 검증
 
-현재 전투 필드와 던전 하나의 싱글 플레이 제작본을 대상으로 한다. 2026-09-30 돌진 수정 뒤 통합 회귀178조건과 별도 돌진6·자율 AI17·피드백 독립57조건을 확인했다. 합계258은 중복 기능 관찰을 포함한 검사 조건 수다. 첫 제작본 Shipping UAT는 성공했지만 주석25개·BP9개의 NodeGuid 경고로 최종 배포물로 채택하지 않았다. 대상9개 BP의 주석 메타데이터 강제 재저장·64개 그래프/925개 실행 노드 로직 동일성·보정 후 BP77개 엄격 컴파일도 확인했다. 새 출력 경로 재패키징의 GUID 경고 해소와 최종 시작 확인은 대기 중이다. 초기 PC 준비 기록 `08-pc-validation.md`와 담당 사본의 결과는 이 제작본의 최종 결과와 구분한다.
+최종 Win64 Shipping 빌드와 패키지 시작·응답 검사가 통과했다. 전투 필드와 던전 하나의 싱글 플레이 제작본은 통합 회귀178·별도 돌진6·자율 AI17·피드백 독립57의 합계258개 조건, BP77개 엄격 컴파일, 주석 GUID 보정과 최종 cook의 오류0·경고0을 확인했다. P1·P2 구현과 자동 회귀, P3 적/보스·회복·던전 흐름의 자동 검증, P4 결과물 빌드와 자동 시작은 완료했다. 난이도·손맛·실제 키/마우스·청취·정상 종료 UI·UE 없는 PC·장기 플레이는 사람 검증으로 남긴다. 258은 중복 기능 관찰을 포함한 검사 조건 수이며 초기 PC 준비 기록 `08-pc-validation.md`와 담당 사본의 결과를 최종 통합 결과와 구분한다.
 
 ## 제작 변경
 
@@ -69,15 +69,21 @@
 
 현재 UE5.8.3의 `BlueprintGraphEditor.cpp:1292`에 있는 `UBlueprintGraphEditor::AddCommentNode`는 새 주석에 `CreateNewGuid`를 호출하지 않는다. `EdGraphNode.cpp:693`의 `UEdGraphNode::PostLoad`는 유효 GUID가 없는 노드를 로드할 때 경고를 남기고 `CreateNewGuid`를 호출하며 이 분기에서 패키지를 dirty로 표시하지 않는다. 따라서 에디터 메모리에서 GUID가 복구되고 dirty0이어도 디스크의 패키지 보정이 저장됐다는 근거가 되지 않았다.
 
-새 에디터 PID24232에서 대상9개 BP의 전체 노드·핀·연결을 먼저 기록하고 로드 시 복구된 GUID를 `only_if_is_dirty=False`의 네이티브 패키지 강제 저장으로 직렬화했다. `comment-guid-resave-result.json`은9개 저장 성공, 피드백 CDO의 bEnableHitstop=true와 dirty 콘텐츠/맵0을 확인한다. `comment-guid-same-logic.json`은9개 BP·64개 그래프·925개 실행 노드의 타입·위치·전체 입력/출력 핀·값·연결이 전후 JSON 구조까지 동일함을 기록한다. 게임 동작을 바꾸는 수정은 없으며 기존258개 실행 조건을 게임 동작의 검증 근거로 유지한다. 보정 후 전체77개 엄격 컴파일도 통과했고, 이어 에디터 종료·별도 새 출력 경로의 재UAT·GUID 경고 해소·최종 시작 스모크를 확인한다.
+새 에디터 PID24232에서 대상9개 BP의 전체 노드·핀·연결을 먼저 기록하고 로드 시 복구된 GUID를 `only_if_is_dirty=False`의 네이티브 패키지 강제 저장으로 직렬화했다. `comment-guid-resave-result.json`은9개 저장 성공, 피드백 CDO의 bEnableHitstop=true와 dirty 콘텐츠/맵0을 확인한다. `comment-guid-same-logic.json`은9개 BP·64개 그래프·925개 실행 노드의 타입·위치·전체 입력/출력 핀·값·연결이 전후 JSON 구조까지 동일함을 기록한다. 게임 동작을 바꾸는 수정은 없으며 기존258개 실행 조건을 게임 동작의 검증 근거로 유지한다. 보정 후 전체77개 엄격 컴파일·에디터 종료·별도 새 출력 경로 재UAT를 마쳤고 최종 cook에서 GUID 경고0을 확인했다.
+
+최종 빌드 소스는 `dd559e08481ca1726ed6e1f967eee06de21c185a`다. `SoulCombat/Saved/production-packaging-final-result.json`은 done/passed=true·ExitCode0·51.797초·32파일·727,456,174바이트와 런타임 설치 파일2개 존재를 기록한다. `production-packaging-final.log`의 cook 결과는 `Success - 0 error(s), 0 warning(s)`이며 missing NodeGuid 출력은0이다. 최종 배포물은 `SoulCombat/Saved/Packages/Win64Shipping-20260930-Final`이고 첫 경고 포함 출력과 별도로 보관한다.
+
+`SoulCombat/Saved/production-shipping-smoke.json`은 done/passed=true·error=null·31.029초의 시작·응답 검사를 기록한다. 최종 배포물의 부트스트랩 PID1616이 실제 Shipping 실행 파일의 자식 PID468을 만들었고,5~25초의5회 관찰에서 모두 Responding=true·창 제목 SoulCombat·창 핸들16912436이었다. 실제 실행 파일 경로와 부모 PID도 대조했다. 검사 후에는 이 검사에서 시작한 경로·부모 PID에 일치하는 프로세스를 Stop-Process로 정리했다. 정상 종료 UI를 통한 종료와 사람의 게임 플레이는 이 검사에 포함하지 않았다.
 
 | 제작본 패키지 단계 | 현재 확인 상태 |
 | --- | --- |
 | 첫 UAT (`4c6ee1a`) | 성공, 주석 GUID 경고로 최종 배포물 미채택 |
 | 대상9개 BP 강제 재저장·전체 노드/핀/연결 same-logic | 저장9/9,64개 그래프·925개 실행 노드 동일 |
 | 주석 GUID 보정 후 전체 BP77개 엄격 컴파일 | 77/77 통과, 의존 누락/Scratch/dirty0 |
-| 별도 새 출력 경로 Win64 Shipping 재UAT·GUID 경고 해소 | 대기 |
-| 최종 배포물 시작/종료 스모크 | 대기 |
+| 별도 새 출력 경로 Win64 Shipping 재UAT·GUID 경고 해소 | ExitCode0, cook 오류0·경고0,51.797초 |
+| 최종 배포물 시작·응답·검사 프로세스 정리 | 실제 Shipping 자식·5회 응답·창 확인,31.029초 |
+
+전달용 `SoulCombat/Saved/Packages/SoulCombat-Win64-20260930.zip`을 만들고33개 항목(UAT 파일32개+한국어 플레이 안내)의 전체 CRC를 검증했다. 크기는435,928,098바이트이며 SHA256은 `aea0f99dfad2eedca5d9f70623cf1bf04747d9e2c4ef632ee7b6c18d8d9896b5`다. `SoulCombat/Saved/production-package-bundle.json`과 추적 가능한 `docs/verification/production-verification.json`에 패키지 파일별 크기·SHA256과 ZIP 결과를 보존했다. 작업 에디터·검사 게임 프로세스가 없고 MCP8000/8001/8002도 종료 상태임을 후속 확인했다. 로컬 커밋만 수행하며 Git push는 하지 않았다.
 
 `08-pc-validation.md`의 Shipping 성공은 `main/cc31c5c`에 대한 초기 PC 준비 결과다. 첫 제작본 UAT와 경고 보정 뒤 최종 패키지를 각각 구분한다. 실행 안내와 사람 확인 순서는 `10-play-guide.md`를 따른다.
 
@@ -87,4 +93,4 @@
 
 통합 담당이 정지 메뉴의 실제 스크린샷을 직접 확인했다. 한국어 글자,4개 버튼과 조작 안내가 표시되고 배치 겹침이 없었다. 실제 키·마우스의 진입/복귀와 전투 중 전체 UI 가독성은 별도 확인 대상이다.
 
-남은 사람 검증은 실제 입력, 애니메이션 연결과 손맛, 숫자·가드·오버레이의 화면 가독성, 음향 청음, 정상 조작으로 전체 던전 완주, UE 없는 PC의 설치·실행, 장시간 안정성이다. 자동 검증에서 이미 수정한 기능의 구현 완료와 이 항목들의 플레이 승인은 구분한다.
+남은 사람 검증은 실제 입력과 정상 종료 UI, 애니메이션 연결·난이도·손맛, 숫자·가드·오버레이의 화면 가독성, 음향 청음, 정상 조작으로 전체 던전 완주, UE 없는 PC의 설치·실행, 장시간 안정성이다. 자동 검증에서 이미 수정한 기능의 구현 완료와 이 항목들의 플레이 승인은 구분한다.
