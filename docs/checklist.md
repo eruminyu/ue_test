@@ -67,3 +67,17 @@
 - [ ] 사람이 키·마우스·화면·소리·손맛 및 최종 패키지를 확인.
 
 담당 결과는 `parallel/combat-timing-build-log.md`와 `parallel/combat-timing-verification.json`에 기록했다. 독립 사본의 자동 통과를 최종 통합·사람 검증으로 대신 표시하지 않는다.
+## P1 담당 B: 명중 피드백 독립 제작
+
+- [x] 기준 `81a750f`, 작업 사본 `combat-feedback`, MCP 8002, 에디터 PID 12548 확인.
+- [x] 새 컴포넌트·피격 오버레이·부유 숫자 액터·위젯의 계약 검사를 먼저 작성하고 미구현 실패 확인.
+- [x] `ReportHit(Attacker, Target, Damage, bGuarded)`와 `ResetAllFeedback` 구현. 반환 기본값은 `bEnableHitstop=false`.
+- [x] 실제 PIE의 57개 검사 통과: 실제 GE 피해 50, 피해0, 가드 표시, 최초 배율/FOV/오버레이, 재명중, 외부 변경, 사망·부활, 일시정지·전역 배속, 파괴·EndPlay, 숫자 수명·24개 상한.
+- [x] PIE 설정 변경 알림의 독립 대조: 기본 알림은 동적 컴포넌트를 무효화, `NEVER` 알림은 같은 객체·Owner·유효성 보존.
+- [x] 20개 그래프의 한국어 주석·배치, 정리 전후 로직 동일 20/20, 추정 노드 겹침0.
+- [x] 새 BP 3개 `warnings_as_errors=true` 컴파일, 재질 재컴파일, 명시 에셋 저장, dirty 콘텐츠·맵0, PIE 종료 확인.
+- [x] 담당 새 에셋·테스트·제작 기록만 로컬 커밋 대상으로 확인. 원본 Combat·PC·캐릭터·설정·음원 수정 없음.
+- [ ] 통합 담당이 PC 컴포넌트 추가·실제 HP 전후 전달·몽타주 시간 전환과 합친 뒤 새 PIE 회귀.
+- [ ] 통합 화면에서 손맛·가드 색·메시별 오버레이·기존 VFX 및 음향의 조합 확인.
+
+상세 근거와 재실행 절차는 `parallel/combat-feedback-build-log.md`에 기록한다. 독립 테스트 통과를 게임 전체 통합 완료로 간주하지 않는다.
