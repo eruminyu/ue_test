@@ -2,6 +2,8 @@
 
 언리얼 엔진 5.8 팀 프로젝트(비상업 포트폴리오)의 전투 프로토타입. 소울워커식 스킬 전투를 GAS로 만들었다. C++는 GAS에 꼭 필요한 속성 세트(`SCAttributeSet`)와 어빌리티 세트 데이터 에셋(`SCAbilitySet`)뿐이고, 나머지는 전부 블루프린트다. 블루프린트는 Unreal MCP로 만들었고, 모든 그래프는 정리돼 있으며 기능 단위 한국어 주석 박스가 달려 있다.
 
+현재는 언리얼 게임 개발의 **학습용 참고 사례**로 사용한다. [학습 안내](docs/07-study-guide.md)는 실제 입력·피해·취소 경로를 읽는 방법과 작은 개선 실험을 다룬다. [이 PC 검증 결과](docs/08-pc-validation.md)는 UE 5.8.3에서의 컴파일·PIE·Shipping 패키징 결과와 사람 검증이 필요한 부분을 구분한다. 기존 포트폴리오 로드맵은 선택할 수 있는 발전안이다.
+
 ## 빠른 시작 (Windows)
 
 1. UE 5.8(런처 설치)과 Visual Studio 2022 이상(C++ 게임 개발 워크로드)을 설치한다.
@@ -48,10 +50,14 @@
 | `docs/04-final-qa.md` | 최종 QA 결과 |
 | `docs/05-portfolio-roadmap.md` | 포트폴리오 발전 로드맵 |
 | `docs/06-handoff.md` | 다른 PC에서 이어서 하기 (준비 절차, Claude Code 지시문) |
+| `docs/07-study-guide.md` | 학습 경로, 설계 선택 조건, 단계별 힌트와 작은 실험 |
+| `docs/08-pc-validation.md` | 2026-09-30 현재 PC 환경·자동 검증·패키징 결과 |
+| `docs/checklist.md` | 작업 완료와 남은 사람 검증 |
 | `docs/mcp-cookbook.md` | UE 5.8.2 Unreal MCP 사용법과 제약 |
 | `docs/engine-api-notes.md` | GAS·엔진 API 검증 노트 |
 | `docs/screenshots/` | 레벨 평면도, PIE 화면, 그래프 스크린샷 |
 | `CLAUDE.md` | Claude Code 세션 규칙 |
+| `AGENTS.md` | 학습 목적과 Codex 협업·검증 규칙 |
 
 ## 주요 설계
 

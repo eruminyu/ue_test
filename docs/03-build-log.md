@@ -23,6 +23,8 @@
 
 ## 환경
 
+아래는 제작 당시 환경이다. 2026-09-30 새 PC의 UE 5.8.3 재검증은 이 문서 마지막 기록과 `08-pc-validation.md`에 있다.
+
 | 항목 | 값 |
 | --- | --- |
 | 엔진 | UE 5.8.2 (CL 56702186, 런처 설치, `C:\Program Files\Epic Games\UE_5.8`) |
@@ -166,3 +168,13 @@
 | 3단계 | 검기 투사체가 스폰 지점에 이미 있던 적을 못 맞힐 수 있음(설계 검토) | SpawnActor 중 초기 겹침 BeginOverlap이 Init(SourceCombat 설정)보다 먼저 옴 | 적중 로직을 TryHit 함수로 분리, Init 끝에서 GetOverlappingActors로 한 번 더 처리 |
 | 3단계 수정 | 컨트롤러 IA_Dash 이벤트가 Shift 입력에 반응하지 않음(검증에서 발견) | 템플릿 Variant_Platforming에도 IA_Dash가 있어 type_id `Input\|EnhancedActionEvents\|IA_Dash`가 둘이고 create_node가 템플릿 쪽을 만듦 | SlateInspector로 노드 복사 → 클립보드 텍스트에서 InputAction 경로 교체 → 붙여넣기 → 재연결 |
 | 9단계 파일럿 | 주석 붙이는 중 CanMove의 Return bool 기본값이 true→false로 바뀜 | 그래프 포커스를 주려고 워터마크를 왼쪽 클릭했는데 그 밑에 Return 노드의 체크박스가 있었다 | set_pin_value로 복구, 포커스는 워터마크 오른쪽 클릭 + Escape로 바꿈, 매 BP 끝에 덤프 비교(same-logic) |
+
+## 2026-09-30 현재 PC 재개 준비와 학습 목적 보충
+
+- 체크아웃 `D:\Project\UE\AstraTest\ue_test`, 검증 기준 `main/cc31c5c`와 fetch 후 `origin/main` 일치. 전체 브랜치·병합 그래프와 실제 구현을 문서와 대조했다.
+- UE 5.8.3(CL 58210709), VS Community 2026, MSVC 14.51.36257, SDK 10.0.26100.0. LFS 검사·템플릿 복원·C++ 에디터 빌드 성공, BP 72개 경고/오류 0.
+- Win64 Shipping 패키징 성공(ExitCode 0, 182.60초), 패키지 시작·프로세스 응답 확인. C++ 빌드 경고와 실제 키/화면/소리 미검증은 `08-pc-validation.md`에 별도 기록했다.
+- 실에셋 PIE에서 전투37·타이밍/관통3·전체 흐름22 체크, 게이트 취소/입장, 이벤트 시간 초과, 사망 중 취소/입력 거부, 보스 분노·세 행동 발동을 확인했다. 부활의 첫 예상X 오류는 실제 방의 RespawnPoint를 읽는 독립 재검사로 해결했다. 중간 검사 실패 기록도 보존했다.
+- 의존 경로 206개 중 에셋 누락 0, `_Scratch` 의존 0. PIE 종료 후 `L_CombatField`, 104개 dirty 0. 게임 로직·에셋·프로젝트 설정은 수정하거나 저장하지 않았다.
+- 사용자는 언리얼 학습용 참고 사례로 사용한다. `07-study-guide.md`에 해결 방향·관찰·작은 실험을 먼저 주는 힌트 방식과 개선 후보를 정리했다. 기존 문서의 경직·안전한 MCP 읽기·피해 계산·비용 Spec·C++ 규모 설명을 보정했다.
+- `docs/checklist.md`에 완료와 남은 사람 검증을 기록했다. 이번 단계는 문서만 로컬 커밋하며 푸시는 하지 않는다.

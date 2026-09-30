@@ -2,6 +2,8 @@
 
 이 저장소는 언리얼 엔진 5.8 팀 프로젝트(비상업 포트폴리오)의 전투 프로토타입 `SoulCombat`이다. 소울워커식 스킬 전투가 중심이고 GAS(Gameplay Ability System)를 쓴다. 블루프린트는 Unreal MCP로 만든다.
 
+현재 사용 목적은 언리얼 학습용 참고 사례다. `AGENTS.md`의 학습·협업 지침과 `docs/07-study-guide.md`를 함께 따른다. 비슷한 기능을 묻는 경우 해결 방향·관찰 지점·작은 실험부터 설명하고, 현재 구현을 유일한 정답으로 단정하지 않는다. `docs/05-portfolio-roadmap.md`는 선택 가능한 발전안이다.
+
 ## 대화 규칙
 
 - 사용자에게는 항상 **한국어**로 답한다.
@@ -16,6 +18,9 @@
 - `docs/04-final-qa.md`: 최종 QA(정적 점검, 입력 없는 PIE 전투 테스트, 전체 흐름 회귀)
 - `docs/05-portfolio-roadmap.md`: 포트폴리오 발전 로드맵(현재 진단, 직군별 트랙, 단계 순서)
 - `docs/06-handoff.md`: 다른 PC에서 이어서 할 때의 준비 절차와 Claude Code 지시문
+- `docs/07-study-guide.md`: 실제 구현을 따라 읽는 학습 경로와 작은 실험
+- `docs/08-pc-validation.md`: 현재 PC의 환경·PIE·Shipping 검증과 한계
+- `docs/checklist.md`: 완료한 점검과 남은 사람 검증. 커밋 전에 갱신한다
 - `docs/mcp-cookbook.md`, `docs/parallel/*-cookbook.md`: 이 에디터 버전에서 확인한 MCP 레시피와 함정
 - `docs/engine-api-notes.md`: 설계 전제를 엔진 소스로 검증한 노트
 - `docs/comment-pass-recipe.md`: 그래프 정리·주석 절차

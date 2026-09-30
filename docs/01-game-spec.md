@@ -97,7 +97,7 @@
 
 1. 대상이 `State.Guard`이고 공격자가 대상 전방 120도 안에 있으면 가드 성공: 계수 × 0.2, 대상에게 `Event.Guard.Blocked`, 큐 `GameplayCue.Guard.Block`, 경직 없음, 넉백 30%.
 2. `GE_Damage` 스펙에 SetByCaller `Data.Damage` = 공격력 × 계수를 넣어 대상에게 적용. `GameplayCue.Hit` 재생.
-3. 가드 실패면 대상에게 `Event.HitReact`(Payload: Instigator = 공격자, EventMagnitude = 넉백). 대상의 `GA_HitReact`가 경직(`GE_HitStun` 0.4초), 넉백, 피격 모션을 처리. `State.SuperArmor`면 발동하지 않는다.
+3. 가드 실패면 대상에게 `Event.HitReact`(Payload: Instigator = 공격자, EventMagnitude = 넉백). 대상의 `GA_HitReact`가 경직, 넉백, 피격 모션을 처리. 경직 태그 `State.HitStun`은 GA의 Activation Owned Tags로만 소유하고, `StunDuration`(기본 0.4초) 뒤 어빌리티가 끝나며 해제한다. 별도 `GE_HitStun` 에셋은 없다. `State.SuperArmor`면 발동하지 않는다.
 4. 대상 선정(`AC_CombatComponent.FindTargets`): Pawn 스피어 오버랩 → 자기 제외 → ASC 있음 → 진영 태그가 다름(Team.Player ↔ Team.Enemy) → `State.Dead` 아님.
 
 사망: `AC_CombatComponent`가 Health 변화를 감시하다 0 이하가 되면 `State.Dead` 부여, `GE_Death`(Cancel Abilities with Tags 컴포넌트)로 모든 어빌리티 취소, 래그돌, `OnDied` 방송. 플레이어는 3초 뒤 현재 체크포인트(필드: 시작 지점, 던전: 현재 방 입구)에서 전부 회복하고 부활. 몬스터는 3초 뒤 제거(필드의 더미와 잡몹은 제자리 부활).

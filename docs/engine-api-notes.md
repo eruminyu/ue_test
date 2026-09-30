@@ -348,8 +348,8 @@ SoulCombat 설계(`docs/01-game-spec.md`)에 쓰이는 엔진 API와 템플릿 �
   2. Make GameplayEffectQuery(OwningTagQuery)
   3. ASC 'Get Active Gameplay Effects for Query'
   4. Remaining = GetActiveGameplayEffectRemainingDuration, Total = GetActiveGameplayEffectTotalDuration
-  - 대안: 쿨다운 GE에 같은 태그로 AssetTags 컴포넌트도 넣으면 GetActiveEffectsWithAllTags도 동작한다.
-  - 매 틱 조회하지 말고 Wait Gameplay Tag Add/Remove To Actor로 타이머를 시작하고 멈춘다.
+  - 대안: 쿨다운 GE에 같은 태그로 AssetTags 컴포넌트도 넣으면 GetActiveEffectsWithAllTags도 동작한다. **현재 SoulCombat은 이 대안을 사용한다.** `02-build-plan.md`와 2026-09-30의 실제 `WBP_SkillSlot.Refresh` 그래프에서도 확인했다. 위 OwningTagQuery 레시피는 Grant 태그만 두는 설계의 선택지이며, 현재 HUD가 잘못되었다는 의미는 아니다.
+  - 조회 부담을 줄여야 할 때는 Wait Gameplay Tag Add/Remove To Actor로 타이머를 시작하고 멈추는 방법을 검토한다. 현재 구현은 Refresh에서 조회한다.
   - Infinite GE는 -1을 반환한다.
 
 ### B7. Wait For Attribute Changed와 Get Float Attribute: TRUE
