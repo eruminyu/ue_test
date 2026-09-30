@@ -36,3 +36,7 @@ SoulCombat/Content/__ExternalActors__/*
 !SoulCombat/Content/__ExternalObjects__/
 SoulCombat/Content/__ExternalObjects__/*
 !SoulCombat/Content/__ExternalObjects__/SoulCombat/
+
+# Python
+__pycache__/
+*.pyc
