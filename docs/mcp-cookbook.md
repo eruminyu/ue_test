@@ -323,6 +323,14 @@ editor.add_comment_to_nodes('월드를 재개하고 메뉴 참조·커서·게�
 
 명시 컴파일·저장과 전후 논리 비교는 계속 필요하다. UI 클립보드 주석 도구는 사용할 수 있는 대체 방식이며, 기존 기록은 해당 작성 당시의 도구 경로로 읽는다. PIE 런타임 객체의 테스트 설정 변경에는 `set_editor_property(..., notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)`를 사용해 에디터 변경 알림에 의한 재생성과 게임 수명 처리를 구분한다.
 
+### 네이티브 주석 노드의 NodeGuid와 쿠킹
+
+UE 5.8.3의 `BlueprintGraphEditor.cpp` 1292~1316행에서 `AddCommentNode`는 `CreateNewGuid()`를 호출하지 않는다. `AddCommentToNodes`도 이 함수를 사용한다. 편집 세션에서 엄격 컴파일와 저장이 통과해도 새 쿠킹 프로세스의 `EdGraphNode::PostLoad`가 GUID 누락 경고를 낼 수 있다. 이번 첫 제작본 쿠킹에서는 주석25개·BP9개에 해당 경고가 발생했다.
+
+`EdGraphNode.cpp` 698~703행은 패키지를 로드할 때 빠진 GUID를 자동 생성한다. 이를 디스크에 남기려면 새 편집 세션에서 대상 패키지를 다시 읽고 `unreal.EditorAssetLibrary.save_loaded_asset(bp, only_if_is_dirty=False)`로 강제 저장한다. 자동 생성이 dirty로 표시되지 않을 수 있어 기본 dirty-only 저장만으로 복구를 단정하지 않는다. `NodeGuid`는 편집 노출 플래그가 없는 보호 속성이라 Python·MCP setter가 접근 검사에 차단된다. 엔진 코드나 게임 실행 로직을 변경할 필요는 없다.
+
+이번 보정은 재로드한9개 BP를 강제 저장했고, 모든64개 그래프의925개 실행 노드에서 타입·위치·전체 핀/값/연결의 전후 동일성을 확인했다. 이후77개 전체 엄격 컴파일와 dirty0을 확인했다. 최종 쿠킹의 경고 수는 `11-production-validation.md`에 별도로 기록한다. 새 주석을 추가한 후에는 편집기 컴파일뿐 아니라 새 프로세스의 쿠킹 로그도 확인한다.
+
 ## DSL `bind`와 순수 Getter의 평가 시점 함정
 
 2026-09-30 통합 담당이 실제 PIE에서 확인한 사례다. DSL의 `bind`는 출력 핀 연결에 이름을 붙이며, 그 줄에서 값을 복사해 보관하는 스냅샷을 보장하지 않는다. 특히 순수(pure) Getter를 `bind`한 뒤 그 Getter가 읽는 변수를 바꾸면, 이후 실행 노드가 입력을 평가할 때 변경된 값을 읽을 수 있다. 텍스트에서 먼저 `bind`했다는 사실만으로 Blueprint의 읽기·쓰기 순서가 고정되지는 않는다.

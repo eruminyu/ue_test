@@ -225,4 +225,13 @@
 - 자율 AI17조건도 별도 통과했다. 기존 SparringGrunt_1의 Think 타이머/Tick을 유지해 실제 Aggro800(CDO2500)·공격180·Think0.2초를 읽고700cm 진입 자연 접근/공격/피해25·범위 밖 배치 후 추격 해제·재진입 피해25·GE 사망 뒤3초 부활 전 추격 해제를 관찰했다. 다른 AI 휴면과 플레이어 MovementMode.NONE은 PIE 준비 조건이며 장애물 우회·난이도·물리 입력 검증은 아니다. 결과는 `SoulCombat/Saved/ai-autonomy-result.json`이다.
 - 원본에서 연결 이후 피드백 독립57조건을 다시 실행해 모두 통과했다(`SoulCombat/Saved/combat-feedback-tests.json`, done=true·failures=[]·error=null). 실제 게임 전달17조건과 독립 수명/복원57조건을 구분한다. 전체178+돌진6+AI17+피드백57=258은 같은 기능을 반복 관찰한 조건을 포함하므로 서로 다른258개 시나리오로 표현하지 않는다.
 - 통합 담당이 정지 메뉴의 실제 스크린샷에서 한국어 글자·4개 버튼·조작 안내·배치 겹침 없음을 확인했다. 실제 키/마우스 진입·복귀 검증과 구분한다.
-- `11-production-validation.md`와 체크리스트를 최신 확인 상태로 갱신했다. 제작본 Shipping·시작 스모크는 대기 중이며 초기08 문서의 cc31c5c 패키지 성공을 제작본 성공으로 대신 쓰지 않는다. 실제 키/마우스·손맛·전투 화면·음향 청취·정상 던전 완주·UE 미설치 PC·장기 플레이는 사람 검증으로 남긴다.
+- `11-production-validation.md`와 체크리스트를 최신 확인 상태로 갱신했다. 이 단계의 제작본 Shipping·시작 스모크는 아래 P4 기록으로 이어 확인하며 초기08 문서의 cc31c5c 패키지 성공을 제작본 성공으로 대신 쓰지 않는다. 실제 키/마우스·손맛·전투 화면·음향 청취·정상 던전 완주·UE 미설치 PC·장기 플레이는 사람 검증으로 남긴다.
+
+### 제작 P4 첫 UAT·주석 GUID 보정·재cook 대기
+
+- 통합 코드4c6ee1a를 기준으로 첫 Win64 Shipping build/cook/stage/archive가 ExitCode0·58.329초에 성공했다. `SoulCombat/Saved/production-packaging-result.json`에32파일·727,456,174바이트, 실행 파일과 vc_redist.x64.exe/vc_redist.arm64.exe2개 설치 파일 존재를 기록했다. 첫 출력은 `SoulCombat/Saved/Packages/Win64Shipping-20260930`이며 로그는 `production-packaging.log`다.
+- cook 경고를 다시 확인해9개 BP의 서로 다른 주석 노드25개에 missing NodeGuid가 있음을 집계했다(`SoulCombat/Saved/comment-guid-cook-red.json`). 반복 출력은 중복 노드로 세지 않았고 첫 UAT 성공을 최종 배포물 채택으로 표시하지 않았다.
+- UE5.8.3 `BlueprintGraphEditor.cpp:1292`의 UBlueprintGraphEditor::AddCommentNode에는 CreateNewGuid 호출이 없다. `EdGraphNode.cpp:693`의 PostLoad는 로드 시 누락 GUID를 생성하지만 그 분기에서 dirty를 표시하지 않는다. 메모리 복구 뒤 dirty0만으로 직렬화된 패키지의 정상화를 확인할 수 없었던 것이 원인이다.
+- 새 에디터 PID24232에서 대상9개 BP의 전체 노드/핀/연결을 사전 기록한 뒤 PostLoad로 복구된 GUID를 only_if_is_dirty=False의 네이티브 패키지 저장으로 직렬화했다(`SoulCombat/Saved/comment-guid-resave-result.json`).9개 저장 성공·피드백 CDO bEnableHitstop=true·dirty 콘텐츠/맵0을 확인했다. `comment-guid-same-logic.json`은9개 BP·64개 그래프·925개 실행 노드의 타입·위치·전체 입력/출력 핀·값·연결이 전후 JSON 구조까지 동일함을 확인한다.
+- 보정 후 `SoulCombat/Saved/full-final-static-after-guid.json`의 전체77개 warnings_as_errors 컴파일77/77, 에셋116·의존227(210에셋+17Script)·누락0·Scratch0·dirty 콘텐츠/맵0·PIE false가 통과했다. 주석의 에디터 메타데이터만 보정했으며 게임 동작·258개 실행 조건의 근거는 유지한다. 에디터 종료 후 별도 새 경로의 재UAT·GUID 경고 해소·최종 패키지 시작 결과는 아직 대기 중이다.
+- 새 추적 회귀 실행기를 실제 에디터에 연결해 charge-sweep 선택6조건이 약13.1초에 통과했다(`SoulCombat/Saved/runner-charge-integration.json`, done/passed=true·error=null). 기존 full178 결과는 보존했고 새 실행기의 전체/extended 묶음은 실행하지 않았다. 재현 연결 확인을 기존258개와 다른6개 게임 조건으로 중복 합산하지 않는다.

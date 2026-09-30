@@ -1,6 +1,6 @@
 # 11. 제작본 통합 검증
 
-현재 전투 필드와 던전 하나의 싱글 플레이 제작본을 대상으로 한다. 2026-09-30 돌진 수정 뒤 최종 통합 회귀178조건과 별도 돌진6·자율 AI17·피드백 독립57조건, 최종 BP77개 엄격 재컴파일·전체 정적 검사를 확인했다. 합계258은 중복 기능 관찰을 포함한 검사 조건 수다. 제작본 Shipping 패키지·시작 확인은 아직 대기 중이다. 초기 PC 준비 기록 `08-pc-validation.md`와 담당 사본의 결과는 이 제작본의 최종 결과와 구분한다.
+현재 전투 필드와 던전 하나의 싱글 플레이 제작본을 대상으로 한다. 2026-09-30 돌진 수정 뒤 통합 회귀178조건과 별도 돌진6·자율 AI17·피드백 독립57조건을 확인했다. 합계258은 중복 기능 관찰을 포함한 검사 조건 수다. 첫 제작본 Shipping UAT는 성공했지만 주석25개·BP9개의 NodeGuid 경고로 최종 배포물로 채택하지 않았다. 대상9개 BP의 주석 메타데이터 강제 재저장·64개 그래프/925개 실행 노드 로직 동일성·보정 후 BP77개 엄격 컴파일도 확인했다. 새 출력 경로 재패키징의 GUID 경고 해소와 최종 시작 확인은 대기 중이다. 초기 PC 준비 기록 `08-pc-validation.md`와 담당 사본의 결과는 이 제작본의 최종 결과와 구분한다.
 
 ## 제작 변경
 
@@ -13,8 +13,8 @@
 
 - 체크아웃: `D:\Project\UE\AstraTest\ue_test`, UE 5.8.3 CL58210709.
 - 병행 기준 `81a750f`; A 반환 `2f6e9ec`, B 반환 `09c2aed`를 원본에 통합했다. 실제 원본 통합 커밋은 `308e7f2`, `89062ed`다. 이후 컨트롤러 연결·기본 히트스톱 활성화는 통합 담당이 수행했다.
-- 모든 연결과 돌진 수정 이후 `/Game/SoulCombat` 에셋116개, BP77개를 다시 실제 집계했고 부모 우선 `warnings_as_errors=true` 최종 컴파일77/77이 통과했다.
-- 최종 전체 의존 집합227개는 존재하는 에셋210개와 Script 패키지17개다. 누락0, `_Scratch` 참조·에셋0, 콘텐츠·맵 dirty0이다. `SoulCombat/Saved/full-final-static.json`은 `passed=true`, 부모 순환0, 엄격 컴파일 통과77/실패0과 PID40248·PIE false·`L_CombatField`를 기록한다. 이 정적 검사는 에셋을 저장하지 않았다.
+- 모든 연결과 돌진 수정 이후 첫 cook 전에 `/Game/SoulCombat` 에셋116개, BP77개를 실제 집계했고 부모 우선 `warnings_as_errors=true` 컴파일77/77이 통과했다. 주석 GUID 강제 재저장 후에도 같은116/77 집계와 엄격 컴파일77/77을 다시 확인했다.
+- 주석 GUID 보정 뒤 전체 의존 집합227개는 존재하는 에셋210개와 Script 패키지17개다. 누락0, `_Scratch` 참조·에셋0, 콘텐츠·맵 dirty0이다. `SoulCombat/Saved/full-final-static-after-guid.json`은 `passed=true`, 부모 순환0, 엄격 컴파일 통과77/실패0과 PID24232·PIE false·`L_CombatField`를 기록한다. 이 정적 검사는 에셋을 저장하지 않았다. 첫 cook 전 자료 `full-final-static.json`과 이후 새 cook의 GUID 경고 검증을 각각 구분한다.
 - 명중/가드 오디오는 외부 샘플 없이 생성했다. 48kHz 모노 PCM, 0.16/0.23초, 형식·무클리핑·양끝0·재현성 검사를 통과했다.
 
 ## 돌진 실패의 원인과 보정
@@ -48,6 +48,8 @@
 
 원본에서 연결 이후 다시 실행한 `Tools/test_combat_feedback.py`의57조건도 모두 통과했다. `SoulCombat/Saved/combat-feedback-tests.json`은 `done=true`, 실패 배열0·예외 null이다. 독립 컴포넌트의 반복 명중·외부 변경·사망/부활·일시정지·전역 배속·파괴/EndPlay·숫자 수명/상한을 확인하며, 게임의 실제 ApplyHit 전달은 위17조건으로 함께 확인한다.
 
+추적 가능한 새 회귀 실행기의 실제 에디터 연결은 `--suite charge-sweep` 선택6조건으로만 확인했다. `SoulCombat/Saved/runner-charge-integration.json`은 done/passed=true·error=null·condition_count6·약13.1초를 기록한다. 기존178개 전체 실행 결과는 덮어쓰지 않고 보존했다. 새 실행기를 통한 전체/extended 묶음은 아직 실행하지 않았으며, 이 연결 확인을 추가로 서로 다른6개 게임 조건으로 합산하지 않는다.
+
 ## 자율 AI 관찰
 
 `Tools/tests/ue_ai_autonomy.py`는 기존 `SparringGrunt_1`의 Think 타이머와 Tick을 바꾸거나 Think/PressInput을 직접 호출하지 않는다. `SoulCombat/Saved/ai-autonomy-result.json`의17조건은 `done=true`, `passed=true`, `error=null`로 통과했다.
@@ -61,7 +63,23 @@
 
 ## 패키지 상태
 
-제작본 Win64 Shipping build/cook/stage/archive·패키지 시작 스모크는 대기 중이다. `08-pc-validation.md`의 Shipping 성공은 `main/cc31c5c`에 대한 초기 PC 준비 결과이며, 이번 몽타주·피드백·메뉴·돌진 변경이 포함된 패키지의 성공으로 표시하지 않는다. 실행 안내와 사람 확인 순서는 `10-play-guide.md`를 따른다.
+첫 제작본 UAT는 코드 기준 `4c6ee1a`에서 Win64 Shipping build/cook/stage/archive에 성공했다. `SoulCombat/Saved/production-packaging-result.json`은 ExitCode0,58.329초,32파일,727,456,174바이트와 게임 실행 파일·`vc_redist.x64.exe`/`vc_redist.arm64.exe`2개 설치 파일의 존재를 기록한다. 출력은 `SoulCombat/Saved/Packages/Win64Shipping-20260930`이다. 이 결과의 `passed=true`는 UAT 종료와 필수 파일 검사를 뜻하며 최종 배포물 채택을 뜻하지 않는다.
+
+첫 cook에는9개 BP의 서로 다른 주석 노드25개에서 `missing NodeGuid, this can cause deterministic cooking issues please resave package` 경고가 있었다. 동일 경고의 반복 출력은 중복 노드로 세지 않았다. 실제 로그는 `SoulCombat/Saved/production-packaging.log`, 대상 노드/패키지 목록은 `comment-guid-cook-red.json`에 보존했다. 첫 배포물은 원인 보정과 새 cook 검증의 비교 자료로 남긴다.
+
+현재 UE5.8.3의 `BlueprintGraphEditor.cpp:1292`에 있는 `UBlueprintGraphEditor::AddCommentNode`는 새 주석에 `CreateNewGuid`를 호출하지 않는다. `EdGraphNode.cpp:693`의 `UEdGraphNode::PostLoad`는 유효 GUID가 없는 노드를 로드할 때 경고를 남기고 `CreateNewGuid`를 호출하며 이 분기에서 패키지를 dirty로 표시하지 않는다. 따라서 에디터 메모리에서 GUID가 복구되고 dirty0이어도 디스크의 패키지 보정이 저장됐다는 근거가 되지 않았다.
+
+새 에디터 PID24232에서 대상9개 BP의 전체 노드·핀·연결을 먼저 기록하고 로드 시 복구된 GUID를 `only_if_is_dirty=False`의 네이티브 패키지 강제 저장으로 직렬화했다. `comment-guid-resave-result.json`은9개 저장 성공, 피드백 CDO의 bEnableHitstop=true와 dirty 콘텐츠/맵0을 확인한다. `comment-guid-same-logic.json`은9개 BP·64개 그래프·925개 실행 노드의 타입·위치·전체 입력/출력 핀·값·연결이 전후 JSON 구조까지 동일함을 기록한다. 게임 동작을 바꾸는 수정은 없으며 기존258개 실행 조건을 게임 동작의 검증 근거로 유지한다. 보정 후 전체77개 엄격 컴파일도 통과했고, 이어 에디터 종료·별도 새 출력 경로의 재UAT·GUID 경고 해소·최종 시작 스모크를 확인한다.
+
+| 제작본 패키지 단계 | 현재 확인 상태 |
+| --- | --- |
+| 첫 UAT (`4c6ee1a`) | 성공, 주석 GUID 경고로 최종 배포물 미채택 |
+| 대상9개 BP 강제 재저장·전체 노드/핀/연결 same-logic | 저장9/9,64개 그래프·925개 실행 노드 동일 |
+| 주석 GUID 보정 후 전체 BP77개 엄격 컴파일 | 77/77 통과, 의존 누락/Scratch/dirty0 |
+| 별도 새 출력 경로 Win64 Shipping 재UAT·GUID 경고 해소 | 대기 |
+| 최종 배포물 시작/종료 스모크 | 대기 |
+
+`08-pc-validation.md`의 Shipping 성공은 `main/cc31c5c`에 대한 초기 PC 준비 결과다. 첫 제작본 UAT와 경고 보정 뒤 최종 패키지를 각각 구분한다. 실행 안내와 사람 확인 순서는 `10-play-guide.md`를 따른다.
 
 ## 사람이 확인할 범위
 
