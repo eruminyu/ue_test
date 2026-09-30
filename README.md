@@ -65,3 +65,7 @@
 - **어빌리티**: `GA_SCBase`(공통) → `GA_ActionBase`(몽타주 + 타격 시점 행동) → 스킬 3종·몬스터 공격. 기본 공격은 템플릿 콤보 몽타주의 섹션 점프 + 차지 공격 피니시. 캔슬 규칙은 태그로(대시 > 스킬 > 가드 > 평타).
 - **UI**: 재사용 위젯(`WBP_AttributeBar`, `WBP_SkillSlot`)을 조립한 HUD. 게임 쪽 BP는 플레이어 컨트롤러의 공개 함수로만 UI를 부른다.
 - **던전**: 방 BP 상속 구조(`BP_DungeonRoom` → Start/Mob/Event/Boss), 휴면 상태로 배치한 몬스터를 방이 웨이브별로 깨운다.
+# 제작본 플레이 안내
+
+게임 조작·일시정지·재시작·필드 복귀·패키징 명령은 [실행·플레이 안내](docs/10-play-guide.md)에 있다. 제작 중인 전투 개선의 통합 상태와 자동/사람 검증은 [제작 계획](docs/09-production-plan.md)과 [체크리스트](docs/checklist.md)로 확인한다.
+
