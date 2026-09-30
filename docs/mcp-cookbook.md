@@ -309,3 +309,17 @@
 - **주석 하나만 지우기(줌 -11에서는 제목이 겹쳐 클릭 불가)**: knot T3D를 붙여넣고(`K2Node_Knot_Focus`) `set_node_position`으로 지울 박스 안(제목 근처)에 옮긴 뒤 `PressKey Home`(선택된 knot에 맞춰 줌 1:1) → 2초 → `delete_node` knot → `Snapshot {"ref":"<BP 창>","maxDepth":40}`에서 주석 제목 `text` ref → `Click`(왼쪽) → **`PressKey Ctrl+C` + 클립보드 파싱으로 그 주석 하나만 선택됐는지 확인** → `PressKey Delete`. 스냅샷 텍스트는 콘솔 인코딩 때문에 한글이 깨져 보여도, ASCII 부분(예: `bInputBuffered`)으로 찾으면 된다.
 - **같은 자리에 새 주석**: spec에 좌표를 직접 준다 `[{"text":"■ ...","x":1840,"y":2560,"w":1344,"h":992,"color":"logic","bubble":false}]`(안쪽 박스는 bubble false) → `graph_comments.py preview` → `ui-run <spec> <그래프 ref> --window <창> --shot <png> --fit-all`(layout 없이도 된다). 제목 줄 수는 `title_height(text,18,w)`로 미리 재서 박스 위쪽 여백(노드까지 거리)보다 작게 줄바꿈한다.
 - **작은 영역 확인 스크린샷**: 위의 knot → Home → delete_node 뒤 `save_shot`(`SlateInspectorToolset Screenshot {"ref":""}`)으로 줌 1:1 화면을 찍으면 새 노드 겹침을 눈으로 볼 수 있다(추정 크기보다 실제 Promotable 노드가 훨씬 작다).
+# UE5.8.3 네이티브 주석 API 추가 확인
+
+2026-09-30 현재 엔진 `Source/Editor/BlueprintEditorLibrary/Private/BlueprintEditorLibrary/BlueprintGraphEditor.h`에는 `AddCommentNode`, `AddCommentToNodes`, `ListCommentNodes`, `RemoveCommentNode`가 UFUNCTION으로 있다. MCP 전용 주석 툴의 부재는 엔진 API 부재가 아니다. 제작 브리지에서 다음 메서드를 실사용해 새 그래프8개의 주석을 만들고 전후 same-logic을 확인했다. 아래 방식은 PIE를 종료한 편집 단계에서만 사용한다.
+
+```python
+import unreal
+blueprint = unreal.load_asset('/Game/SoulCombat/Core/BP_SCPlayerController')
+editor = unreal.BlueprintGraphEditor.get_graph_editor_by_name(blueprint, 'ResumeGame')
+nodes = list(editor.list_all_nodes())
+editor.add_comment_to_nodes('월드를 재개하고 메뉴 참조·커서·게임 입력을 복원', nodes, 70)
+```
+
+명시 컴파일·저장과 전후 논리 비교는 계속 필요하다. UI 클립보드 주석 도구는 사용할 수 있는 대체 방식이며, 기존 기록은 해당 작성 당시의 도구 경로로 읽는다. PIE 런타임 객체의 테스트 설정 변경에는 `set_editor_property(..., notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)`를 사용해 에디터 변경 알림에 의한 재생성과 게임 수명 처리를 구분한다.
+

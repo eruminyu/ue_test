@@ -128,7 +128,7 @@ def _damage_tick(delta):
             _damage_check("이미 죽은 대상은 추가 숫자 없음", len(_damage_numbers(world)) == count)
             _damage_state["feedback"].call_method("ResetAllFeedback")
             player = _damage_state["player"]
-            player.set_editor_property("custom_time_dilation", 0.6)
+            player.set_editor_property("custom_time_dilation", 0.6, notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)
             camera = player.get_component_by_class(unreal.CameraComponent)
             fov = camera.get_editor_property("field_of_view")
             live = next(a for a in unreal.GameplayStatics.get_all_actors_of_class(world, unreal.Actor) if a.get_actor_label() == "Dummy_1")
@@ -136,7 +136,7 @@ def _damage_tick(delta):
             _damage_state["controller"].call_method("TogglePauseMenu")
             _damage_check("메뉴 진입에서 기존 배율0.6 복원", abs(player.get_editor_property("custom_time_dilation") - 0.6) < 0.001)
             _damage_check("메뉴 진입에서 기존 FOV 복원", abs(camera.get_editor_property("field_of_view") - fov) < 0.001)
-            player.set_editor_property("custom_time_dilation", 1.0)
+            player.set_editor_property("custom_time_dilation", 1.0, notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)
             _damage_state["controller"].call_method("ResumeGame")
             _damage_finish()
     except Exception:

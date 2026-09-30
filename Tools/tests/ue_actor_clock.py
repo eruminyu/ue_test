@@ -30,7 +30,7 @@ def _clock_attributes(actor):
 def _clock_finish(passed, details):
     player_actor = _clock_state["player"]
     if player_actor is not None:
-        player_actor.set_editor_property("custom_time_dilation", _clock_state.get("original_dilation", 1.0))
+        player_actor.set_editor_property("custom_time_dilation", _clock_state.get("original_dilation", 1.0), notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)
     _clock_state["done"] = True
     with open(_clock_output, "w", encoding="utf-8") as stream:
         json.dump({"done": True, "passed": passed, "test": "개별 배속 0.25에서 피해의 몽타주 시점", "details": details}, stream, ensure_ascii=False, indent=2)
@@ -56,7 +56,7 @@ def _clock_tick(delta):
             player_actor.set_actor_location_and_rotation(unreal.Vector(550, 0, 95), unreal.Rotator(), False, True)
             dummy.set_actor_location_and_rotation(unreal.Vector(800, 0, 95), unreal.Rotator(yaw=180), False, True)
             _clock_state["health_before"] = _clock_attributes(dummy)["Health"]
-            player_actor.set_editor_property("custom_time_dilation", 0.25)
+            player_actor.set_editor_property("custom_time_dilation", 0.25, notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)
             input_tag = unreal.GameplayTag()
             input_tag.import_text('(TagName="InputTag.Attack")')
             component_type = unreal.load_class(None, "/Game/SoulCombat/Components/AC_CombatComponent.AC_CombatComponent_C")

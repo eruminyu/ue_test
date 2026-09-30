@@ -44,7 +44,7 @@
 - 에셋을 바꾸면 `AssetTools.save_assets`로 저장한다. 블루프린트는 `compile_blueprint`가 에러·경고 없이 통과해야 끝난 것이다.
 - 전용 툴이 없으면 ProgrammaticToolset(툴 묶어 호출)이나 SlateInspectorToolset(UI 조작)을 쓰되, 기록에 그렇게 남긴다.
 - 스크린샷은 컨텍스트를 많이 먹는다. 검증 단계에서만 찍고, 이미지는 파일로 저장한다.
-- 알려진 MCP 함정: 디스패처 Assign 노드가 있는 그래프를 `read_graph_dsl`로 읽으면 빈 `<Dispatcher>_Event_N` 이벤트가 매번 새로 생긴다(대신 `find_nodes` + `get_node_infos`). 클래스 참조(TSubclassOf) 변수는 만들 수 없다(조용히 int가 된다). 주석 박스와 부모 함수 호출 노드는 전용 툴이 없어 UI 자동화로 만든다. 자세한 것은 쿡북.
+- 알려진 MCP 함정: 디스패처 Assign 노드가 있는 그래프를 `read_graph_dsl`로 읽으면 빈 `<Dispatcher>_Event_N` 이벤트가 매번 새로 생긴다(대신 `find_nodes` + `get_node_infos`). 클래스 참조(TSubclassOf) 변수는 MCP로 만들 수 없다(조용히 int가 된다). UE5.8.3 주석 박스는 Python의 `BlueprintGraphEditor.add_comment_to_nodes`로 생성할 수 있다. 기존 UI 주석 레시피는 대체 경로다. 부모 함수 호출 노드는 사용할 수 있는 API를 먼저 확인하고 기존 UI 레시피를 참고한다. 자세한 것은 쿡북.
 - 병렬 작업: 에디터를 여러 개 띄울 때는 프로젝트 사본(저장소 밖)을 다른 포트로 열고, 에셋마다 담당 에디터를 하나로 정한 뒤 끝나면 파일을 복사해 합친다. 열려 있는 에셋 파일을 밖에서 덮어쓰지 않는다(에디터를 닫거나 그 에셋을 내린 뒤 복사).
 
 ## 블루프린트 작성 규칙
