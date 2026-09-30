@@ -119,3 +119,46 @@ python -X utf8 Tools/tests/ue_send_test.py (Join-Path $savedPath 'ue-stop-play.p
 송신기의 `--timeout`은 요청 접수 응답을 기다리는 시간이다. 타임아웃은 실행 취소가 아니다. `audit-response.json`의 요청 ID, 에디터 로그, 개별 결과 JSON과 PIE 상태를 확인한 뒤 재시도를 판단한다. 결과가 `done=false`인데 같은 검사를 다시 보내면 콜백이 겹칠 수 있다. 브리지의 `ok=true`와 검사 결과의 통과도 구분한다.
 
 오디오 소스의 형식·경계·재현성 검사는 에디터 없이 `python -X utf8 Tools/tests/test_combat_audio.py`로 수행한다. 실제 키·화면·소리·손맛·Shipping 정상 플레이 확인은 위 자동 회귀와 별개의 사람 검증이다.
+
+## 추적 가능한 순차 회귀 실행기
+
+`ue_run_suite.py`는 기존 `SoulCombat/Saved/run_integrated_regressions.py`의 실행 순서와 PIE 경계를 유지한 호스트 CLI다. 저장소·`SoulCombat/Saved`·`ue_send_test.py` 경로는 실행기 파일의 실제 위치에서 계산하므로 다른 작업 체크아웃에서도 그 체크아웃의 실행기를 사용한다. 출력과 JSON은 UTF-8로 기록한다. 기존 Saved 실행기는 변경하지 않는다.
+
+다음 두 모드는 에디터가 없어도 된다. 테스트 소스의 구문과 결과 파일 이름을 읽으며 에디터 호출·Saved 쓰기·잠금 생성을 하지 않는다. `--list`는 사용 가능한 14개 검사를 나열하고, `--plan-only`는 선택한 실행 계획과 기대 조건 수를 출력한다.
+
+```powershell
+python -X utf8 Tools/tests/ue_run_suite.py --list
+python -X utf8 Tools/tests/ue_run_suite.py --plan-only
+python -X utf8 Tools/tests/ue_run_suite.py --plan-only --extended
+python -X utf8 Tools/tests/ue_run_suite.py --plan-only --suite feedback
+```
+
+실제 실행에는 위에서 준비한 테스트 전용 에디터·브리지와 `L_CombatField` 에디터 월드가 필요하고 기존 PIE가 없어야 한다. 시작 시 준비 파일의 `ready`·PID·Saved를 실제 브리지 응답과 대조하고, 후속 상태 조회에서도 같은 PID·Saved인지 확인한다. 다른 담당의 MCP·브리지 요청과 겹쳐 실행하지 않는다. 기존 Saved 실행기와 같은 `integrated-regressions.lock`을 사용하며 잠금이 있으면 시작하지 않는다.
+
+```powershell
+# 기본 11개 검사, 178조건
+python -X utf8 Tools/tests/ue_run_suite.py
+
+# 기본 11개 뒤 돌진6·독립 피드백57·AI17 추가: 14개, 258조건
+python -X utf8 Tools/tests/ue_run_suite.py --extended
+
+# 한 검사만 실행하거나 여러 검사를 지정한 순서로 실행
+python -X utf8 Tools/tests/ue_run_suite.py --suite charge-sweep
+python -X utf8 Tools/tests/ue_run_suite.py --suite feedback --suite ai
+```
+
+`--suite`는 기본 검사를 제외하고 지정한 검사만 실행한다. `--extended`와 함께 쓰거나 같은 검사를 중복 지정하면 거부한다. 기본 순서는 ActorClock1 → 실제 피해17 → 정지 메뉴8 → 메뉴 버튼9 → 던전 복구39 → 스킬 UI16 → 플레이어 타이밍14 → 적 타이밍12 → 전투37 → 기존 타이밍3 → 던전 흐름22다. 전투37·기존 타이밍3은 같은 필드 PIE와 `ue_runtime.py`를 공유한다. 던전 흐름은 새 필드 PIE에서 실제 `GI.EnterDungeon`으로 이동한 뒤 공통 런타임을 준비한다.
+
+추가 `charge-sweep`와 `ai`는 테스트 파일이 자체 PIE 시작·종료를 맡으므로 실행기가 중복 시작하지 않는다. `feedback`은 실행기가 새 필드 PIE를 준비한 뒤 `Tools/test_combat_feedback.py`의 정의를 로드하고 `start_feedback_tests()`를 호출한다. 각 검사의 완료 결과와 PIE 종료까지 확인해야 다음 검사를 보낸다.
+
+결과는 기존처럼 `SoulCombat/Saved/integrated-regressions.json`과 각 검사의 결과 JSON에 둔다. 이전 결과는 새 실행이 덮어쓰기 전에 `Saved/integrated-history/<UTC시각-호스트PID>/`에 복사한다. 새 실행기의 최종 통과는 `done=true`, `passed=true`, `status="passed"`, `condition_count == expected_conditions`로 판정한다. 각 suite도 기대 조건 수와 실제 `cases`/`checks` 수가 같고 모든 행이 통과해야 한다. ActorClock은 배열 없는 단일 `done`/`passed` 판정을 1조건으로 센다. 독립 피드백 파일은 `passed` 필드 없이 `done=true`, `failures=[]`, 모든 `cases.passed=true`로 완료를 판정한다.
+
+브리지의 `ok=true`·검사의 `started=true`는 접수 확인이다. 실패 행·비어 있지 않은 실패 목록·오류를 발견하거나 최종 판정·조건 수가 다르면 다음 검사를 즉시 중단한다. 브리지 응답은 20초, 월드 준비·종료는 60초, 콜백 결과는 240초까지 기다리며 15초 간격으로 진행 상태를 출력한다. 실패·시간 초과 시 실행기가 PIE·콜백을 자동 취소하지 않으므로 요청 ID·개별 결과·현재 상태를 먼저 확인하고 재실행한다. 에셋 저장·에디터 종료·빌드·패키징은 수행하지 않는다.
+
+에디터 없는 호스트 검증은 다음 명령으로 실행한다. 실패 판정, 기본 순서·조건 수, 추가 검사 생명주기, PID·Saved 불일치, 무호출 계획, 이전 결과 보존을 검사한다.
+
+```powershell
+python -X utf8 Tools/tests/test_ue_run_suite.py
+```
+
+2026-09-30 검증 범위: 기존 Saved 실행기를 통한 전체 11개·178조건과 별도 돌진6·독립 피드백57·AI17은 실제 완료 결과가 통과했다. 새 `ue_run_suite.py`는 호스트 단위 검사14개, AST와 `--list`/`--plan-only`를 검증했고 기존 Saved 파일이 바뀌지 않았음을 확인했다. **새 실행기 자체의 실제 에디터 연결 실행은 아직 검증하지 않았다.** 이미 끝난 전체 게임 회귀와 새 호스트 실행기 검증을 구분하며, 기록을 위해 같은 전체 검사를 불필요하게 다시 실행하지 않는다.

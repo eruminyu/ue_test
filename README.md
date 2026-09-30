@@ -2,7 +2,7 @@
 
 언리얼 엔진 5.8 팀 프로젝트(비상업 포트폴리오)의 전투 프로토타입. 소울워커식 스킬 전투를 GAS로 만들었다. C++는 GAS에 꼭 필요한 속성 세트(`SCAttributeSet`)와 어빌리티 세트 데이터 에셋(`SCAbilitySet`)뿐이고, 나머지는 전부 블루프린트다. 블루프린트는 Unreal MCP로 만들었고, 모든 그래프는 정리돼 있으며 기능 단위 한국어 주석 박스가 달려 있다.
 
-현재는 **게임 제작과 개선을 우선**하고, 학습은 나중으로 미룬다. 가능한 독립 작업은 여러 에디터로 병행한다(`AGENTS.md`). [이 PC 검증 결과](docs/08-pc-validation.md)는 UE 5.8.3에서의 컴파일·PIE·Shipping 패키징 결과와 사람 검증이 필요한 부분을 구분한다. 기존 포트폴리오 로드맵은 선택할 수 있는 발전안이다. [학습 안내](docs/07-study-guide.md)는 이후 공부할 때 실제 입력·피해·취소 경로를 따라 읽는 자료다.
+현재는 **게임 제작과 개선을 우선**하고, 학습은 나중으로 미룬다. 가능한 독립 작업은 여러 에디터로 병행한다(`AGENTS.md`). [제작 계획](docs/09-production-plan.md)과 [제작본 검증](docs/11-production-validation.md)은 현재 필드·던전 하나의 범위와 자동/사람 검증을 구분한다. [초기 PC 준비 결과](docs/08-pc-validation.md)는 변경 전 `cc31c5c` 기준 기록이다. 기존 포트폴리오 로드맵은 선택할 수 있는 발전안이다. [학습 안내](docs/07-study-guide.md)는 이후 공부할 때 실제 입력·피해·취소 경로를 따라 읽는 자료다.
 
 ## 빠른 시작 (Windows)
 
@@ -29,6 +29,7 @@
 | Space | 점프 |
 | Q / E / R | 돌진 베기 / 대지 강타(띄우기) / 검기 날리기(관통 투사체) |
 | F | 상호작용 (던전 게이트 열기) |
+| Esc | 일시정지·조작 안내·계속하기·현재 맵 재시작·필드 복귀·종료 |
 
 ## 플레이 흐름
 
@@ -41,13 +42,15 @@
 
 | 경로 | 내용 |
 | --- | --- |
-| `SoulCombat/` | UE 프로젝트. 직접 만든 에셋은 `Content/SoulCombat`에만 있다(블루프린트 72개 포함 104개) |
+| `SoulCombat/` | UE 프로젝트. 직접 만든 에셋은 `Content/SoulCombat`에만 있다(블루프린트 77개 포함 116개, 2026-09-30 제작본) |
 | `SoulCombat/Source/SoulCombat/` | C++: `SCAttributeSet`, `SCAbilitySet` |
 | `Tools/` | 준비 스크립트, MCP HTTP 클라이언트, 그래프 배치·주석 도구 |
 | `docs/01-game-spec.md` | 게임 사양 |
 | `docs/02-build-plan.md` | 에셋별 상세 설계와 MCP 작업 순서 |
 | `docs/03-build-log.md`, `docs/parallel/` | 단계별 제작 기록 (두 번째 에디터 작업분은 parallel) |
 | `docs/04-final-qa.md` | 최종 QA 결과 |
+| `docs/09-production-plan.md`, `docs/11-production-validation.md` | 현재 제작 범위·통합 검증 결과 |
+| `docs/10-play-guide.md` | 제작본 실행·조작·패키징 안내 |
 | `docs/05-portfolio-roadmap.md` | 포트폴리오 발전 로드맵 |
 | `docs/06-handoff.md` | 다른 PC에서 이어서 하기 (준비 절차, Claude Code 지시문) |
 | `docs/07-study-guide.md` | 학습 경로, 설계 선택 조건, 단계별 힌트와 작은 실험 |

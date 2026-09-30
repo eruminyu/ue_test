@@ -1,8 +1,15 @@
 """실제 PIE 전용 명중 연출 계약·수명 회귀 검사.
 
-게임 에셋을 편집하지 않는다. PC에 테스트 컴포넌트를 붙이고 기존 GE/전투
-함수의 실제 HP 감소량을 전달한다. 에디터 Python 브리지에서 이 파일을
-실행한 뒤 start_feedback_tests()를 호출한다. 결과는 프로젝트 Saved에 둔다.
+게임 에셋을 편집하지 않는다. 새 PIE의 PC에 독립 테스트 컴포넌트를 붙이고
+검사 초기 히트스톱을 명시적으로 끈다. 실제 GE_Damage의 Data.Damage를 적용해
+얻은 HP 감소량을 이 컴포넌트에만 전달한다. 통합 ApplyHit를 호출하면 PC의
+게임 컴포넌트에도 ReportHit가 전달되어 복원 소유권이 겹치므로 여기서는
+호출하지 않는다. 실제 ApplyHit 전달은 별도 통합 회귀 검사에서 확인한다.
+
+에디터 Python 브리지에서 이 파일을 실행한 뒤 start_feedback_tests()를
+호출한다. 결과는 프로젝트 Saved에 둔다. 최초 담당 B 반환 당시의 기본값
+false·57개 통과 기록은 당시 구현의 증거이며, 이 검사는 통합 이후 게임
+기본값과 무관하게 독립 수명·복원 계약을 검사한다.
 """
 import json
 import os
@@ -42,6 +49,9 @@ class FeedbackRuntimeTests:
         self.original_overlay = self.mesh.get_overlay_material()
         self.feedback = self.pc.call_method("AddComponentByClass", args=(self.feedback_class, False, unreal.Transform(), False))
         assert self.feedback is not None
+        # 통합 게임의 기본값을 바꾸지 않고, 새 PIE 검사 객체만 초기화한다.
+        runtime_set(self.feedback, "bEnableHitstop", False)
+        assert unreal.SystemLibrary.is_valid(self.feedback)
         self.rows = []
         self.steps = []
         self.index = 0
@@ -90,22 +100,32 @@ class FeedbackRuntimeTests:
         self.check(prefix + " 최초 FOV 복원", abs(f - 97.0) < 0.001, f)
         self.check(prefix + " 최초 오버레이 복원", self.mesh.get_overlay_material() == self.original_overlay)
 
-    def real_damage(self):
+    def apply_damage_effect(self, magnitude):
+        """실제 GE로 HP를 변경하되 게임 PC의 ReportHit 경로는 호출하지 않는다."""
         asc = self.target.get_component_by_class(unreal.AbilitySystemComponent)
+        source_asc = self.player.get_component_by_class(unreal.AbilitySystemComponent)
+        effect = unreal.load_class(None, "/Game/SoulCombat/GAS/Effects/GE_Damage.GE_Damage_C")
+        assert asc is not None and source_asc is not None and effect is not None
         attr = next(a for a in asc.get_all_attributes()
                     if unreal.AbilitySystemLibrary.get_debug_string_from_gameplay_attribute(a).endswith(".Health"))
         before = unreal.AbilitySystemLibrary.get_float_attribute(self.target, attr)[0]
-        combat = self.player.get_component_by_class(unreal.load_class(None, "/Game/SoulCombat/Components/AC_CombatComponent.AC_CombatComponent_C"))
-        combat.call_method("ApplyHit", args=(self.target, 1.0, 0.0, 0.0))
+        damage_tag = unreal.GameplayTag()
+        damage_tag.import_text('(TagName="Data.Damage")')
+        spec = source_asc.make_outgoing_spec(effect, 1.0, source_asc.make_effect_context())
+        spec = unreal.AbilitySystemLibrary.assign_tag_set_by_caller_magnitude(spec, damage_tag, magnitude)
+        asc.apply_gameplay_effect_spec_to_self(spec)
         after = unreal.AbilitySystemLibrary.get_float_attribute(self.target, attr)[0]
         return max(0.0, before - after)
+
+    def real_damage(self):
+        return self.apply_damage_effect(50.0)
 
     def begin_normal(self):
         self.reset()
         damage = self.real_damage()
         self.report(damage)
         self.check("기존 GE의 실제 피해 전달", abs(damage - 50.0) < 0.05, damage)
-        self.check("히트스톱 기본 꺼짐", not self.value("bEnableHitstop"))
+        self.check("독립 검사 초기 히트스톱 꺼짐", not self.value("bEnableHitstop"))
         self.check("꺼짐 상태 배율 보존", abs(self.player.get_editor_property("custom_time_dilation") - 0.75) < 0.0001)
         self.check("실제 숫자 액터 생성", len(self.value("DamageActors")) == 1)
         number = self.value("DamageActors")[0]
@@ -155,8 +175,8 @@ class FeedbackRuntimeTests:
 
     def kill_target(self):
         self.begin_stop()
-        combat = self.player.get_component_by_class(unreal.load_class(None, "/Game/SoulCombat/Components/AC_CombatComponent.AC_CombatComponent_C"))
-        combat.call_method("ApplyHit", args=(self.target, 10000.0, 0.0, 0.0))
+        # 이미 시작한 독립 히트스톱 중 실제 GE로 사망시킨다. 추가 ReportHit는 없다.
+        self.apply_damage_effect(1000000.0)
 
     def respawn_target(self):
         combat = self.target.get_component_by_class(unreal.load_class(None, "/Game/SoulCombat/Components/AC_CombatComponent.AC_CombatComponent_C"))

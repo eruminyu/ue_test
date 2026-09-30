@@ -323,3 +323,13 @@ editor.add_comment_to_nodes('월드를 재개하고 메뉴 참조·커서·게�
 
 명시 컴파일·저장과 전후 논리 비교는 계속 필요하다. UI 클립보드 주석 도구는 사용할 수 있는 대체 방식이며, 기존 기록은 해당 작성 당시의 도구 경로로 읽는다. PIE 런타임 객체의 테스트 설정 변경에는 `set_editor_property(..., notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)`를 사용해 에디터 변경 알림에 의한 재생성과 게임 수명 처리를 구분한다.
 
+## DSL `bind`와 순수 Getter의 평가 시점 함정
+
+2026-09-30 통합 담당이 실제 PIE에서 확인한 사례다. DSL의 `bind`는 출력 핀 연결에 이름을 붙이며, 그 줄에서 값을 복사해 보관하는 스냅샷을 보장하지 않는다. 특히 순수(pure) Getter를 `bind`한 뒤 그 Getter가 읽는 변수를 바꾸면, 이후 실행 노드가 입력을 평가할 때 변경된 값을 읽을 수 있다. 텍스트에서 먼저 `bind`했다는 사실만으로 Blueprint의 읽기·쓰기 순서가 고정되지는 않는다.
+
+`HitAlongPath`에서는 이전 위치의 순수 Getter를 Trace의 Start에 연결한 상태로 `SetPreviousTraceLocation(current)`를 먼저 실행했다. 이후 SphereTrace가 Start 입력을 평가하자 이전 위치가 이미 현재 위치로 바뀌어 `Start == End`가 됐다. 적 명중 12조건 중 Side2 두 조건이 실패했고, 새 PIE에서 `off620`과 `off1125`의 실제 피해는 각각 0이었다. 진단용 이전 위치→현재 위치 Trace는 `PlayerHit`였지만 같은 끝점으로 축소된 `CollapsedTrace`는 miss였다. 직접 `BeginChargePath → 액터를 구간 끝 위치로 이동 → HitAlongPath`를 호출한 핵심 6조건에서도 첫 구간·둘째 구간·역방향 구간 3조건은 실패했고 endpoint·outside 3조건은 통과했다. 따라서 끝점만 검사하는 성공 사례로 이동 구간의 판정까지 통과했다고 판단하면 안 된다.
+
+읽은 값을 유지해야 하면 실제 실행 핀이 있는 함수 로컬 Set으로 `이전 위치 읽기 → 로컬 값 저장 → 공유 변수 변경 → 저장한 로컬 값 소비` 순서를 명시한다. 스냅샷이 필요 없는 경우에는 `Trace 실행 → 이전 위치를 현재 위치로 갱신` 순서로 연결해 소비 전에 값을 덮어쓰지 않는다. 이번에는 `Trace → SetPreviousTraceLocation → ForEach` 순서로 실행 핀 3개만 보정했다. 같은 핵심 검사 6조건이 모두 통과했고, 히트스톱이 활성화된 자연 적 공격 12조건과 최종 통합 회귀 178조건도 통과했다. 데이터 핀·기본값·피해 규칙은 유지했다. 실제 피해 측정의 `BeforeHitHealth`는 함수 로컬 변수에 실행 핀 Set으로 피해 전 Health를 저장하므로 이번 순수 Getter 재평가 문제와 구분한다.
+
+나중에 학습용으로 재현할 때는 Getter를 `bind`한 뒤 원본 변수를 바꾸는 순서를 앞뒤로 바꾸고 Trace의 Start·End를 비교하면 되며, 이 재현 학습은 현재 게임 제작의 선행 조건이 아니다.
+

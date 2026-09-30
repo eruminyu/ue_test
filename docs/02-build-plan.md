@@ -2,6 +2,8 @@
 
 `01-game-spec.md`의 에셋을 Unreal MCP로 만드는 순서와 에셋별 상세 설계다. MCP 사용법은 `docs/mcp-cookbook.md`, API 근거는 `docs/engine-api-notes.md`를 따른다. 각 단계가 끝나면 `03-build-log.md`에 기록하고 커밋한다.
 
+2026-09-30 제작 변경을 반영했다. 타격·콤보 판정은 전용 몽타주 이벤트로 전환했고, 메뉴·실제 피해 알림과 명중 피드백을 연결했다. 최종 전체 회귀·패키징·사람 검증 상태는 `09-production-plan.md`와 `checklist.md`를 따른다. 아래 설계 설명을 검증 완료 기록으로 사용하지 않는다.
+
 ## 0. 공통 규칙 (모든 제작 에이전트)
 
 - MCP 호출은 한 번에 하나. MCP를 쓰는 에이전트는 동시에 하나만 돈다.
@@ -103,10 +105,10 @@
 - `IsBlockedByGuard(Target) -> bool`: 대상 ASC에 State.Guard, dot(대상 전방, 대상→공격자 방향) ≥ GuardConeDot.
 - `ApplyHit(Target, Coefficient, Knockback, Launch) -> bool(가드됨)`:
   1. bGuarded = IsBlockedByGuard. 계수 = bGuarded ? Coefficient × GuardDamageScale : Coefficient.
-  2. `ASC.MakeOutgoingSpec(GE_Damage)` → `AssignTagSetByCallerMagnitude(Data.Damage, 공격력 × 계수)` → 대상 ASC에 적용.
-  3. 가드됨: 대상에게 `Event.Guard.Blocked`(Instigator = 소유자). 넉백 × 0.3만 적용.
-  4. 아님: 대상에게 `Event.HitReact`(Instigator = 소유자, EventMagnitude = Knockback).
-  5. 대상이 Character이고 State.SuperArmor가 없으면 `LaunchCharacter(수평 방향(대상-소유자) × 넉백 + (0,0,Launch), true, true)`.
+  2. 대상 Health를 함수 로컬 `BeforeHitHealth`에 저장 → `ASC.MakeOutgoingSpec(GE_Damage)` → `AssignTagSetByCallerMagnitude(Data.Damage, 공격력 × 계수)` → 대상 ASC에 적용.
+  3. GE 적용 후 Health를 읽어 `BeforeHitHealth - AfterHitHealth`를 `DispatchCombatHit(Target, Damage, bGuarded)`에 전달. 함수는 양수 피해만 PC 0의 `BP_SCPlayerController.ReportCombatHit(Attacker, Target, Damage, bGuarded)`로 알린다. Instant GE의 반환 핸들 유효성으로 명중 성공을 판단하지 않는다.
+  4. 기존 Sequence로 복귀. 가드됨: 대상에게 `Event.Guard.Blocked`(Instigator = 소유자), 넉백 × 0.3. 아님: 대상에게 `Event.HitReact`(Instigator = 소유자, EventMagnitude = Knockback).
+  5. 대상이 Character이고 State.SuperArmor가 없으면 `LaunchCharacter(수평 방향(대상-소유자) × 적용 넉백 + (0,0,적용 띄우기), true, true)`. 적용 넉백은 가드 시 Knockback × 0.3, 적용 띄우기는 가드 시 0이며 가드가 아니면 원래 값을 쓴다. 기존 bGuarded 반환을 유지한다. 피해 0으로 피드백을 생략해도 기존 Sequence는 계속한다.
 - `HitTargetsInFront(Radius, ForwardOffset, Coefficient, Knockback, Launch) -> int`: 중심 = 소유자 위치 + 전방 × ForwardOffset, FindTargets → 각각 ApplyHit.
 - `HandleHealthChanged(New, Old)`: OnHealthChanged(New, MaxHealth) 방송. New ≤ 0이고 살아 있으면 `Die`.
 - `Die` (커스텀 이벤트): 이미 State.Dead면 무시 → bIsDead = true → `AddLooseGameplayTags(State.Dead)` → 자신에게 `GE_Death` 적용(모든 어빌리티 취소; ASC의 CancelAllAbilities는 BP에 없다) → OnDied 방송 → Delay(RespawnDelay) → bRespawnOnDeath면 `Respawn`, 아니고 bDestroyOnDeath면 소유자 파괴.
@@ -132,11 +134,23 @@
 - `FaceDesiredInput()`: Combat.DesiredFacing으로 FaceDirection.
 
 **GA_ActionBase** (부모 GA_SCBase): 몽타주 하나 + 타격 시점 하나짜리 행동의 공통 흐름. 스킬 3종, 몬스터 근접 공격이 상속.
-- 변수(인스턴스 편집): `Montage`(AnimMontage), `StartSection`(Name), `PlayRate`(1.0), `HitTime`(섹션 시작 기준 초), `Coefficient`, `Radius`, `ForwardOffset`, `Knockback`, `Launch`, `bFaceInputOnStart`(true), `LungeSpeed`(0), `LungeDuration`(0)
-- ActivateAbility: CommitAbility 실패 → EndAbility. bFaceInputOnStart면 FaceDesiredInput → `OnActionStarted()` → LungeSpeed > 0이면 `ApplyRootMotionConstantForce`(전방, LungeSpeed, LungeDuration, **Additive**: 공격 애니의 루트 모션에 더해짐) → PlayMontageAndWait(Montage, PlayRate, StartSection) (Completed/BlendOut/Interrupted/Cancelled → EndAbility) → WaitDelay(HitTime / PlayRate) → `OnHitFrame()`.
+- 변수(인스턴스 편집): `Montage`(AnimMontage), `StartSection`(Name), `PlayRate`(1.0), `Coefficient`, `Radius`, `ForwardOffset`, `Knockback`, `Launch`, `bFaceInputOnStart`(true), `LungeSpeed`(0), `LungeDuration`(0). 상태 `bHitFrameConsumed`.
+- ActivateAbility: CommitAbility 실패 → EndAbility. bHitFrameConsumed = false → 몽타주 재생 전에 반복 `WaitGameplayEvent(Event.Combat.HitFrame)` 등록 → bFaceInputOnStart면 FaceDesiredInput → `OnActionStarted()` → LungeSpeed > 0이면 `ApplyRootMotionConstantForce`(전방, LungeSpeed, LungeDuration, **Additive**: 공격 애니의 루트 모션에 더해짐) → PlayMontageAndWait(Montage, PlayRate, StartSection) (Completed/BlendOut/Interrupted/Cancelled → EndAbility).
+- `HandleHitFrame(Payload)`: Instigator가 아바타이고 OptionalObject가 자신의 Montage이며 미소비 상태인지 확인 → 피해 처리 전에 bHitFrameConsumed = true → 기존 `OnHitFrame()` 호출. `HitTime` 변수와 타격용 WaitDelay는 제거했다. 종료 시 GAS가 수신 태스크를 정리한다.
 - 참고: 공격·대시 애니(MM_Attack_01~03, MM_ChargedAttack, MM_Dash)는 루트 모션이 켜져 있어 재생 중 이동은 애니가 정한다. LaunchCharacter로 자신을 밀면 루트 모션에 덮인다. 그래서 돌진은 루트 모션 소스 태스크로 한다.
 - `OnActionStarted()`: 기본 비어 있음 (자식이 오버라이드).
 - `OnHitFrame()`: 기본 `Combat.HitTargetsInFront(Radius, ForwardOffset, Coefficient, Knockback, Launch)`.
+
+**Animation/Notifies/AN_SCGameplayEvent** (AnimNotify): `Received_Notify`에서 Mesh 소유자에게 설정한 태그의 게임플레이 이벤트를 보낸다. Payload의 Instigator·Target = 소유자, OptionalObject = 받은 Animation, EventMagnitude = 평타 단계다. 공유 노티파이에 런타임 타격 상태를 저장하지 않는다. `should_fire_in_editor=false`로 에디터 미리보기에서는 실행하지 않는다.
+
+`Animation/Montages`의 전용 복제본은 기존 애니메이션·섹션·루트 모션과 템플릿 노티파이를 유지하며, `SCGameplay` 트랙의 새 이벤트만 BranchingPoint로 추가한다. 시간은 몽타주 절대 시각이다.
+
+| 몽타주 | 타격 이벤트 | 콤보 연결 이벤트 |
+| --- | --- | --- |
+| AM_SCComboAttack | 0.467 / 1.467 / 2.400초, 단계 1 / 2 / 3 | 0.533 / 1.567 / 2.900초, 단계 1 / 2 / 3 |
+| AM_SCChargedAttack | 1.167초, 단계 4 | 없음 |
+| AM_SCEnemyMelee | 0.450초, 단계 1 | 없음 |
+| AM_SCBossSlam | 1.250초, 단계 0 | 없음 |
 
 **GA_HitReact** (부모 GA_SCBase): 트리거 GameplayEvent `Event.HitReact`. Asset Ability.HitReact, Cancel: Ability.Attack.Basic, Ability.Enemy.Attack, Ability.Guard, **ActivationOwnedTags: State.HitStun**(경직 태그는 여기서만 준다. GE로 주면 대시가 경직을 끊어도 태그가 남는다), Blocked: State.Dead, State.SuperArmor, State.Invulnerable. **bRetriggerInstancedAbility = true**(경직 중 다시 맞으면 갱신).
 - Activate: CommitAbility → 아바타 메시 AnimInstance의 `PlaySlotAnimationAsDynamicMontage(MM_HitReact_Front_Lgt_01, DefaultSlot, 0.05, 0.15, 1.2)`(additive 움찔, 라이플 기준이라 PIE에서 확인) → WaitDelay 0.4 → EndAbility.
@@ -146,21 +160,21 @@
 ### 3-1. 플레이어 어빌리티
 
 **GA_Player_BasicAttack** (부모 GA_SCBase). 태그는 사양 3장.
-구조(엔진 노트 B1, B2, D1): 1~3타는 **AM_ComboAttack 하나를 PlayMontageAndWait로 한 번** 재생하고(StartSection `Melee01`), 다음 타는 GA 노드 **MontageJumpToSection**(`Melee02`, `Melee03`)으로 넘긴다(인터럽트 이벤트 없음). 섹션은 서로 연결돼 있지 않아 점프하지 않으면 섹션 끝(블렌드아웃 0.2초 전)에 몽타주가 끝난다. 4타는 **새 PlayMontageAndWait**(AM_ChargedAttack, `Attack`)이고, 이때 1번 태스크가 **동기로** OnInterrupted를 낸다 → `ComboStep` 가드로 무시한다.
+구조(엔진 노트 B1, B2, D1): 1~3타는 **AM_SCComboAttack 하나를 PlayMontageAndWait로 한 번** 재생하고(StartSection `Melee01`), 다음 타는 GA 노드 **MontageJumpToSection**(`Melee02`, `Melee03`)으로 넘긴다(인터럽트 이벤트 없음). 섹션은 서로 연결돼 있지 않아 점프하지 않으면 섹션 끝(블렌드아웃 0.2초 전)에 몽타주가 끝난다. 4타는 **새 PlayMontageAndWait**(AM_SCChargedAttack, `Attack`)이고, 이때 1번 태스크가 **동기로** OnInterrupted를 낸다 → `ComboStep` 가드로 무시한다.
 
-- 변수(인스턴스 편집, 섹션 시작 기준 초, 템플릿 노티파이 시간에서 가져옴):
-  - `ComboMontage` = AM_ComboAttack, `ComboSections` = [Melee01, Melee02, Melee03]
-  - `FinisherMontage` = AM_ChargedAttack, `FinisherSection` = Attack
-  - `StepHitTimes` = [0.467, 0.467, 0.40, 0.367] (AN_AttackDamage 시점)
-  - `StepChainTimes` = [0.533, 0.567, 0.90] (1~2타는 AN_AttackCombo 시점. 상한: Melee01·02는 0.8, Melee03은 1.467 전이어야 점프가 먹는다)
+- 변수(인스턴스 편집):
+  - `ComboMontage` = AM_SCComboAttack, `ComboSections` = [Melee01, Melee02, Melee03]
+  - `FinisherMontage` = AM_SCChargedAttack, `FinisherSection` = Attack
   - `PlayRate` = 1.0, `StepCoefficients` = [1.0, 1.1, 1.3, 2.0], `StepRadii` = [160, 160, 170, 220], `StepOffsets` = [120, 120, 130, 120], `StepKnockbacks` = [200, 200, 250, 450], `StepLaunches` = [0, 0, 0, 350]
-- 상태: `ComboStep`(1~4), `QueuedInputs`(입력 큐), `bPastChainPoint`. 설정: `MaxQueuedInputs`(3). (처음에는 bool 버퍼 `bInputBuffered`였으나, 빠른 4연타가 3타에서 끊겨 최종 QA에서 큐로 바꿨다. 첫 클릭은 어빌리티 발동에 쓰이므로 남은 2~4타를 위해 최대 3개를 쌓는다.)
-- ActivateAbility: CommitAbility 실패 → End. ComboStep = 1, QueuedInputs = 0 → `WaitGameplayEvent(InputTag.Attack, 반복)`: EventMagnitude > 0.5이면 bPastChainPoint면 `AdvanceStep`, 아니면 QueuedInputs = min(QueuedInputs + 1, MaxQueuedInputs) → FaceDesiredInput → PlayMontageAndWait(ComboMontage, PlayRate, ComboSections[0]) — **모든 출력(Completed/BlendOut/Interrupted/Cancelled): ComboStep ≤ 3일 때만 EndAbility** → `BeginStepTimers`.
-- `BeginStepTimers` (커스텀 이벤트): bPastChainPoint = false(큐는 비우지 않는다) → WaitDelay(StepHitTimes[ComboStep-1] / PlayRate) → `Combat.HitTargetsInFront(반경, 오프셋, 계수, 넉백, 띄우기)`. ComboStep ≤ 3이면 따로 WaitDelay(StepChainTimes[ComboStep-1] / PlayRate) → bPastChainPoint = true → QueuedInputs > 0이면 하나 꺼내고(−1) `AdvanceStep`.
+- 상태: `ComboStep`(1~4), `QueuedInputs`(입력 큐), `bPastChainPoint`, `bHitFrameConsumed`. 설정: `MaxQueuedInputs`(3). (처음에는 bool 버퍼 `bInputBuffered`였으나, 빠른 4연타가 3타에서 끊겨 최종 QA에서 큐로 바꿨다. 첫 클릭은 어빌리티 발동에 쓰이므로 남은 2~4타를 위해 최대 3개를 쌓는다.)
+- ActivateAbility: CommitAbility 실패 → End. ComboStep = 1, QueuedInputs = 0 → 타격·콤보 연결 이벤트의 반복 수신을 몽타주 재생 전에 등록 → `WaitGameplayEvent(InputTag.Attack, 반복)`: EventMagnitude > 0.5이면 bPastChainPoint면 `AdvanceStep`, 아니면 QueuedInputs = min(QueuedInputs + 1, MaxQueuedInputs) → FaceDesiredInput → PlayMontageAndWait(ComboMontage, PlayRate, ComboSections[0]) — **모든 출력(Completed/BlendOut/Interrupted/Cancelled): ComboStep ≤ 3일 때만 EndAbility** → `BeginStepTimers`.
+- `BeginStepTimers` (기존 참조를 유지한 커스텀 이벤트 이름): bPastChainPoint = false, bHitFrameConsumed = false. 큐는 비우지 않고, 타이머는 등록하지 않는다.
+- `HandleHitFrame`: 아바타·현재 단계 몽타주·EventMagnitude의 단계·미소비 상태 확인 → bHitFrameConsumed = true → 기존 단계별 `Combat.HitTargetsInFront(반경, 오프셋, 계수, 넉백, 띄우기)`.
+- `HandleComboChain`: 아바타·ComboMontage·현재 단계 확인 → bPastChainPoint = true → QueuedInputs > 0이면 하나 꺼내고(−1) `AdvanceStep`.
 - `AdvanceStep` (커스텀 이벤트): ComboStep ≥ 4면 무시. ComboStep++ → FaceDesiredInput →
   - ComboStep ≤ 3: `MontageJumpToSection(ComboSections[ComboStep-1])` → BeginStepTimers
   - ComboStep == 4: PlayMontageAndWait(FinisherMontage, PlayRate, FinisherSection) — 모든 출력 → EndAbility → BeginStepTimers
-- 이전 단계의 WaitDelay는 ChainTime > HitTime이라 다음 단계 시작 전에 끝난다. 히트스탑(CustomTimeDilation)은 WaitDelay 타이밍과 어긋나므로 넣지 않는다.
+- `StepHitTimes`, `StepChainTimes`와 타격·연결용 WaitDelay는 제거했다. 애니메이션 이벤트가 타격·연결을 결정하므로 개별 시간 배율 변경에 따라 몽타주 진행과 함께 움직인다. 실제 피드백 히트스톱은 컨트롤러의 피드백 컴포넌트에서 처리하며, 최종 전체 회귀는 별도 기록한다.
 
 **GA_Player_Guard** (부모 GA_SCBase)
 - Activate: Commit → `Add GameplayCue To Owner(GameplayCue.Guard.Active, bRemoveOnAbilityEnd=true)` → PlayMontageAndWait(AM_ChargedAttack, 1.0, `Charge`) (Charge 섹션은 자기 자신으로 연결돼 무한 루프한다. 템플릿 노티파이 'Check Charged Attack'은 우리 캐릭터가 BPI_Attacker를 구현하지 않아 무시됨) → `WaitGameplayEvent(InputTag.Guard, 반복)`: EventMagnitude < 0.5면 EndAbility. `WaitGameplayEvent(Event.Guard.Blocked, 반복)`: `Execute GameplayCue On Owner(GameplayCue.Guard.Block)`. (넉백 30%는 공격자의 ApplyHit가 준다.)
@@ -172,11 +186,11 @@
 
 **GA_Player_Jump** (부모 GA_SCBase): Commit → 아바타 Character `Jump` → WaitDelay 0.1 → EndAbility. `WaitGameplayEvent(InputTag.Jump)` 뗌 이벤트는 쓰지 않는다(단순화).
 
-**GA_Skill_DashSlash** (부모 GA_ActionBase): Montage AM_ComboAttack, Section `Melee03`, HitTime 0.40, 계수 3.0, 반경 250, 전방 100, 넉백 600, 띄우기 150, LungeSpeed 1800, LungeDuration 0.3.
+**GA_Skill_DashSlash** (부모 GA_ActionBase): Montage AM_SCComboAttack, Section `Melee03`, 타격 이벤트 2.400초, 계수 3.0, 반경 250, 전방 100, 넉백 600, 띄우기 150, LungeSpeed 1800, LungeDuration 0.3.
 
-**GA_Skill_GroundSlam** (부모 GA_ActionBase): AM_ChargedAttack, `Attack`, HitTime 0.367, 계수 4.0, 반경 450, 전방 0, 넉백 300, 띄우기 700. `OnHitFrame` 오버라이드: 부모 호출 + `Execute GameplayCue On Owner(GameplayCue.Skill.GroundSlam)`.
+**GA_Skill_GroundSlam** (부모 GA_ActionBase): AM_SCChargedAttack, `Attack`, 타격 이벤트 1.167초, 계수 4.0, 반경 450, 전방 0, 넉백 300, 띄우기 700. `OnHitFrame` 오버라이드: 부모 호출 + `Execute GameplayCue On Owner(GameplayCue.Skill.GroundSlam)`.
 
-**GA_Skill_WaveSlash** (부모 GA_ActionBase): AM_ComboAttack, `Melee02`, HitTime 0.467. `OnHitFrame` 오버라이드: `BP_WaveProjectile`을 아바타 앞 100cm, 아바타 회전으로 스폰 → `Init(Combat, 2.5, 400, 0)`.
+**GA_Skill_WaveSlash** (부모 GA_ActionBase): AM_SCComboAttack, `Melee02`, 타격 이벤트 1.467초. `OnHitFrame` 오버라이드: `BP_WaveProjectile`을 아바타 앞 100cm, 아바타 회전으로 스폰 → `Init(Combat, 2.5, 400, 0)`.
 
 ### 3-2. `Combat/BP_WaveProjectile` (Actor)
 
@@ -207,6 +221,7 @@ Abilities: (GA_Player_BasicAttack, InputTag.Attack), (GA_Player_Guard, InputTag.
 - IA_Dash Started → PressInput(InputTag.Dash).
 - IA_Skill1/2/3 Started → PressInput(InputTag.Skill.1/2/3).
 - IA_Interact Started → CurrentInteractable 유효하면 `Interact(ControlledPawn)`.
+- Escape Pressed → `TogglePauseMenu`. 키 이벤트의 `bExecuteWhenPaused=true`로 일시정지 중에도 닫을 수 있도록 연결한다. 실제 물리 키·마우스 조작은 사람 검증 항목이다.
 - 헬퍼 `GetPawnCombat() -> AC_CombatComponent`.
 
 ### 3-6. `Core/BP_SCGameModeBase` (GameModeBase)
@@ -255,12 +270,24 @@ DefaultPawnClass BP_PlayerCharacter, PlayerControllerClass BP_SCPlayerController
 - `ShowRoomBanner(Title, Subtitle)`, `ShowBossBar(Boss, Name)`, `HideBossBar()`, `ShowEventTimer(Objective, Seconds)`, `SetEventProgress(Text)`, `HideEventTimer()`.
 - `OpenDungeonEntry(Title, Description, LevelName) -> WBP_DungeonEntry`: 생성·표시, UIOnly 입력, 커서 표시, OnConfirmed → `HandleEntryConfirmed`(창 닫고 GameInstance.EnterDungeon), OnCancelled → `HandleEntryCancelled`(창 닫고 GameOnly).
 - `OpenDungeonClear(ClearSeconds)`: 생성·표시, 커서 표시(GameAndUI), OnReturnRequested → GameInstance.ReturnToField.
+- 상태 `PauseWidget`(WBP_PauseMenu). `TogglePauseMenu`: 열린 메뉴가 있으면 ResumeGame. 입장·클리어 위젯이 있으면 새 메뉴를 열지 않는다. 메뉴 생성 → AddToViewport → GameAndUI와 메뉴 포커스·커서 → SetGamePaused(true).
+- `ResumeGame`: 일시정지 해제 → 메뉴 제거·참조 해제 → GameOnly(bFlushInput=true)·커서 숨김. `RestartCurrentLevel`: ResumeGame 후 현재 레벨을 OpenLevel해 플레이어·방·적을 전체 초기화한다. `ReturnToFieldFromMenu`: ResumeGame 후 실제 GameInstance.ReturnToField. `QuitFromMenu`: ResumeGame 후 QuitGame. 일시정지 진입·재시작·복귀·종료에서 `ResetCombatFeedback`로 피드백을 복원한다.
+- **UI/WBP_PauseMenu**: 계속하기 / 현재 맵 처음부터 다시 / 필드로 돌아가기 / 게임 종료 버튼을 위 함수에 연결한다. 체크포인트 자동 부활은 현재 방 진행 유지이며, 메뉴 재시작과 구분한다.
+- `ReportCombatHit(Attacker, Target, Damage, bGuarded)`: `AC_CombatFeedback.ReportHit`에 실제 피해를 전달한다. 명중/가드 효과음은 양수 피해·유효 Target과 폰을 확인하고 거리 2400cm 이내에서 대상 위치에 재생하며 거리로 음량을 줄인다.
+
+**Components/AC_CombatFeedback** (ActorComponent, 컨트롤러 소유): 컨트롤러의 `CombatFeedback` 컴포넌트 하나에 연결한다. 담당 사본은 `bEnableHitstop=false`로 반환했으며 통합 제작본에서는 에셋 기본값과 PC의 컴포넌트를 true로 활성화했다. 공개 함수 `ReportHit(Attacker: Actor, Target: Actor, Damage: float, bGuarded: bool)`, `ResetAllFeedback()`. 실제 감소량으로 숫자·가드 표시·피격 플래시·시간 정지·카메라 세기를 정한다. 최초 CustomTimeDilation·FOV·오버레이를 보존하고 반복 명중이 복원값을 덮어쓰지 않게 한다. 컨트롤러 컴포넌트 Tick와 GetRealTimeSeconds로 만료를 처리하며 사망·무효 대상·EndPlay·일시정지에서 소유한 변경을 정리한다. 현재 값이 마지막 적용값과 다르면 외부 변경을 보존한다. PC의 `ResetCombatFeedback`는 컴포넌트의 ResetAllFeedback를 호출한다. 연결 이후 전체 회귀·패키징·사람 검증 결과는 별도 기록한다.
+
+**Audio/S_SC_Hit, S_SC_Guard**: `Tools/audio/generate_combat_audio.py`로 생성한 원본 WAV를 임포트한다. 생성·재생 경로 검사와 사람의 청취를 구분한다.
+
+**Combat/BP_DamageNumber, UI/WBP_DamageNumber**: 숫자 액터의 화면 공간 WidgetComponent에 표시 위젯을 붙인다. `DamageValue`, `bGuardedValue`로 실제 피해량과 가드를 표시한다. 기본 실제 시간 수명은 0.7초, 상승 거리 65cm이며, 컨트롤러 피드백의 동시 숫자 상한은 24다. Tick에서 상승·투명도·수명을 처리하고 ResetAllFeedback에서 활성 숫자를 제거한다.
+
+**Materials/M_SC_HitFlash**: 반투명 Unlit 오버레이 재질. 메시의 기본 Material 대신 OverlayMaterial을 사용하고, 최초 오버레이와 외부 변경을 보존한다.
 
 ## 5단계: 몬스터
 
 **AI/BP_EnemyAIController** (AIController)
 - 변수 `Enemy`(BP_EnemyBase), `Target`(Pawn), `ThinkInterval`(0.2), `bChasing`.
-- OnPossess: Enemy 캐스트 저장 → `SetTimerByEvent(Think, ThinkInterval, 반복)`.
+- OnPossess: Enemy 캐스트 저장 → `SetTimerbyFunctionName(Object=self, FunctionName="Think", Time=ThinkInterval, bLooping=true)`.
 - `Think`: Enemy 무효·비활성·사망이면 bChasing=false. Target = 플레이어 폰(무효·사망이면 중지). 경직·공격 중이면 중지. 거리 > AggroRange면 중지. AttackTags를 순서대로: 거리가 [AttackMinRanges[i], AttackRanges[i]] 안이면 대상 쪽으로 회전 → `Combat.PressInput(AttackTags[i])`가 true면 bChasing=false로 끝. 모두 실패하면 bChasing = 거리 > 마지막 AttackRanges × 0.8.
 - Tick: bChasing이고 Combat.CanMove면 대상 방향(수평) `AddMovementInput`.
 
@@ -282,10 +309,10 @@ DefaultPawnClass BP_PlayerCharacter, PlayerControllerClass BP_SCPlayerController
 **BP_SealCrystal**: 스켈레탈 메시 없음, `CrystalMesh`(SM_ChamferCube 0.8×0.8×1.6, 45도 기울임, MI_SC_Crystal), AI 없음, bSuperArmor true, AbilitySet DA_AbilitySet_Static, AttributeTable DT_Attr_Crystal(Static 세트와 테이블만 다른 `DA_AbilitySet_Crystal`), bDestroyOnDeath true, bStartDormant true.
 
 **몬스터 어빌리티**
-- `GA_Enemy_Melee` (부모 GA_ActionBase): AM_ComboAttack `Melee01`, PlayRate 0.8, HitTime 0.45, 계수 1.0, 반경 130, 전방 110, 넉백 300, bFaceInputOnStart false. Cooldown GE_Cooldown_Enemy_Melee. 태그 사양 3장.
-- `GA_Enemy_Melee_Boss` (부모 GA_Enemy_Melee): `Melee03`, PlayRate 0.9, 계수 1.2, 반경 200, 전방 150, 넉백 500, Cooldown GE_Cooldown_Boss_Melee.
-- `GA_Boss_Slam` (부모 GA_SCBase): Commit → `BP_TelegraphCircle` 스폰(반경 500, 1.2초) → PlayMontageAndWait(AM_ChargedAttack, `Charge`) → WaitDelay 1.2 → MontageJumpToSection(`Attack`) → WaitDelay 0.45 → HitTargetsInFront(500, 0, 2.5, 200, 600) + 큐 GameplayCue.Enemy.Slam + 예고원 파괴 → 몽타주 끝나면 End. Cooldown GE_Cooldown_Boss_Slam.
-- `GA_Boss_Charge` (부모 GA_SCBase): Commit → 대상 쪽 회전 → WaitDelay 0.5 → LaunchCharacter(전방 × 2500) + AM_Dash 재생 → 0.15/0.35/0.55초에 반경 200 타격(HitActors로 중복 방지) → 0.8초에 End. Cooldown GE_Cooldown_Boss_Charge.
+- `GA_Enemy_Melee` (부모 GA_ActionBase): AM_SCEnemyMelee `Melee01`, PlayRate 0.8, 타격 이벤트 0.450초, 계수 1.0, 반경 130, 전방 110, 넉백 300, bFaceInputOnStart false. Cooldown GE_Cooldown_Enemy_Melee. 태그 사양 3장.
+- `GA_Enemy_Melee_Boss` (부모 GA_Enemy_Melee): Montage를 AM_SCComboAttack으로 명시하고 `Melee03`, PlayRate 0.9, 타격 이벤트 2.400초, 계수 1.2, 반경 200, 전방 150, 넉백 500, Cooldown GE_Cooldown_Boss_Melee.
+- `GA_Boss_Slam` (부모 GA_SCBase): Commit → 타격 이벤트 반복 수신 등록 → `BP_TelegraphCircle` 스폰(반경 500, 1.2초) → PlayMontageAndWait(AM_SCBossSlam, `Charge`) → 전조용 WaitDelay 1.2 → MontageJumpToSection(`Attack`). `HandleHitFrame`은 아바타·전용 몽타주·미소비 상태를 검사하고 먼저 소비 처리한 뒤 HitTargetsInFront(500, 0, 2.5, 200, 600) + 큐 GameplayCue.Enemy.Slam + 예고원 파괴를 수행한다. 타격은 몽타주 위치 1.250초이며 HitDelay와 타격용 WaitDelay는 제거했다. 몽타주 종료/중단에서 EndAbility와 예고원 정리. Cooldown GE_Cooldown_Boss_Slam.
+- `GA_Boss_Charge` (부모 GA_SCBase): Commit → 대상 쪽 회전 → 전조 WaitDelay 0.5 → `ApplyRootMotionConstantForce`(속도 2500, 지속 0.6초) + 기존 AM_Dash 재생. `BeginChargePath`에서 출발점과 길이 0 스윕을 검사하고, 기존 0.15/0.35/0.55초 표본마다 `HitAlongPath`가 이전 검사 위치→현재 위치를 반경 200의 `MultiSphereTraceForObjects(Pawn)`로 잇는다. 유효 적을 HitActors에 추가한 뒤 기존 ApplyHit(계수 1.8, 넉백 600, 띄우기 200)를 호출해 대상별 1회를 유지한다. 루트 모션 완료와 EndTime 0.8 종료점도 검사한다. 이동 수명·표본은 기존 월드 시간을 유지하며, 다섯 WaitDelay는 타격 포즈와 별개인 돌진 경로 검사에 남겨 둔다. 스윕은 표본 사이 직선 구간을 검사하고 장애물에 대한 곡선 이동 경로를 정밀 복원하지 않는다. Cooldown GE_Cooldown_Boss_Charge.
 
 **Combat/BP_TelegraphCircle**: 바닥 원판(SM_Cylinder, 높이 0.01배, MI_SC_Telegraph). `Init(Radius, Duration)`: Tick에서 크기 0 → Radius로 키움, Duration 뒤 스스로 파괴하지 않고 스킬이 파괴.
 

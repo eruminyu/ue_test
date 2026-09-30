@@ -2,7 +2,7 @@
 
 다른 컴퓨터에서 SoulCombat 작업을 이어갈 때 쓴다. 1장은 사람이 할 준비이고, 2장은 코딩 에이전트에 붙여넣는 지시문이다. Codex는 저장소의 `AGENTS.md`, Claude Code는 `CLAUDE.md`도 읽는다.
 
-2026-09-30 현재는 **게임 제작과 개선을 우선하고, 학습은 나중으로** 미룬다. 가능한 독립 작업은 여러 에디터로 병행한다. `08-pc-validation.md`에서 현재 PC 재검증 결과를, `AGENTS.md`에서 작업 분리·통합 규칙을 확인한다. `07-study-guide.md`는 이후 학습용 참고 자료다. 포트폴리오 직군이나 애니메이션 팩 결정은 해당 개선 작업을 시작할 때만 필요하다.
+2026-09-30 현재는 **게임 제작과 개선을 우선하고, 학습은 나중으로** 미룬다. 가능한 독립 작업은 여러 에디터로 병행한다. 초기 PC 준비 결과는 `08-pc-validation.md`, 현재 제작 범위와 통합 기록은 `09-production-plan.md`, 조작·배포 절차는 `10-play-guide.md`에서 확인한다. `AGENTS.md`의 작업 분리·통합 규칙을 따른다. `07-study-guide.md`는 이후 학습용 참고 자료다. 포트폴리오 직군이나 애니메이션 팩 결정은 해당 개선 작업을 시작할 때만 필요하다.
 
 ## 1. 사람이 할 준비
 
@@ -31,7 +31,7 @@
 powershell -ExecutionPolicy Bypass -File Tools\Setup-Project.ps1 -EngineDir "D:\Program Files\Epic Games\UE_5.8" -Launch
 ```
 
-현재 PC 점검에서는 포트 8001을 사용했지만, 작업 재개용 에디터는 `.mcp.json`과 일치하는 8000으로 확인했다. 빌드·패키징을 다시 할 때는 Live Coding 충돌을 피하도록 실행 중인 UE 에디터를 먼저 종료한다.
+현재 PC의 통합 에디터는 `.mcp.json`과 일치하는 8000을 사용한다. 병행 제작 사본 A/B는 각각 8001/8002를 사용했으며 반환 후 종료했다. 빌드·패키징을 다시 할 때는 Live Coding 충돌을 피하도록 실행 중인 UE 에디터를 먼저 저장·종료한다.
 
 ## 2. 작업 재개 지시문
 
@@ -39,16 +39,17 @@ powershell -ExecutionPolicy Bypass -File Tools\Setup-Project.ps1 -EngineDir "D:\
 SoulCombat 작업을 다른 PC에서 이어서 한다. 이전 세션의 대화 기록은 없고, 필요한 맥락은 저장소 문서에 있다.
 
 먼저 읽을 것
-- AGENTS.md와 CLAUDE.md(규칙), README.md(구성), docs/07-study-guide.md(학습 목적), docs/08-pc-validation.md(현재 PC 검증), docs/checklist.md(남은 확인)
+- AGENTS.md와 CLAUDE.md(규칙), README.md(구성), docs/09-production-plan.md(현재 제작 범위), docs/11-production-validation.md(최신 검증 근거), docs/10-play-guide.md(실행·조작), docs/checklist.md(남은 확인)
+- 초기 PC 준비와 이후 학습이 필요할 때: docs/08-pc-validation.md, docs/07-study-guide.md
 - 개선 후보를 검토할 때: docs/05-portfolio-roadmap.md. 이 문서를 학습 필수 순서로 취급하지 않는다.
 - MCP로 에셋을 만들기 전: docs/mcp-cookbook.md와 docs/parallel/*-cookbook.md에서 그 작업에 해당하는 부분
 - 필요할 때만: docs/01-game-spec.md(사양), docs/02-build-plan.md(에셋별 설계), docs/03-build-log.md(제작 기록), docs/04-final-qa.md(QA), docs/engine-api-notes.md
 
 1. 환경 점검 (각 에디터의 MCP 호출은 한 번에 하나)
 - unreal-mcp가 연결되는지 list_toolsets로 확인한다. 안 되면 에디터가 켜져 있는지 나에게 묻는다.
-- 현재 레벨이 /Game/SoulCombat/Maps/L_CombatField인지, /Game/SoulCombat의 블루프린트 72개가 에러·경고 없이 컴파일되는지 확인한다(docs/04-final-qa.md 1-1과 같은 방법).
+- 현재 레벨이 /Game/SoulCombat/Maps/L_CombatField인지, /Game/SoulCombat의 실제 블루프린트 목록 전체가 에러·경고 없이 컴파일되는지 확인한다. 초기 기록의 BP72/에셋104를 현재 개수로 고정하지 않는다.
 - 점검만 했으면 에셋을 저장하지 않는다. 끝나고 git status에 변경이 없는지 확인한 뒤 결과를 짧게 보고한다.
-- 자동 테스트용 에셋(/Game/_Scratch의 BP_TestPlayerDriver, BP_TestKiller, BP_TestGateDriver와 테스트 맵)은 저장소에 없다. PIE 테스트가 필요해지면 docs/04-final-qa.md의 설명대로 다시 만든다.
+- 현재 회귀 소스와 실행 절차는 Tools/tests/README.md에 있다. PythonScriptPlugin을 테스트 프로세스에서 활성화하고 Tools/tests/ue_test_bridge.py로 실제 PIE 액터를 검사한다. 검사 도중 에셋을 편집하거나 저장하지 않고 결과 JSON의 done=true까지 기다린다. 초기 QA의 /Game/_Scratch 테스트 에셋은 현재 회귀에 필요하지 않다.
 
 2. 다음 작업: 게임 제작과 개선
 - 지금은 게임 제작을 우선하고 공부는 나중에 한다. 내가 요청한 기능은 승인된 범위에서 구현·검증·통합한다. 입력·피해·취소를 함께 공부하는 활동을 제작의 선행 작업으로 넣지 않는다.

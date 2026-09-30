@@ -70,6 +70,7 @@ def _damage_tick(delta):
             controller = unreal.GameplayStatics.get_player_controller(world, 0)
             feedback = controller.get_component_by_class(feedback_class)
             _damage_check("실제 컨트롤러에 피드백 연결", feedback is not None)
+            _damage_check("기본 히트스톱 활성·컴포넌트 하나", feedback.get_editor_property("bEnableHitstop") and len(controller.get_components_by_class(feedback_class)) == 1)
             player = unreal.GameplayStatics.get_player_pawn(world, 0)
             dummy = next(a for a in unreal.GameplayStatics.get_all_actors_of_class(world, unreal.Actor) if a.get_actor_label() == "Dummy_2")
             combat_class = unreal.load_class(None, "/Game/SoulCombat/Components/AC_CombatComponent.AC_CombatComponent_C")
@@ -85,6 +86,7 @@ def _damage_tick(delta):
             _damage_check("실제 명중 숫자 생성", len(numbers) == count + 1)
             value, guarded = _damage_display(numbers[-1])
             _damage_check("실제 피해50 표시", abs(value - 50) < 0.05 and not guarded, {"damage": value, "guarded": guarded})
+            _damage_check("실제 피해에서 히트스톱 적용", player.get_editor_property("custom_time_dilation") < 1.0 and dummy.get_editor_property("custom_time_dilation") < 1.0)
             _damage_state.update({"feedback": feedback, "controller": controller, "dummy": dummy, "combat": combat, "player": player, "phase": "after_hit", "hit_real": time.monotonic()})
         elif _damage_state["phase"] == "after_hit" and time.monotonic() - _damage_state["hit_real"] > 1.1:
             _damage_check("숫자 수명 종료", len(_damage_numbers(world)) == 0)
@@ -126,6 +128,21 @@ def _damage_tick(delta):
             count = len(numbers)
             _damage_state["combat"].call_method("ApplyHit", args=(dummy, 1.0, 0.0, 0.0))
             _damage_check("이미 죽은 대상은 추가 숫자 없음", len(_damage_numbers(world)) == count)
+            dying_class = unreal.load_class(None, "/Game/SoulCombat/Characters/Enemies/BP_Enemy_Grunt.BP_Enemy_Grunt_C")
+            statics = unreal.get_default_object(unreal.GameplayStatics)
+            transform = unreal.Transform(location=unreal.Vector(1000, 0, 95))
+            dying = statics.call_method("BeginDeferredActorSpawnFromClass", args=(world, dying_class, transform, unreal.SpawnActorCollisionHandlingMethod.ALWAYS_SPAWN, None, unreal.SpawnActorScaleMethod.MULTIPLY_WITH_ROOT))
+            statics.call_method("FinishSpawningActor", args=(dying, transform, unreal.SpawnActorScaleMethod.MULTIPLY_WITH_ROOT))
+            dying.call_method("SetDormant", args=(True,))
+            dying_combat = dying.get_component_by_class(_damage_state["combat"].get_class())
+            dying_asc = dying.get_component_by_class(unreal.AbilitySystemComponent)
+            dying_spec = dying_asc.make_outgoing_spec(effect, 1.0, dying_asc.make_effect_context())
+            dying_spec = unreal.AbilitySystemLibrary.assign_tag_set_by_caller_magnitude(dying_spec, _damage_tag("Data.Damage"), _damage_health(dying) - 25)
+            dying_asc.apply_gameplay_effect_spec_to_self(dying_spec)
+            before_names = {a.get_path_name() for a in _damage_numbers(world)}
+            _damage_state["combat"].call_method("ApplyHit", args=(dying, 1.0, 0.0, 0.0))
+            final_numbers = [a for a in _damage_numbers(world) if a.get_path_name() not in before_names]
+            _damage_check("사망 후 제거되는 실제 적의 마지막 피해 숫자", dying_combat.get_editor_property("bDestroyOnDeath") and not dying_combat.get_editor_property("bRespawnOnDeath") and len(final_numbers) == 1 and abs(_damage_display(final_numbers[0])[0] - 25) < 0.05)
             _damage_state["feedback"].call_method("ResetAllFeedback")
             player = _damage_state["player"]
             player.set_editor_property("custom_time_dilation", 0.6, notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)
@@ -138,6 +155,9 @@ def _damage_tick(delta):
             _damage_check("메뉴 진입에서 기존 FOV 복원", abs(camera.get_editor_property("field_of_view") - fov) < 0.001)
             player.set_editor_property("custom_time_dilation", 1.0, notify_mode=unreal.PropertyAccessChangeNotifyMode.NEVER)
             _damage_state["controller"].call_method("ResumeGame")
+            _damage_state.update({"phase": "destroyed_wait", "dying": dying, "hit_real": time.monotonic()})
+        elif _damage_state["phase"] == "destroyed_wait" and time.monotonic() - _damage_state["hit_real"] > 3.5:
+            _damage_check("처치한 실제 적의 지연 제거 완료", not unreal.SystemLibrary.is_valid(_damage_state["dying"]))
             _damage_finish()
     except Exception:
         _damage_finish(traceback.format_exc())

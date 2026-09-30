@@ -200,15 +200,29 @@
 - `BP_SCPlayerController`에 TogglePauseMenu/ResumeGame/RestartCurrentLevel/ReturnToFieldFromMenu/QuitFromMenu를 추가하고 `WBP_PauseMenu`의 버튼과 연결했다. Esc는 정지 중에도 실행하며, 메뉴는 GameAndUI 입력·커서 표시·월드 정지, 복귀는 GameOnly·입력 Flush·참조 해제를 수행한다. 기존 입장/클리어 창이 열려 있으면 메뉴를 추가로 만들지 않는다.
 - 코어 검사 `Tools/tests/ue_pause_menu.py`를 먼저 작성해 미구현 함수 실패를 확인한 뒤 구현했다. 정지·시간 정지·위젯·커서·반복 복귀8조건이 통과했다. UI 구현 후 `ue_pause_buttons.py`로 실제 버튼 델리게이트와 새 월드 생성·입장 창 보호·복귀 포털·종료9조건을 검사했다. 물리 키/마우스 입력은 검사하지 않았다.
 - 기존 컨트롤러 모든 함수 그래프는 동일하다. EventGraph 원래48노드는 그대로이며 Esc/Toggle 호출2노드만 추가됐다. 두 에셋 warnings_as_errors 컴파일, 명시 저장, 패키지 경로 기준 dirty=false 확인.
-- 동시에 추가한 `ue_actor_clock.py`는 기존 타이머 방식의 개별 배속0.25 조기 피해를 재현했다. 몽타주0.11794초에서 피해50이 발생한 실패 결과를 보존했고 A 담당이 이벤트 방식으로 수정한다. 아직 통합 완료로 표시하지 않는다.
+- 동시에 추가한 `ue_actor_clock.py`는 기존 타이머 방식의 개별 배속0.25 조기 피해를 재현했다. 몽타주0.11794초에서 피해50이 발생한 실패 결과를 보존했다. 이 단계에서는 A 담당의 이벤트 방식 수정과 통합을 기다렸으며 이후 결과는 아래 최종 통합 기록에 이어 적었다.
 
 ### 스킬 표시·방 복구·실제 피해 알림
 
 - 대시/Q/E/R의 GA가 참조하는 실제 Cost GE와 HUD Cost/CostAttribute를 대조했다. 실제 발동과 쿨다운 막대까지16조건 통과(`ue_skill_ui.py`). 메뉴의 포커스와 Space/스킬별 조작 안내를 보완했다.
 - `ue_dungeon_recovery.py`로 Mob1/Mob2/Boss의 실제 방 진입, 부분 진행, 자원 소모와 GE 사망, 3초 부활을 확인했다.39조건 통과. 적 AI Think/Tick을 테스트 월드에서만 정지하므로 난이도·접근·물리 입력 검증은 아니다. 방별 문·웨이브·남은 적·보스 HP/분노는 기존 진행 유지 규칙을 따랐다.
-- `ApplyHit`에서 GE 바로 전 함수 로컬 BeforeHitHealth를 저장하고, GE 이후 실제 HP 감소량을 새 DispatchCombatHit에 전달한다. 기존 가드/경직/넉백/반환 실행 흐름을 유지했다. 피해0에는 새 알림을 보내지 않는다. PC.ReportCombatHit에는 현재 명중·가드 효과음을 연결했으며 B 연출 연결은 이후 단계다. 훅 추가 후 기존 전투37조건 통과.
+- `ApplyHit`에서 GE 바로 전 함수 로컬 BeforeHitHealth를 저장하고, GE 이후 실제 HP 감소량을 새 DispatchCombatHit에 전달한다. 기존 가드/경직/넉백/반환 실행 흐름을 유지했다. 피해0에는 새 알림을 보내지 않는다. 이 단계의 PC.ReportCombatHit에는 명중·가드 효과음을 연결했고 B 연출은 이후 통합했다. 훅 추가 후 기존 전투37조건 통과.
 - 외부 샘플 없이 생성한 48kHz 모노 PCM 효과음2개와 생성 코드를 보관한다. 구현 전 실패한 테스트를 작성했고 WAV 형식·길이·무클리핑·양끝0·재현성 검사를 통과했다. SoundWave 실제 임포트와0.16/0.23초 길이 확인. 청음은 자동 성공으로 표시하지 않는다.
 - Saved에만 있던 브리지·송신기·공통 함수·전투/타이밍/던전 회귀 소스를 `Tools/tests`에 보관하고 한국어 재현 절차를 추가했다. 새 송신기는 Windows 파일 읽기 충돌을 최대1초 재시도한다. 이 송신기·공통 함수·전투 회귀는 실제8000에서 실행해37조건 통과했다.
 - `Package-Game.ps1`과 실행 안내를 준비했다. Shipping의 두 맵과 런타임 설치 프로그램을 포함하며 PlanOnly 검사는 통과했다. 실제 최종 패키징은 A/B 통합 검증 뒤다.
 - UE5.8.3 엔진의 BlueprintGraphEditor.h에서 네이티브 주석 생성 API를 확인했다. 통합 담당8그래프의 위치·한국어 주석을 이 API로 정리하고 전후 same-logic을 확인했다. MCP에 전용 주석 툴이 없다는 기존 기록을 엔진/Python에도 없는 제약으로 확대하지 않도록 지침을 보완했다.
 - 테스트의 개별 배율 변경은 `notify_mode=PropertyAccessChangeNotifyMode.NEVER`를 사용한다. PIE 컴포넌트 설정을 에디터 변경 알림으로 수정하면 재생성될 수 있다는 B의 조사에 따라 런타임 검사를 분리했다. 제작 CDO 변경은 정상 저장/새 PIE 경로를 따른다.
+
+### 제작 P1 통합·돌진 원인 보정·최종 자동 회귀
+
+- 병행 기준81a750f의 A 반환2f6e9ec·B 반환09c2aed를 원본308e7f2·89062ed에 통합했다. 원본 PC에 CombatFeedback 컴포넌트 하나를 붙였고 통합 원본의 피드백 에셋 기본값과 PC 배치 컴포넌트는 bEnableHitstop=true다. B 사본의 반환 기본값false를 통합 단계에서 활성화했다.
+- 기존 ApplyHit의 함수 로컬 Health 전후 감소량을 DispatchCombatHit→PC.ReportCombatHit→AC_CombatFeedback.ReportHit로 전달했다. 숫자/가드 표시·오버레이 플래시·히트스톱·FOV 펄스와 명중/가드 효과음을 연결했고 메뉴 진입·Restart/Return/Quit에서 연출을 정리한다. 기존 가드·경직·넉백·반환 흐름을 보존했다.
+- 최초 통합 정적 검사에서 에셋116개·BP77개, 부모 우선 warnings_as_errors 컴파일77/77을 확인했다. 의존227개는 에셋210개+Script17개이며 누락0·Scratch 참조/에셋0이었다. 돌진 수정과 모든 연결 변경 이후에도 최종 전체77개 엄격 컴파일77/77, 동일 집계·누락0·Scratch0·dirty 콘텐츠/맵0·PID40248·PIE false·L_CombatField를 재확인했다(`SoulCombat/Saved/full-final-static.json`, passed=true). 최종 정적 검사에서는 에셋을 저장하지 않았다.
+- 첫 회귀는 실제 피해 피드백17개가 통과했으나 실행기의 예상 수16과 달라 중단했다. 기대 수를 보정했다. 두 번째 회귀는 적 공격12 중 돌진의 두 중간 옆걸음에서 기대90/실제0이 발견돼 중단했으며 두 실패 자료를 보존했다.
+- 돌진 HitAlongPath가 스윕 전에 PreviousTraceLocation을 갱신하는 것이 원인이었다. 순수 GetPreviousTraceLocation은 값 사본이 아니므로 Trace 평가 시 Start==End가 됐고 표본 끝점이 가까울 때만 우연히 맞았다. 첫 누락은 히트스톱 적용 이전이므로 별도 이동 수명을 바꾸지 않았다.
+- 실행을 IsValid→MultiSphereTraceForObjects→SetPreviousTraceLocation→ForEachLoop로 보정했다. 노드26개·데이터 핀·기본값·기존 피해/범위/히트수/쿨다운/전조/속도/지속시간과 다른 GA는 그대로다. 실제 PIE의 격리 스윕6조건 중3실패가6통과로 바뀌었고, 실제 적 어빌리티·Root Motion12조건도 통과했다. 엄격 컴파일·명시 저장·배치 후 핀 불변·PIE false·dirty 콘텐츠/맵0을 확인했다. 근거는 `SoulCombat/Saved/charge-fix-verification.json`과 그 안에 연결한 RED/GREEN·실행 차이·배치/저장 결과다.
+- 돌진 수정 뒤 세 번째 최종 통합 실행11개 묶음178조건이 약203초에 모두 통과했다. 개별 배속 타격1·실제 피해 피드백17·메뉴8·버튼/맵 전환9·방 복구39·스킬 표시16·평타14·적 공격12·기존 전투37·타이밍/관통3·던전 흐름22다. `SoulCombat/Saved/integrated-regressions.json`의 done/passed=true·error=null과 종료 후 L_CombatField·PIE false를 확인했다.
+- 자율 AI17조건도 별도 통과했다. 기존 SparringGrunt_1의 Think 타이머/Tick을 유지해 실제 Aggro800(CDO2500)·공격180·Think0.2초를 읽고700cm 진입 자연 접근/공격/피해25·범위 밖 배치 후 추격 해제·재진입 피해25·GE 사망 뒤3초 부활 전 추격 해제를 관찰했다. 다른 AI 휴면과 플레이어 MovementMode.NONE은 PIE 준비 조건이며 장애물 우회·난이도·물리 입력 검증은 아니다. 결과는 `SoulCombat/Saved/ai-autonomy-result.json`이다.
+- 원본에서 연결 이후 피드백 독립57조건을 다시 실행해 모두 통과했다(`SoulCombat/Saved/combat-feedback-tests.json`, done=true·failures=[]·error=null). 실제 게임 전달17조건과 독립 수명/복원57조건을 구분한다. 전체178+돌진6+AI17+피드백57=258은 같은 기능을 반복 관찰한 조건을 포함하므로 서로 다른258개 시나리오로 표현하지 않는다.
+- 통합 담당이 정지 메뉴의 실제 스크린샷에서 한국어 글자·4개 버튼·조작 안내·배치 겹침 없음을 확인했다. 실제 키/마우스 진입·복귀 검증과 구분한다.
+- `11-production-validation.md`와 체크리스트를 최신 확인 상태로 갱신했다. 제작본 Shipping·시작 스모크는 대기 중이며 초기08 문서의 cc31c5c 패키지 성공을 제작본 성공으로 대신 쓰지 않는다. 실제 키/마우스·손맛·전투 화면·음향 청취·정상 던전 완주·UE 미설치 PC·장기 플레이는 사람 검증으로 남긴다.
