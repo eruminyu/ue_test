@@ -15,6 +15,7 @@
 - `docs/03-build-log.md`: 단계별 결과 기록 (두 번째 에디터 작업분은 `docs/parallel/`)
 - `docs/04-final-qa.md`: 최종 QA(정적 점검, 입력 없는 PIE 전투 테스트, 전체 흐름 회귀)
 - `docs/05-portfolio-roadmap.md`: 포트폴리오 발전 로드맵(현재 진단, 직군별 트랙, 단계 순서)
+- `docs/06-handoff.md`: 다른 PC에서 이어서 할 때의 준비 절차와 Claude Code 지시문
 - `docs/mcp-cookbook.md`, `docs/parallel/*-cookbook.md`: 이 에디터 버전에서 확인한 MCP 레시피와 함정
 - `docs/engine-api-notes.md`: 설계 전제를 엔진 소스로 검증한 노트
 - `docs/comment-pass-recipe.md`: 그래프 정리·주석 절차

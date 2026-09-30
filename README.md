@@ -47,6 +47,7 @@
 | `docs/03-build-log.md`, `docs/parallel/` | 단계별 제작 기록 (두 번째 에디터 작업분은 parallel) |
 | `docs/04-final-qa.md` | 최종 QA 결과 |
 | `docs/05-portfolio-roadmap.md` | 포트폴리오 발전 로드맵 |
+| `docs/06-handoff.md` | 다른 PC에서 이어서 하기 (준비 절차, Claude Code 지시문) |
 | `docs/mcp-cookbook.md` | UE 5.8.2 Unreal MCP 사용법과 제약 |
 | `docs/engine-api-notes.md` | GAS·엔진 API 검증 노트 |
 | `docs/screenshots/` | 레벨 평면도, PIE 화면, 그래프 스크린샷 |
